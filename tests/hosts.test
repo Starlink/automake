@@ -18,32 +18,42 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure aclocal scans configure.in for macro definitions.
-# PR/319.
+# Test to make sure automake correctly recognizes presence of
+# AC_CANONICAL_(BUILD|HOST|SYSTEM|TARGET), and creates config.* in all
+# those cases.
+# From Norman Gray.
 
 . ./defs || exit 1
 
 set -e
 
-# Start macros with AM_ because that causes aclocal to complain if it
-# cannot find them.
+: >Makefile.am
 
-cat >> configure.in << 'END'
-m4_include([somedef.m4])
-AC_DEFUN([AM_SOME_MACRO])
-AC_DEFUN([AM_SOME_OTHER_MACRO])
-AM_SOME_MACRO
-AM_SOME_OTHER_MACRO
-AM_MORE_MACRO
-END
+$ACLOCAL
+$AUTOMAKE --add-missing
+test ! -f config.guess
+test ! -f config.sub
 
-mkdir m4
-echo 'AC_DEFUN([AM_SOME_MACRO])' > m4/some.m4
-echo 'AC_DEFUN([AM_SOME_DEF])' > somedef.m4
-echo 'AC_DEFUN([AM_MORE_MACRO], [AC_REQUIRE([AM_SOME_DEF])])' > m4/more.m4
+# Test all four of the AC_CANONICAL_* targets, including _SYSTEM, which is
+# supported but deprecated by autoconf.
+for macro in AC_CANONICAL_BUILD AC_CANONICAL_HOST \
+             AC_CANONICAL_SYSTEM AC_CANONICAL_TARGET
+do
+  rm -rf autom4te.cache config.sub config.guess
 
-$ACLOCAL -I m4
-$FGREP AM_SOME_MACRO aclocal.m4 && exit 1
-$FGREP AM_MORE_MACRO aclocal.m4 && exit 1
-$FGREP 'm4_include([m4/more.m4])' aclocal.m4
-test 1 = `grep m4_include aclocal.m4 | wc -l`
+  cat >configure.in<<EOF
+AC_INIT([hosts], [1.0])
+$macro
+AM_INIT_AUTOMAKE
+AC_CONFIG_FILES([Makefile])
+EOF
+
+  $ACLOCAL
+  $AUTOMAKE --add-missing
+
+  # Show the files which were installed
+  ls
+
+  test -f config.guess
+  test -f config.sub
+done
