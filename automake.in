@@ -7,7 +7,7 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
 
 # automake - create Makefile.in from Makefile.am
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+# 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ use Carp;
 my $IGNORE_PATTERN = '^\s*##([^#\n].*)?\n';
 my $WHITE_PATTERN = '^\s*' . "\$";
 my $COMMENT_PATTERN = '^#';
-my $TARGET_PATTERN='[$a-zA-Z_.@%][-.a-zA-Z0-9_(){}/$+@%]*';
+my $TARGET_PATTERN='[$a-zA-Z0-9_.@%][-.a-zA-Z0-9_(){}/$+@%]*';
 # A rule has three parts: a list of targets, a list of dependencies,
 # and optionally actions.
 my $RULE_PATTERN =
@@ -246,7 +246,7 @@ my %standard_prefix =
 # Copyright on generated Makefile.ins.
 my $gen_copyright = "\
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
+# 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -372,7 +372,7 @@ my $package_version = '';
 # Where version is defined.
 my $package_version_location;
 
-# TRUE if we've seen AC_ENABLE_MULTILIB.
+# TRUE if we've seen AM_ENABLE_MULTILIB.
 my $seen_multilib = 0;
 
 # TRUE if we've seen AM_PROG_CC_C_O
@@ -858,7 +858,7 @@ register_language ('name' => 'cppasm',
 		   'compiler' => 'CPPASCOMPILE',
 		   'compile_flag' => '-c',
 		   'output_flag' => '-o',
-		   'extensions' => ['.S'],
+		   'extensions' => ['.S', '.sx'],
 
 		   # With assembly we still use the C linker.
 		   '_finish' => \&lang_c_finish);
@@ -2127,7 +2127,7 @@ sub handle_lib_objects
 	       # for Libtool libraries or programs.  (Actually we are a bit
 	       # laxe here since this code also applies to non-libtool
 	       # libraries or programs, for which -dlopen and -dlopreopen
-	       # are pure nonsense.  Diagnosing this doesn't seems very
+	       # are pure nonsense.  Diagnosing this doesn't seem very
 	       # important: the developer will quickly get complaints from
 	       # the linker.)
 	       $val !~ /^-dl(?:pre)?open$/ &&
@@ -2202,11 +2202,10 @@ sub handle_LIBOBJS_or_ALLOCA ($)
 	  # If LTLIBOBJS is used, we must also clear LIBOBJS (which might
 	  # be created by libtool as a side-effect of creating LTLIBOBJS).
 	  $clean_files{"\$($var)"} = MOSTLY_CLEAN if $var =~ s/^LT//;
-
 	}
       else
 	{
-	  error ("`\$($var)' cannot be used outside `$dir' if"
+	  error ("`\$($var)' cannot be used outside `$config_libobj_dir' if"
 		 . " `subdir-objects' is not set");
 	}
     }
@@ -2306,7 +2305,7 @@ sub handle_compile ()
     my $default_includes = '';
     if (! option 'nostdinc')
       {
-	my @incs = ('-I.');
+	my @incs = ('-I.', subst ('am__isrc'));
 
 	my $var = var 'CONFIG_HEADER';
 	if ($var)
@@ -2320,8 +2319,8 @@ sub handle_compile ()
 	# and unaesthetic in non-VPATH builds.  We use `-I.@am__isrc@`
 	# instead.  It will be replaced by '-I.' or '-I. -I$(srcdir)'.
 	# Items in CONFIG_HEADER are never in $(srcdir) so it is safe
-	# to just append @am__isrc@.
-	$default_includes = ' ' . uniq (@incs) . subst ('am__isrc');
+	# to just put @am__isrc@ right after `-I.', without a space.
+	($default_includes = ' ' . uniq (@incs)) =~ s/ @/@/;
       }
 
     my (@mostly_rms, @dist_rms);
@@ -2478,6 +2477,8 @@ sub handle_programs
       # If the resulting program lies into a subdirectory,
       # make sure this directory will exist.
       my $dirstamp = require_build_directory_maybe ($one_file);
+
+      $libtool_clean_directories{dirname ($one_file)} = 1;
 
       $output_rules .= &file_contents ('program',
 				       $where,
@@ -3110,14 +3111,14 @@ sub handle_texinfo_helper ($)
       #   nodist_info_TEXINFOS or something similar.  (Doing this
       #   requires some sanity checks.  For instance Automake should
       #   not allow:
-      #      dist_info_TEXINFO = foo.texi
-      #      nodist_foo_TEXINFO = included.texi
+      #      dist_info_TEXINFOS = foo.texi
+      #      nodist_foo_TEXINFOS = included.texi
       #   because a distributed file should never depend on a
       #   non-distributed file.)
       #
       # * If .texi files are not distributed, then .info files should
       #   not be distributed either.  There are also cases where one
-      #   want to distribute .texi files, but do not want to
+      #   wants to distribute .texi files, but does not want to
       #   distribute the .info files.  For instance the Texinfo package
       #   distributes the tool used to build these files; it would
       #   be a waste of space to distribute them.  It's not clear
@@ -3605,7 +3606,7 @@ sub handle_dist ()
     {
       my $archive_defined = option 'no-dist-gzip' ? 0 : 1;
       $archive_defined ||=
-	grep { option "dist-$_" } ('shar', 'zip', 'tarZ', 'bzip2');
+	grep { option "dist-$_" } qw(shar zip tarZ bzip2 lzma);
       error (option 'no-dist-gzip',
 	     "no-dist-gzip specified but no dist-* specified, "
 	     . "at least one archive format must be enabled")
@@ -4599,7 +4600,10 @@ sub handle_tests
       $output_rules .= &file_contents ('check', new Automake::Location);
 
       # Tests that are known programs should have $(EXEEXT) appended.
+      # For matching purposes, we need to adjust XFAIL_TESTS as well.
       append_exeext { exists $known_programs{$_[0]} } 'TESTS';
+      append_exeext { exists $known_programs{$_[0]} } 'XFAIL_TESTS'
+        if (var ('XFAIL_TESTS'));
     }
 }
 
@@ -4746,6 +4750,10 @@ sub scan_autoconf_config_files ($$)
       # Handle $local:$input syntax.
       my ($local, @rest) = split (/:/);
       @rest = ("$local.in",) unless @rest;
+      msg ('portability', $where,
+	  "Omit leading `./' from config file names such as `$local',"
+	  . "\nas not all make implementations treat `file' and `./file' equally.")
+	if ($local =~ /^\.\//);
       my $input = locate_am @rest;
       if ($input)
         {
@@ -5123,8 +5131,9 @@ sub scan_autoconf_files ()
   # check must be done for every run, even those where we are only
   # looking at a subdir Makefile.  We must set relative_dir for
   # maybe_push_required_file to work.
+  # Sort the files for stable verbose output.
   $relative_dir = '.';
-  foreach my $file (keys %required_aux_file)
+  foreach my $file (sort keys %required_aux_file)
     {
       require_conf_file ($required_aux_file{$file}->get, FOREIGN, $file)
     }
@@ -6422,6 +6431,7 @@ sub make_paragraphs ($%)
 		 'MAINTAINER-MODE'
 		 => $seen_maint_mode ? subst ('MAINTAINER_MODE_TRUE') : '',
 
+		 'LZMA'        => !! option 'dist-lzma',
 		 'BZIP2'       => !! option 'dist-bzip2',
 		 'COMPRESS'    => !! option 'dist-tarZ',
 		 'GZIP'        =>  ! option 'no-dist-gzip',
@@ -6734,7 +6744,7 @@ sub file_contents ($$%)
 #
 # As a side effect, it looks for misspellings.  It is an error to have
 # a variable ending in a "reserved" suffix whose prefix is unknown, e.g.
-# "bin_PROGRAMS".  However, unusual prefixes are allowed if a variable
+# "bni_PROGRAMS".  However, unusual prefixes are allowed if a variable
 # of the same name (with "dir" appended) exists.  For instance, if the
 # variable "zardir" is defined, then "zar_PROGRAMS" becomes valid.
 # This is to provide a little extra flexibility in those cases which
@@ -7664,12 +7674,13 @@ sub version ()
 {
   print <<EOF;
 automake (GNU $PACKAGE) $VERSION
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
 Written by Tom Tromey <tromey\@redhat.com>
        and Alexandre Duret-Lutz <adl\@gnu.org>.
-
-Copyright 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 EOF
   # --version always returns 0 per GNU standards.
   exit 0;

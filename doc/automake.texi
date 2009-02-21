@@ -14,21 +14,16 @@ This manual is for @acronym{GNU} Automake (version @value{VERSION},
 Makefiles from template files.
 
 Copyright @copyright{} 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the @acronym{GNU} Free Documentation License,
 Version 1.2 or any later version published by the Free Software
-Foundation; with no Invariant Sections, with the Front-Cover texts
-being ``A @acronym{GNU} Manual,'' and with the Back-Cover Texts as in
-(a) below.  A copy of the license is included in the section entitled
-``@acronym{GNU} Free Documentation License.''
+Foundation; with no Invariant Sections, with no Front-Cover texts,
+and with no Back-Cover Texts.  A copy of the license is included in the
+section entitled ``@acronym{GNU} Free Documentation License.''
 
-(a) The FSF's Back-Cover Text is: ``You have freedom to copy and
-modify this @acronym{GNU} Manual, like @acronym{GNU} software.  Copies
-published by the Free Software Foundation raise funds for
-@acronym{GNU} development.''
 @end quotation
 @end copying
 
@@ -540,7 +535,7 @@ command should read @code{gunzip -c amhello-1.0.tar.gz | tar xf -}.
 The user then enters the newly created directory to run the
 @file{configure} script.  This script probes the system for various
 features, and finally creates the @file{Makefile}s.  In this toy
-example there are only two @file{Makefile}s, but in real-world project
+example there are only two @file{Makefile}s, but in real-world projects,
 there may be many more, usually one @file{Makefile} per directory.
 
 It is now possible to run @code{make}.  This will construct all the
@@ -824,7 +819,7 @@ called @dfn{parallel builds} or @dfn{VPATH builds}.  The expression
 reference to the way the build tree shadows the source tree, it is not
 about some concurrency in the way build commands are run.  For this
 reason we refer to such setups using the name @emph{VPATH builds} in
-the sequel.  @emph{VPATH} is the name of the @command{make} feature
+the following.  @emph{VPATH} is the name of the @command{make} feature
 used by the @file{Makefile}s to allow these builds (@pxref{General
 Search, , @code{VPATH}: Search Path for All Prerequisites, make, The
 GNU Make Manual}).
@@ -1089,11 +1084,11 @@ inappropriate.
 The @code{DESTDIR} variable can be used to perform a staged
 installation.  The package should be configured as if it was going to
 be installed in its final location (e.g., @code{--prefix /usr}), but
-when running @code{make install} the @code{DESTDIR} should be set to
-the absolute name of a directory in which all the installation will be
+when running @code{make install}, the @code{DESTDIR} should be set to
+the absolute name of a directory into which the installation will be
 diverted.  From this directory it is easy to review which files are
 being installed where, and finally copy them to their final location
-by any means.
+by some means.
 
 @cindex Binary package
 
@@ -1219,7 +1214,7 @@ Speed up one-time builds.
 Some compilers do not offer any practical way to derive the list of
 dependencies as a side-effect of the compilation, requiring a separate
 run (maybe of another tool) to compute these dependencies.  The
-performance penalty implied my these methods is important enough to
+performance penalty implied by these methods is important enough to
 disable them by default.  The option @option{--enable-dependency-tracking}
 must be passed to @command{configure} to activate them.
 
@@ -1523,7 +1518,7 @@ Index, autoconf, The Autoconf Manual}).  The macros that start with
 (@pxref{Macro Index}).
 
 The first two lines of @file{configure.ac} initialize Autoconf and
-Automake.  @code{AC_INIT} takes in parameters the name of the package,
+Automake.  @code{AC_INIT} takes in as parameters the name of the package,
 its version number, and a contact address for bug-reports about the
 package (this address is output at the end of @code{./configure
 --help}, for instance).  When adapting this setup to your own package,
@@ -1701,12 +1696,13 @@ for compiling and linking programs to be generated.
 @cindex Non-standard targets
 @cindex @code{cvs-dist}, non-standard example
 @trindex cvs-dist
+@trindex git-dist
 
 The variable definitions and rules in the @file{Makefile.am} are
 copied verbatim into the generated file.  This allows you to add
 arbitrary code into the generated @file{Makefile.in}.  For instance,
 the Automake distribution includes a non-standard rule for the
-@code{cvs-dist} target, which the Automake maintainer uses to make
+@code{git-dist} target, which the Automake maintainer uses to make
 distributions from his source control system.
 
 @cindex GNU make extensions
@@ -3757,7 +3753,7 @@ into @code{LIBOBJS}.
 @cindex autoupdate
 
 Although using some of the following macros was required in past
-releases, you should not used any of them in new code.  Running
+releases, you should not use any of them in new code.  Running
 @command{autoupdate} should adjust your @file{configure.ac}
 automatically (@pxref{autoupdate Invocation, , Using
 @command{autoupdate} to Modernize @file{configure.ac}, autoconf, The
@@ -3980,7 +3976,7 @@ conditionals (@pxref{Conditionals}) or use Autoconf @code{AC_SUBST}
 variables (@pxref{Setting Output Variables, , Setting Output
 Variables, autoconf, The Autoconf Manual}).  Using Automake
 conditionals is the preferred solution.  Before we illustrate these
-two possibility, let's introduce @code{DIST_SUBDIRS}.
+two possibilities, let's introduce @code{DIST_SUBDIRS}.
 
 @subsection @code{SUBDIRS} vs.@: @code{DIST_SUBDIRS}
 @cindex @code{DIST_SUBDIRS}, explained
@@ -4313,14 +4309,14 @@ self-contained @file{hand-1.2.tar.gz} archive.  So although it appears
 to be embedded in another package, it can still be used separately.
 
 The purpose of the @samp{AC_CONFIG_AUX_DIR([.])} instruction is to
-force Automake and Autoconf into search auxiliary script in the
+force Automake and Autoconf to search for auxiliary scripts in the
 current directory.  For instance, this means that there will be two
 copies of @file{install-sh}: one in the top-level of the @code{arm}
 package, and another one in the @file{hand/} subdirectory for the
 @code{hand} package.
 
-The historical default is to search these auxiliary scripts in the
-immediate parent and grand-parent directories.  So if the
+The historical default is to search for these auxiliary scripts in
+the parent directory and the grandparent directory.  So if the
 @samp{AC_CONFIG_AUX_DIR([.])} line was removed from
 @file{hand/configure.ac}, that subpackage would share the auxiliary
 script of the @code{arm} package.  This may looks like a gain in size
@@ -5743,12 +5739,13 @@ The contents of this variable are passed to every compilation that invokes
 the C preprocessor; it is a list of arguments to the preprocessor.  For
 instance, @option{-I} and @option{-D} options should be listed here.
 
-Automake already provides some @option{-I} options automatically.  In
-particular it generates @samp{-I$(srcdir)}, @samp{-I.}, and a
-@option{-I} pointing to the directory holding @file{config.h} (if
-you've used @code{AC_CONFIG_HEADERS} or @code{AM_CONFIG_HEADER}).  You
-can disable the default @option{-I} options using the
-@option{nostdinc} option.
+Automake already provides some @option{-I} options automatically, in a
+separate variable that is also passed to every compilation that invokes
+the C preprocessor.  In particular it generates @samp{-I.},
+@samp{-I$(srcdir)}, and a @option{-I} pointing to the directory holding
+@file{config.h} (if you've used @code{AC_CONFIG_HEADERS} or
+@code{AM_CONFIG_HEADER}).  You can disable the default @option{-I}
+options using the @option{nostdinc} option.
 
 @code{AM_CPPFLAGS} is ignored in preference to a per-executable (or
 per-library) @code{_CPPFLAGS} variable if it is defined.
@@ -6033,7 +6030,7 @@ The command used to actually link a Unified Parallel C program.
 
 Automake includes some support for assembly code.  There are two forms
 of assembler files: normal (@file{*.s}) and preprocessed by @code{CPP}
-(@file{*.S}).
+(@file{*.S} or @file{*.sx}).
 
 @vindex CCAS
 @vindex CCASFLAGS
@@ -6053,7 +6050,7 @@ The autoconf macro @code{AM_PROG_AS} will define @code{CCAS} and
 @code{CCAS} to the C compiler and @code{CCASFLAGS} to the C compiler
 flags), but you are free to define these variables by other means.
 
-Only the suffixes @file{.s} and @file{.S} are recognized by
+Only the suffixes @file{.s}, @file{.S}, and @file{.sx} are recognized by
 @command{automake} as being files containing assembly code.
 
 
@@ -6562,10 +6559,10 @@ bin_PROGRAMS = liver$(EXEEXT)
 The targets Automake generates are likewise given the @samp{$(EXEEXT)}
 extension.
 
-The variable @code{TESTS} (@pxref{Tests}) is also rewritten if it
-contains filenames that have been declared as programs in the same
-@file{Makefile}.  (This is mostly useful when some programs from
-@code{check_PROGRAMS} are listed in @code{TESTS}.)
+The variables @code{TESTS}, @code{XFAIL_TESTS} (@pxref{Tests}) are also
+rewritten if it contains filenames that have been declared as programs
+in the same @file{Makefile}.  (This is mostly useful when some programs
+from @code{check_PROGRAMS} are listed in @code{TESTS}.)
 
 However, Automake cannot apply this rewriting to @command{configure}
 substitutions.  This means that if you are conditionally building a
@@ -6909,8 +6906,8 @@ foo.c:2: bindir.h: No such file or directory
 make: *** [foo.o] Error 1
 @end example
 
-In this example @file{bindir.h} is not distributed, not installed, and
-it is not even being built on-time.  One may wonder what the
+In this example @file{bindir.h} is not distributed nor installed, and
+it is not even being built on-time.  One may wonder if the
 @samp{nodist_foo_SOURCES = bindir.h} line has any use at all.  This
 line simply states that @file{bindir.h} is a source of @code{foo}, so
 for instance, it should be inspected while generating tags
@@ -7144,7 +7141,7 @@ always install its files.
 If @code{AM_GNU_GETTEXT} is seen in @file{configure.ac}, then Automake
 turns on support for GNU gettext, a message catalog system for
 internationalization
-(@pxref{GNU Gettext, , , gettext, GNU gettext utilities}).
+(@pxref{Top, , Introduction, gettext, GNU gettext utilities}).
 
 The @code{gettext} support in Automake requires the addition of one or
 two subdirectories to the package, @file{po} and possibly also @file{intl}.
@@ -7259,7 +7256,7 @@ installed (see the definitions of @code{pythondir} and
 
 @defmac AM_PATH_PYTHON ([@var{VERSION}], [@var{ACTION-IF-FOUND}], [@var{ACTION-IF-NOT-FOUND}])
 
-Search a Python interpreter on the system.  This macro takes three
+Search for a Python interpreter on the system.  This macro takes three
 optional arguments.  The first argument, if present, is the minimum
 version of Python required for this package: @code{AM_PATH_PYTHON}
 will skip any Python interpreter that is older than @var{VERSION}.
@@ -7474,14 +7471,15 @@ hello_TEXINFOS = gpl.texi
 @cindex @file{texinfo.tex}
 
 By default, Automake requires the file @file{texinfo.tex} to appear in
-the same directory as the Texinfo source (this can be changed using the
-@code{TEXINFO_TEX} variable, see below).  However, if you used
-@code{AC_CONFIG_AUX_DIR} in @file{configure.ac} (@pxref{Input, , Finding
-`configure' Input, autoconf, The Autoconf Manual}), then
-@file{texinfo.tex} is looked for there.  Automake supplies
-@file{texinfo.tex} if @option{--add-missing} is given.
-
-@opindex no-texinfo.tex
+the same directory as the @file{Makefile.am} file that lists the
+@file{.texi} files.  If you used @code{AC_CONFIG_AUX_DIR} in
+@file{configure.ac} (@pxref{Input, , Finding `configure' Input,
+autoconf, The Autoconf Manual}), then @file{texinfo.tex} is looked for
+there.  In both cases, automake then supplies @file{texinfo.tex} if
+@option{--add-missing} is given, and takes care of its distribution.
+However, if you set the @code{TEXINFO_TEX} variable (see below),
+it overrides the location of the file and turns off its installation
+into the source as well as its distribution.
 
 The option @option{no-texinfo.tex} can be used to eliminate the
 requirement for the file @file{texinfo.tex}.  Use of the variable
@@ -7934,7 +7932,7 @@ dist-hook:
         cp -p $(srcdir)/random/a1 $(srcdir)/random/a2 $(distdir)/random
 @end example
 
-Another way to to use this is for removing unnecessary files that get
+Another way to use this is for removing unnecessary files that get
 recursively included by specifying a directory in EXTRA_DIST:
 
 @example
@@ -8076,6 +8074,11 @@ frequently smaller than gzipped archives.
 @item @code{dist-gzip}
 Generate a gzip tar archive of the distribution.
 @trindex dist-gzip
+
+@item @code{dist-lzma}
+Generate a lzma tar archive of the distribution.  lzma archives are
+frequently smaller than @command{bzip2}-compressed archives.
+@trindex dist-lzma
 
 @item @code{dist-shar}
 Generate a shar archive of the distribution.
@@ -8364,6 +8367,12 @@ Cause @command{dejagnu}-specific rules to be generated.  @xref{Tests}.
 Hook @code{dist-bzip2} to @code{dist}.
 @trindex dist-bzip2
 
+@item @option{dist-lzma}
+@cindex Option, @option{dist-lzma}
+@opindex dist-lzma
+Hook @code{dist-lzma} to @code{dist}.
+@trindex dist-lzma
+
 @item @option{dist-shar}
 @cindex Option, @option{dist-shar}
 @opindex dist-shar
@@ -8535,7 +8544,7 @@ In order to use this option with C sources, you should add
 These three mutually exclusive options select the tar format to use
 when generating tarballs with @samp{make dist}.  (The tar file created
 is then compressed according to the set of @option{no-dist-gzip},
-@option{dist-bzip2} and @option{dist-tarZ} options in use.)
+@option{dist-bzip2}, @option{dist-lzma} and @option{dist-tarZ} options in use.)
 
 These options must be passed as argument to @code{AM_INIT_AUTOMAKE}
 (@pxref{Macros}) because they can require additional configure checks.
@@ -9045,9 +9054,9 @@ resort to handwritten rules or even handwritten @file{Makefile}s.
 @node Extending
 @section Extending Automake Rules
 
-With some minor exceptions (like @code{_PROGRAMS} variables being
-rewritten to append @samp{$(EXEEXT)}), the contents of a
-@file{Makefile.am} is copied to @file{Makefile.in} verbatim.
+With some minor exceptions (like @code{_PROGRAMS} variables, @code{TESTS},
+or @code{XFAIL_TESTS}) being rewritten to append @samp{$(EXEEXT)}), the
+contents of a @file{Makefile.am} is copied to @file{Makefile.in} verbatim.
 
 @cindex copying semantics
 
@@ -10647,18 +10656,19 @@ along the following lines.
 data.c data.h data.w data.x: data.stamp
 ## Recover from the removal of $@@
         @@if test -f $@@; then :; else \
-          trap 'rm -rf data.lock data.stamp 1 2 13 15; \
+          trap 'rm -rf data.lock data.stamp' 1 2 13 15; \
 ## mkdir is a portable test-and-set
           if mkdir data.lock 2>/dev/null; then \
 ## This code is being executed by the first process.
             rm -f data.stamp; \
             $(MAKE) $(AM_MAKEFLAGS) data.stamp; \
+            result=$$?; rm -rf data.lock; exit $$result; \
           else \
 ## This code is being executed by the follower processes.
 ## Wait until the first process is done.
             while test -d data.lock; do sleep 1; done; \
 ## Succeed if and only if the first process succeeded.
-            test -f data.stamp; exit $$?; \
+            test -f data.stamp; \
           fi; \
         fi
 @end example
@@ -11262,8 +11272,9 @@ Automake is now hosted on @code{sourceware.cygnus.com}.  It has a
 publicly accessible CVS repository.  This CVS repository is a copy of
 the one Tom was using on his machine, which in turn is based on
 a copy of the CVS repository of David MacKenzie.  This is why we still
-have to full source history.  (Automake is still on Sourceware today,
-but the host has been renamed to @code{sources.redhat.com}.)
+have to full source history.  (Automake was on Sourceware until 2007-10-29,
+when it moved to a git repository on @code{savannah.gnu.org},
+but the Sourceware host had been renamed to @code{sources.redhat.com}.)
 
 The oldest file in the administrative directory of the CVS repository
 that was created on Sourceware is dated 1998-09-19, while the
@@ -11594,6 +11605,9 @@ Aside from this it contains mainly minor changes and bug-fixes.
 Automake has ten years.  This chapter of the manual was initially
 written for this occasion.
 
+@itemx 2007-10-29 Automake repository moves to @code{savannah.gnu.org} and uses
+git as primary repository.
+
 @end table
 
 @node Dependency Tracking Evolution
@@ -11789,9 +11803,8 @@ This was also a problem in the previous dependency tracking implementation.
 
 The current fix is to use @code{BUILT_SOURCES} to list built headers
 (@pxref{Sources}).  This causes them to be built before any other
-other build rules are run.  This is unsatisfactory as a general
-solution, however in practice it seems sufficient for most actual
-programs.
+build rules are run.  This is unsatisfactory as a general solution,
+however in practice it seems sufficient for most actual programs.
 @end itemize
 
 This code is used since Automake 1.5.
@@ -11948,6 +11961,7 @@ The number of test cases in the test suite.
 @item 2005-02-13 @tab 1.9.5  @tab 7523 @tab 719 @tab 7859 @tab 3373 (40) @tab 1453 (32) @tab 142 @tab 562
 @item 2005-07-10 @tab 1.9.6  @tab 7539 @tab 699 @tab 7867 @tab 3400 (40) @tab 1453 (32) @tab 144 @tab 570
 @item 2006-10-15 @tab 1.10   @tab 7859 @tab 1072 @tab 8024 @tab 3512 (40) @tab 1496 (34) @tab 172 @tab 604
+@item 2008-01-21 @tab 1.10.1 @tab 7870 @tab 1089 @tab 8025 @tab 3584 (41) @tab 1499 (34) @tab 173 @tab 617
 @end multitable
 
 
@@ -12069,4 +12083,4 @@ The number of test cases in the test suite.
 @c  LocalWords:  LTALLOCA MALLOC malloc memcmp strdup alloca libcompat xyz DFOO
 @c  LocalWords:  unprefixed buildable preprocessed DBAZ DDATADIR WARNINGCFLAGS
 @c  LocalWords:  LIBFOOCFLAGS LIBFOOLDFLAGS ftable testSubDir obj LIBTOOLFLAGS
-@c  LocalWords:  barexec Pinard's automatize initialize
+@c  LocalWords:  barexec Pinard's automatize initialize lzma

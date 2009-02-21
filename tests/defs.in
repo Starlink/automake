@@ -2,7 +2,7 @@
 # @configure_input@
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006  Free Software Foundation, Inc.
+# 2005, 2006, 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -50,7 +50,7 @@ if test -z "$srcdir"; then
    # compute $srcdir.
    srcdir=`echo "$0" | sed -e 's,/[^\\/]*$,,'`
    test $srcdir = $0 && srcdir=.
-fi
+else :; fi
 
 # Ensure $srcdir is set correctly.
 test -f $srcdir/defs.in || {
@@ -140,8 +140,15 @@ then
 	echo "$me: running $CC --version"
 	( $CC --version ) || exit 77
 	;;
+      gcj)
+	GCJ=gcj
+	export GCJ
+	echo "$me: running $GCJ --version"
+	( $GCJ --version ) || exit 77
+	( $GCJ -v ) || exit 77
+	;;
       g++)
-        CXX=g++
+	CXX=g++
 	export CXX
 	echo "$me: running $CXX --version"
 	( $CXX --version ) || exit 77
@@ -278,23 +285,22 @@ case $required in
   *libtool* | *gettext* )
     aclocaldir='@prefix@/share/aclocal'
     extra_includes=""
-    if [ -f $aclocaldir/dirlist ] ; then
-       extra_includes=`(tmp_inc=""
-       while read LINE ; do
-	  tmp_inc="$tmp_inc -I $LINE"
-       done
-       echo $tmp_inc) < $aclocaldir/dirlist`
-    fi
+    if test -f $aclocaldir/dirlist; then
+       extra_includes=`
+       <$aclocaldir/dirlist \
+       sed -ne 's/#.*//;s/[	 ][	 ]*$//g;s/..*/ -I &/p' |
+	 tr -d '\n'`
+    else :; fi
 
     libtool_found=no
     gettext_found=no
     for d in $extra_includes $aclocaldir ; do
-       [ "x$d" != x-I ] || continue
-       if [ -f "$d/libtool.m4" ] ; then
-          libtool_found=yes
+       test "x$d" != x-I || continue
+       if test -f "$d/libtool.m4"; then
+	  libtool_found=yes
        fi
-       if [ -f "$d/gettext.m4" ] ; then
-          gettext_found=yes
+       if test -f "$d/gettext.m4"; then
+	  gettext_found=yes
        fi
     done
     case $required in
@@ -321,6 +327,22 @@ sleep='sleep @MODIFICATION_DELAY@'
 # to override the definition from the Makefile.
 testsrcdir=$srcdir
 unset srcdir
+
+# An old timestamp that can be given to a file, in "touch -t" format.
+# The time stamp should be portable to all file systems of interest.
+# Just for fun, choose the exact time of the announcement of the GNU project
+# in UTC; see <http://www.gnu.org/gnu/initial-announcement.html>.
+old_timestamp=198309271735.59
+
+# is_newest FILE FILES
+# --------------------
+# Return false if any file in FILES is newer than FILE.
+# Resolve ties in favor of FILE.
+is_newest ()
+{
+  test x`find "$@" -newer "$1"` = x
+}
+
 
 # AUTOMAKE_run status [options...]
 # --------------------------------

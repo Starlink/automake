@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002, 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -18,36 +18,53 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure dependency tracking works for Java.
+# Check EXEEXT extension for XFAIL_TESTS.
 
-required=gcj
 . ./defs || exit 1
 
+set -e
+
 cat >> configure.in << 'END'
-AM_PROG_GCJ
+AC_PROG_CC
 AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
-bin_PROGRAMS = convert
-convert_SOURCES = convert.java
+TESTS = $(XFAIL_TESTS)
+XFAIL_TESTS = a b c d
+check_PROGRAMS = a c d
+check_SCRIPTS = b
+
+print-xfail-tests:
+	@echo BEG: $(XFAIL_TESTS) :END
 END
 
-set -e
+cat >>b <<'END'
+#! /bin/sh
+exit 1
+END
+chmod a+x b
+
+cat >>a.c <<'END'
+#include <stdlib.h>
+int main() { return EXIT_FAILURE; }
+END
+
+cp a.c c.c
+cp a.c d.c
 
 $ACLOCAL
 $AUTOCONF
-$AUTOMAKE
-./configure >stdout
-cat stdout
+$AUTOMAKE -a
 
-# Configure must be checking the dependency style of gcj ...
-grep 'dependency style of gcj' stdout >filt
-cat filt
+./configure
+$MAKE check
+EXEEXT=.bin $MAKE -e print-xfail-tests >foo
+cat foo
+grep 'BEG: a.bin b c.bin d.bin :END' foo
 
-# ... only once.
-test `wc -l < filt` = 1
-
-# Accept any outcome but `none'
-# (at the time of writing it should be gcc or gcc3).
-grep -v none filt
+$MAKE distclean
+mkdir build
+cd build
+../configure
+$MAKE check

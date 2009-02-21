@@ -1,3 +1,58 @@
+New in 1.10.1:
+
+  - Automake development is done in a git repository on Savannah now, see
+
+      http://git.sv.gnu.org/gitweb/?p=automake.git
+
+    A read-only CVS mirror is provided at
+
+      cvs -d :pserver:anonymous@pserver.git.sv.gnu.org:/automake.git \
+          checkout -d automake HEAD
+
+  - "make dist" can now create lzma-compressed tarballs.
+
+  - `automake --add-missing' will by default install the GPLv3 file as
+    COPYING if it is missing.  Note that Automake will never overwrite
+    an existing COPYING file, even when the `--force-missing' option is
+    used.  Further note that Automake 1.10.1 is still licensed under GPLv2+.
+
+  - Libtool generic flags are now passed to the install and uninstall
+    modes as well.
+
+  - Files with extension .sx are also treated as preprocessed assembler.
+
+  - install-sh now has an BSD-like option `-C' to preserve modification
+    times of unchanged files upon installation.
+
+Bugs fixed in 1.10.1:
+
+* Long standing bugs:
+
+  - Fix aix dependency tracking for libtool objects.
+
+  - The signal handling of aclocal has been improved.
+
+  - Targets beginning with a digit are now recognized correctly.
+
+  - All directories `.libs'/`_libs' used by libtool are cleaned now,
+    not only those in which libraries are built.
+
+* Bugs introduced by 1.10:
+
+  - Fix output of dummy dependency files in presence of post-processed
+    Makefile.in's again, but also cope with long lines.
+
+  - $(EXEEXT) is automatically appended to filenames of XFAIL_TESTS
+    that have been declared as programs in the same Makefile.
+    This is for consistency with the analogous change to TESTS in 1.10.
+
+  - The autoconf version check implemented by aclocal in aclocal.m4
+    (and new in Automake 1.10) is degraded to a warning.  This helps
+    in the common case where the Autoconf versions used are compatible.
+
+  - Fix order of standard includes to again be `-I. -I$(srcdir)',
+    followed by directories containing config headers.
+
 New in 1.10:
 
 * Version requirements:
@@ -1232,7 +1287,7 @@ New in 0.20:
 -----
 
 Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-2004, 2005  Free Software Foundation, Inc.
+2004, 2005, 2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Automake.
 

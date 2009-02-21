@@ -8,7 +8,7 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
 # aclocal - create aclocal.m4 by scanning configure.ac
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -150,14 +150,27 @@ my $erase_me;
 
 ################################################################
 
-# Erase temporary file ERASE_ME.
+# Erase temporary file ERASE_ME.  Handle signals.
 sub unlink_tmp
 {
+  my ($sig) = @_;
+
+  if ($sig)
+    {
+      verb "caught SIG$sig, bailing out";
+    }
   if (defined $erase_me && -e $erase_me && !unlink ($erase_me))
     {
       fatal "could not remove `$erase_me': $!";
     }
   undef $erase_me;
+
+  # reraise default handler.
+  if ($sig)
+    {
+      $SIG{$sig} = 'DEFAULT';
+      kill $sig => $$;
+    }
 }
 
 $SIG{'INT'} = $SIG{'TERM'} = $SIG{'QUIT'} = $SIG{'HUP'} = 'unlink_tmp';
@@ -782,10 +795,13 @@ sub write_aclocal ($@)
       # Do not use "$output_file" here for the same reason we do not
       # use it in the header below.  autom4te will output the name of
       # the file in the diagnostic anyway.
-      $output = "m4_if(m4_PACKAGE_VERSION, [$ac_version],,
-[m4_fatal([this file was generated for autoconf $ac_version.
-You have another version of autoconf.  If you want to use that,
-you should regenerate the build system entirely.], [63])])
+      $output = "m4_ifndef([AC_AUTOCONF_VERSION],
+  [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
+m4_if(AC_AUTOCONF_VERSION, [$ac_version],,
+[m4_warning([this file was generated for autoconf $ac_version.
+You have another version of autoconf.  It may work, but is not guaranteed to.
+If you have problems, you may need to regenerate the build system entirely.
+To do so, use the procedure documented by the package, typically `autoreconf'.])])
 
 $output";
     }
@@ -799,7 +815,7 @@ $output";
   $output = "# generated automatically by aclocal $VERSION -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -888,12 +904,13 @@ sub version()
 {
   print <<EOF;
 aclocal (GNU $PACKAGE) $VERSION
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
 Written by Tom Tromey <tromey\@redhat.com>
        and Alexandre Duret-Lutz <adl\@gnu.org>.
-
-Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 EOF
   exit 0;
 }

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002, 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -18,36 +18,39 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure dependency tracking works for Java.
+# Make sure an AC_CONFIG_FILES, AC_CONFIG_LINKS, and AC_CONFIG_COMMANDS
+# are not prerequisites of `all'.
 
-required=gcj
 . ./defs || exit 1
 
-cat >> configure.in << 'END'
-AM_PROG_GCJ
+set -e
+
+cat >> configure.in << \END
+AC_SUBST([FOO], [foo])
+if $create; then
+  AC_CONFIG_FILES([file])
+  AC_CONFIG_LINKS([link:input])
+  AC_CONFIG_COMMANDS([stamp], [echo stamp > stamp])
+fi
 AC_OUTPUT
 END
 
-cat > Makefile.am << 'END'
-bin_PROGRAMS = convert
-convert_SOURCES = convert.java
-END
+: >Makefile.am
 
-set -e
+echo link > input
+echo @FOO@ >file.in
 
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure >stdout
-cat stdout
 
-# Configure must be checking the dependency style of gcj ...
-grep 'dependency style of gcj' stdout >filt
-cat filt
+./configure create=false
+$MAKE
+test ! -f file
+test ! -f link
+test ! -f stamp
 
-# ... only once.
-test `wc -l < filt` = 1
-
-# Accept any outcome but `none'
-# (at the time of writing it should be gcc or gcc3).
-grep -v none filt
+./configure create=:
+test -f file
+test -f link
+test -f stamp

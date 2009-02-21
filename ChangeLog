@@ -1,4 +1,519 @@
+2008-01-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac, NEWS: Bump version to 1.10.1.  Update.
+	* doc/automake.texi (Releases): Update for 1.10.1.
+	* Makefile.am (git-diff): Adjust for git syntax.
+
+2008-01-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* COPYING: Revert license to GPLv2+.  All uses changed.
+
+	* lib/config-ml.in: Sync from upstream.
+	* tests/multlib.test: Add `pwd` to $PATH instead of absolute
+	references to mycc.
+
+2008-01-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tests/tar.test: Skip if no appropriate tar was found.
+
+2008-01-19  NightStrike  <nightstrike@gmail.com>
+
+	* doc/automake.texi (Dependency Tracking): Fix typo.
+
+2008-01-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/config.guess, lib/config.sub: Sync from upstream.
+
+	* Makefile.am (WGET_SV_CVS): Renamed from WGETSGO.
+	(WGET_SV_GIT_AC, WGET_SV_GIT_GL, WGET_GCC): New.
+	(fetch): Update to match current upstream locations.
+
+2008-01-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/gnupload: Revert last change.  Add pointer to upload
+	instructions of the GNU Maintenance Instructions.
+	Suggestion by Karl Berry.
+
+	* lib/gnupload: Add missing 'gnu' to example URL.
+	Report by Karl Berry.
+
+	* lib/gnupload: Fix shell portability issues with for loops.
+	Report by Karl Berry.
+
+2008-01-19  Jim Meyering  <meyering@redhat.com>
+
+	* lib/gnupload (GPG): Don't use an absolute path.
+	This reverts part of the 2004-01-28 change.
+
+2008-01-19  Akim Demaille  <akim@lrde.epita.fr>
+
+	* bootstrap: Fix typos on redirections.
+
+2008-01-19  Akim Demaille  <akim@lrde.epita.fr>
+
+	Skip comments and empty lines in dirlist in the tests.
+	* defs.in (extra_includes): Skip comments and empty lines in dirlist.
+
+2008-01-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/ylwrap: Cope with white space in `PROGRAM' and `pwd`.
+
+	* lib/am/tags.am (ID, TAGS, CTAGS): Make awk scripts portable again.
+	(CTAGS): Drop unneeded variable `here'.
+
+2008-01-19  Jim Meyering  <meyering@redhat.com>
+
+	Add lzma compression support.
+	* NEWS: Mention it.
+	* automake.in (handle_dist): Recognize dist-lzma.
+	(make_paragraphs): Map LZMA to dist-lzma.
+	* doc/automake.texi (Dist): Add dist-lzma.
+	(Options): Likewise.
+	* lib/Automake/Options.pm (_process_option_list):
+	* lib/am/distdir.am (dist-lzma): New rule.
+	(dist dist-all): Add command to create an lzma-compressed tarball.
+	(distcheck): Handle lzma-compressed tarballs just like the others.
+	* tests/defs.in: Test for lzma, too.
+	* tests/lzma.test: New file, based on nogzip.test.
+	* tests/Makefile.am (TESTS): Add lzma.test.
+	* tests/Makefile.in: Regenerate.
+	Suggestion from Karl Berry.
+
+2008-01-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Backport from master branch:
+
+	2006-12-25  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/install-sh (initialize_posix_glob): New var.
+	Use it instead of setting posix_glob inline.
+	(posix_glob): Use '?'/''/: instead of ''/yes/no, for convenience.
+	(cmpprog, CMPPROG): New vars, since we use cmp rather than the diff
+	of Akim's patch.
+	Use LC_ALL before invoking 'ls' when we depend on its output format.
+	Don't use awk; just use the shell's builtin features.
+	Clean up $dsttmp -C detects no installation is needed.
+	* tests/defs.in (is_newest): Renamed from is_younger; the new
+	name is more accurate.  All uses changed.
+	(old_timestamp): New var.
+	* tests/instsh2.test: Rewrite to avoid the need for sleeping.
+
+	2006-12-25  Akim Demaille  <akim@epita.fr>
+
+	* lib/install-sh: Implement install-sh -C.
+	(This patch is the remaining part of the patch proposed in
+	<http://lists.gnu.org/archive/html/automake-patches/2006-10/msg00077.html>.)
+	(usage): Document it.
+	(copy_on_change): New var.
+	* tests/defs.in (is_younger): New function.
+	* tests/instsh2.test: Check install-sh -C.
+
+2008-01-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Backport from master branch:
+
+	2006-12-24  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/install-sh: Fix typo in previous patch for handling --.
+	Use more-consistent style for ';;'.
+	Prefer || to if-then-else-:.
+	* tests/install2.test: Rework to avoid set -e problems.
+
+	2006-12-24  Akim Demaille  <akim@epita.fr>
+
+	Simplify install-sh and its test.  This shouldn't change any behavior.
+	(This patch is a subset of the patch proposed in
+	<http://lists.gnu.org/archive/html/automake-patches/2006-10/msg00077.html>.)
+	* lib/install-sh (usage): Use usual GNU style.
+	(dstarg): Rename as...
+	(dst_arg): this for consistency.
+	Simplify quoting of assignments.
+	Sort them.
+	Don't use '\' to continue commands: && suffices.
+	Remove useless "continue" in the argument processing,
+	and factor the shifts.
+	* tests/defs.in: Some improvements to make it set -e clean.
+	Use the traditional ":" trick to protect loops from being empty.
+	Remove an empty straightforward piece of code prepared to define
+	additional variables.
+	Use test instead of [], for consistency.
+	* tests/install2.test: Use set -e, to simplify code.
+
+2008-01-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi (DESTDIR, Built sources example): Fix wording.
+	* THANKS: Update.
+	Reports and suggestions by William Pursell and nightstrike@gmail.com.
+
+2008-01-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Do not fail if `autoupdate' is not present.
+	* tests/obsolete.test: Check for presence of autoupdate.  Apparently,
+	FreeBSD may install the other Autoconf programs without a version
+	suffix but not autoupdate.
+
+	Fix Heisenbug trying to unset a sometimes-not-set variable.
+	* tests/check5.test: Do not error out upon `unset TESTS' due to
+	`set -e', in case TESTS was not set.
+
+	* doc/automake.texi (amhello Explained): Fix odd sentence.
+	Report by nightstrike@gmail.com.
+
+2008-01-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* m4/init.m4 (_AC_AM_CONFIG_HEADER_HOOK): Rewrite to be more
+	resistant to different quoting styles of $1.
+
+	Clarify texinfo.tex and TEXINFO_TEX semantics.
+	* doc/automake.texi (Texinfo): Clarify that by default,
+	texinfo.tex is searched in the same directory as the Makefile.am
+	that needs it.  Clarify that TEXINFO_TEX has precedence over
+	AC_CONFIG_AUX_DIR, and that it requires the user to install and
+	distribute it.
+	* tests/txinfo22.test: Ensure TEXINFO_TEX is not distributed.
+	* THANKS: Update.
+	Reports by Dilyan Palauzov and Roumen Petrov.
+
+2008-01-11  Bruno Haible  <bruno@clisp.org>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tests/output-order.test: New test, for the stable output fix.
+	* tests/Makefile.am: Update.
+
+2008-01-08  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (dist-hook): New, ensure world-executable tests.
+	* THANKS: Update.
+	Report by Arto C. Nirkko.
+
+	* tests/acloca20.test: Use `--force' with the second $AUTOCONF,
+	to force update on fast machines where both autoconf invocations
+	happen within the same second.
+	Report by Greg Schafer.
+
+2008-01-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (scan_autoconf_files): Sort loop over
+	%required_aux_file, for stable verbose output.
+	Report by Bruno Haible.
+
+	* INSTALL, lib/INSTALL, lib/config.guess, lib/config.sub,
+	lib/texinfo.tex: Sync from upstream.
+
+	* tests/ccnoco.test (Mycomp): Use a tighter match for -c -o,
+	to avoid matching for example `LDFLAGS=-Wl,--sort-common'.
+	* THANKS: Update.
+	Report and analysis by Carsten Lohrke and Mike Frysinger.
+
+2008-01-07  Stepan Kasal  <skasal@redhat.com>
+
+	* automake.in (handle_texinfo_helper, handle_lib_objects): Fix
+	typos in comments.
+
+2008-01-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in: Remove debugging leftover.
+
+	Bump copyright years.
+	* aclocal.in (write_aclocal, version): Likewise.
+	* automake.in ($gen_copyright, version): Likewise.
+	* doc/automake.texi: Likewise.
+
+2007-11-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tests/output13.test: New test.
+	* tests/Makefile.am: Adjust.
+	Prompted by report from Bruno Haible in
+	<http://lists.gnu.org/archive/html/bug-gnulib/2007-10/msg00479.html>.
+
+	Fix signal handling in aclocal.
+	* aclocal.in (unlink_tmp): If invoked by a signal, note so
+	in verbose mode.  Reinstall default signal handler and reraise,
+	to transport the interrupt information.
+
+2007-11-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Avoid spurious test failure with `make check TESTS=check5.test'.
+	* tests/check5.test: unset TESTS.
+
+2007-11-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Fix default includes ordering to be `-I. -I$(srcdir) ...' again.
+	* automake.in (handle_compile): Put -I$(srcdir) before include
+	paths for config headers, as was done before Automake 1.10, but
+	keep uniquified list without multiple adjacent spaces.
+	* doc/automake.texi (Program variables): List include paths
+	in order.
+	* NEWS: Mention 1.10 regression.
+	* tests/stdinc.test: New test.
+	* tests/Makefile.am: Adjust.
+	* THANKS: Update.
+	Report by Kent Boortz.
+
+2007-11-11  NightStrike  <nightstrike@gmail.com>  (tiny change)
+
+	For PR automake/526:
+	* doc/automake.texi (Basic Installation): Fix typo.
+
+2007-11-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Accommodate for new macro AC_AUTOCONF_VERSION.
+	* aclocal.in (write_aclocal): Use AC_AUTOCONF_VERSION rather
+	than m4_PACKAGE_VERSION.  Define the former if not defined.
+	* m4/amversion.in (AM_SET_CURRENT_AUTOMAKE_VERSION): Likewise.
+	* tests/missing4.test: Use AC_AUTOCONF_VERSION.
+
+2007-11-11  Bruno Haible  <bruno@clisp.org>
+
+	* doc/automake.texi (Program variables): Clarify that
+	Automake does not put DEFAULT_INCLUDES in AM_CPPFLAGS, but
+	passes it directly to compilation commands.
+
+2007-11-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Move to git as primary source repository.
+	* Makefile.am (git-dist, git-release): Renamed and adjusted from ...
+	(cvs-dist, cvs-release): ... these.
+	(git-diff): New target, taken and adjusted from cvs-diff.
+	* Makefile.in: Regenerate.
+	* bootstrap: Adjust.
+	* NEWS: Announce change.
+	* doc/automake.texi (General Operation): cvs-dist is git-dist now.
+	(Timeline): Mention change.
+
+2007-10-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in: Treat extension .sx also like preprocessed
+	assembler (.S), following GCC.
+	* NEWS: Update.
+	* doc/automake.texi (Assembly Support)
+	(Unified Parallel C Support): Adjust.
+	* tests/asm3.test: New test.
+	* tests/Makefile.am: Update.
+
+2007-09-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (TARGET_PATTERN): Allow leading digit.
+	* tests/exeext3.test: Adjust to expose this.
+	Report by Claudio Fontana and Laurence Finston.
+
+2007-08-23  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* tests/defs.in (required): For gcj, check whether `gcj -v'
+	works, to avoid broken installations without libgcj.spec.
+	Export $GCJ.
+	* tests/gcj4.test: Setting GCJ not needed any more.
+	* THANKS: Update.
+	Report by Jesse Chisholm.
+
+2007-08-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/config-ml.in, lib/config.guess, lib/config.sub,
+	lib/symlink-tree, lib/texinfo.tex: New upstream versions.
+
+2007-08-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi (gettext): Fix link to gettext manual.
+
+2007-08-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	In ChangeLog files, use more-permissive notice rather than GPL,
+	as per usual GNU standards these days.
+
+2007-08-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (handle_programs): Also clean .libs/_libs
+	directory for _PROGRAMS.
+	* tests/libtoo10.test: New test.
+	* tests/Makefile.am: Update.
+	* THANKS: Update.
+	Report by Guillermo Ontañón.
+
+2007-08-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Actually require version 2.60 in the test for
+	Autoconf, and recommend it in the error messages.
+	* THANKS: Update.
+	Report by Robert Swafford.
+
+2007-07-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi (VPATH Builds): Fix wording.
+	Report by Reuben Thomas.
+
+2007-07-22  Noah Misch  <noah@cs.caltech.edu>
+
+	* tests/subst.test: Move the AC_SUBST into a macro definition.
+	Avoids an error from CVS Autoconf.
+	* THANKS: Update.
+	Report by Benoit Sigoure.
+
+2007-07-22  Francesco Salvestrini  <salvestrini@gmail.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/am/ltlib.am (install-%DIR%LTLIBRARIES)
+	(uninstall-%DIR%LTLIBRARIES): Use $(AM_LIBTOOLFLAGS) and
+	$(LIBTOOLFLAGS).
+	* lib/am/progs.am (install-%DIR%PROGRAMS)
+	(uninstall-%DIR%PROGRAMS): Likewise.
+	* tests/libtool7.test: Update test for `install' and
+	`uninstall' cases.
+	* NEWS, THANKS: Update.
+
+2007-07-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi: Remove Front-Cover and Back-Cover Texts,
+	this manual is not printed by the FSF.
+
+2007-07-16  Alexandre Duret-Lutz  <adl@gnu.org>
+
+	* NEWS: Clarify that COPYING files are not updated.
+
+2007-07-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi: New Back-Cover Text.
+	Report by Karl Berry.
+
+2007-07-07  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.in (version): Fix output to match GCS requirements.
+	* automake.in (version): Likewise.
+	Report by Eric Blake.
+
+	* COPYING, lib/COPYING: Update to GPLv3.  All uses changed.
+	* NEWS: Update.
+
+2007-06-23  Paul Eggert  <eggert@cs.ucla.edu>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.in (write_aclocal): Warn about autoconf
+	incompatibilities instead of making them fatal.
+	* tests/missing4.test: Adjust.
+	* NEWS: Update.
+	Problem reported by Bruno Haible in
+	<http://lists.gnu.org/archive/html/bug-automake/2007-06/msg00010.html>.
+
+2007-05-03  Stepan Kasal  <kasal@ucw.cz>
+
+	* doc/automake.texi, lib/Automake/Rule.pm: Fix typos.
+	* automake.in: Likewise.
+	(am_primary_prefixes): Keep the intentional typo there.
+
+2007-04-25  Eric Blake  <ebb9@byu.net>
+
+	* doc/stamp-vti: Remove generated file from revision control.
+	* doc/version.texi: Likewise.
+
+2007-04-23  Reuben Thomas  <rrt@sc3d.org>  (tiny change)
+
+	* doc/automake.texi (Python): Fix typo.
+
+2007-03-30  Eric Blake  <ebb9@byu.net>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/mdate-sh (ls_command): Use -n when available to avoid
+	problems with spaces in user/group names.
+	* tests/mdate5.test: New test.
+	* tests/Makefile.am: Adjust.
+
+2007-03-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (handle_tests): Rewrite XFAIL_TESTS just like
+	TESTS, appending $(EXEEXT), so that matching continues to work
+	on w32.
+	* NEWS: Mention this.
+	* doc/automake.texi (EXEEXT, Extending): Update.
+	* tests/check7.test: New test.
+	* tests/Makefile.am: Adjust.
+	Bug report by Ed Hartnett.
+
+	* m4/depout.m4 (_AM_OUTPUT_DEPENDENCY_COMMANDS): Again search
+	the whole file, but use sed to reduce the line length.
+	Fixes 1.10 regression.  Report by David Byron.
+	* THANKS, NEWS: Update.
+
+2007-03-29  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lib/depcomp (aix): Rewrite depmode in the spirit of the tru64
+	one.  Fixes failure to catch dependencies with libtool and xlc
+	in case of enable_static=no (which is the default on AIX without
+	runtimelinking).
+	* tests/depcomp7.test: Run test once with --disable-shared and
+	once with --disable-static, to expose failure systematically.
+	* NEWS: Update.
+
+2007-03-29  Stepan Kasal  <kasal@ucw.cz>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (handle_LIBOBJS_or_ALLOCA): Fix the error message.
+	* tests/pr401.test: Update to expose the error.
+	* tests/pr401b.test: Likewise.
+	* tests/pr401c.test: Likewise.
+
+2007-03-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* automake.in (scan_autoconf_config_files): Warn about leading
+	`./' in config file names.
+	* tests/canon-name.test: New test.
+	* tests/Makefile.am: Update.
+	* THANKS: Update.
+	Suggestion by Claudio Fontana.
+
+	* tests/yacc6.test: Add the generated headers to `BUILT_SOURCES'
+	as documented in the manual.  Fixes parallel make failure.
+	Report by Dieter Jurzitza.
+	* THANKS: Update.
+
+	* ChangeLog, TODO, tests/exdir3.test: Fix copyright notice.
+
+	* TODO: Kill a couple of outdated items.
+	* tests/exdir3.test: New test.
+	* tests/Makefile.am: Update.
+
+2007-01-27 Bruno Haible  <bruno@clisp.org>
+
+	* doc/automake.texi (Multiple Outputs): Fix the multiple outputs
+	with locking example.
+
+2007-01-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi (Subpackages): Fix ambiguous wording.
+	Report and suggestions by Reuben Thomas.
+	* THANKS: Update.
+
+2006-12-20  Reuben Thomas  <rrt@sc3d.org>  (tiny change)
+
+	* doc/automake.texi: Fix typo.
+
+2006-11-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/Makefile.am: Use $(MAKE) $(AM_MAKEFLAGS) for building
+	amhello, to prevent gmake from invoking make with MAKEFLAGS
+	it does not understand.
+	Report by Patrick Welche.
+
+2006-10-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/automake.texi (Dist, Dependency Tracking Evolution):
+	Fix some typos.
+	* lib/Automake/Condition.pm: Likewise.
+	* lib/Automake/DisjConditions.pm: Likewise.
+	* lib/Automake/ItemDef.pm: Likewise.
+	* lib/Automake/Options.pm: Likewise.
+	* lib/Automake/Rule.pm: Likewise.
+	* lib/Automake/VarDef.pm: Likewise.
+	* lib/Automake/Variable.pm: Likewise.
+	* lib/Automake/Wrap.pm: Likewise.
+	* lib/Automake/XFile.pm: Likewise.
+	* m4/substnot.m4: Likewise.
+
+2006-10-16  Alexandre Duret-Lutz  <adl@gnu.org>
+
+	* lib/gnupload: Update to version 1.1 of directive file.
+
 2006-10-15  Alexandre Duret-Lutz  <adl@gnu.org>
+
+	* configure.ac, NEWS: Bump version to 1.10.0a.
 
 	* configure.ac, NEWS: Bump version to 1.10.
 	* doc/automake.texi (Releases): Update for 1.10.
@@ -1719,24 +2234,10 @@
 
 -----
 
-Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+Copyright (C) 2005, 2006, 2007  Free Software Foundation, Inc.
 
-This file is part of GNU Automake.
-
-GNU Automake is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
-
-GNU Automake is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with autoconf; see the file COPYING.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.
+Copying and distribution of this file, with or without modification, are
+permitted provided the copyright notice and this notice are preserved.
 
 ;; Variables:
 ;; coding: utf-8
