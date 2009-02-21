@@ -1,4 +1,4 @@
-# Copyright (C) 1997, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+# Copyright (C) 1997, 2001, 2002, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ That's indeed the condition into which C<VAR> has a value.
 
 Like C<Condition> objects, a C<DisjConditions> object is unique
 with respect to its conditions.  Two C<DisjConditions> objects created
-for the same set of conditions will have the same adress.  This makes
+for the same set of conditions will have the same address.  This makes
 it easy to compare C<DisjConditions>s: just compare the references.
 
 =head2 Methods
@@ -145,11 +145,7 @@ use vars '%_disjcondition_singletons';
 sub new ($;@)
 {
   my ($class, @conds) = @_;
-  my $self = {
-    hash => {},
-  };
-  bless $self, $class;
-
+  my @filtered_conds = ();
   for my $cond (@conds)
     {
       confess "`$cond' isn't a reference" unless ref $cond;
@@ -161,19 +157,40 @@ sub new ($;@)
       # DisjConditions as false for this reason.
       next if $cond->false;
 
-      # Store conditions as keys AND as values, because blessed
-      # objects are converted to string when used as keys (so
-      # at least we still have the value when we need to call
-      # a method).
-      $self->{'hash'}{$cond} = $cond;
+      push @filtered_conds, $cond;
     }
 
-  my $key = $self->string;
-  if (exists $_disjcondition_singletons{$key})
+  my $string;
+  if (@filtered_conds)
     {
-      return $_disjcondition_singletons{$key};
+      @filtered_conds = sort { $a->string cmp $b->string } @filtered_conds;
+      $string = join (' | ', map { $_->string } @filtered_conds);
     }
-  $_disjcondition_singletons{$key} = $self;
+  else
+    {
+      $string = 'FALSE';
+    }
+
+  # Return any existing identical DisjConditions.
+  my $me = $_disjcondition_singletons{$string};
+  return $me if $me;
+
+  # Else, create a new DisjConditions.
+
+  # Store conditions as keys AND as values, because blessed
+  # objects are converted to string when used as keys (so
+  # at least we still have the value when we need to call
+  # a method).
+  my %h = map {$_ => $_} @filtered_conds;
+
+  my $self = {
+    hash => \%h,
+    string => $string,
+    conds => \@filtered_conds,
+  };
+  bless $self, $class;
+
+  $_disjcondition_singletons{$string} = $self;
   return $self;
 }
 
@@ -186,11 +203,7 @@ Return the list of C<Condition> objects involved in C<$set>.
 sub conds ($ )
 {
   my ($self) = @_;
-  return @{$self->{'conds'}} if exists $self->{'conds'};
-  my @conds = values %{$self->{'hash'}};
-  @conds = sort { $a->string cmp $b->string } @conds;
-  $self->{'conds'} = [@conds];
-  return @conds;
+  return @{$self->{'conds'}};
 }
 
 =item C<$cond = $set-E<gt>one_cond>
@@ -241,21 +254,7 @@ Build a string which denotes the C<DisjConditions>.
 sub string ($ )
 {
   my ($self) = @_;
-
-  return $self->{'string'} if defined $self->{'string'};
-
-  my $res = '';
-  if ($self->false)
-    {
-      $res = 'FALSE';
-    }
-  else
-    {
-      $res = join (' | ', map { $_->string } $self->conds);
-    }
-
-  $self->{'string'} = $res;
-  return $res;
+  return $self->{'string'};
 }
 
 =item C<$cond-E<gt>human>

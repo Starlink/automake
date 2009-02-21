@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1999, 2001, 2002  Free Software Foundation, Inc.
+# Copyright (C) 1999, 2001, 2002, 2006  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -25,19 +25,19 @@
 cat >> configure.in << 'END'
 AC_PROG_F77
 AC_PROG_FC
-_AM_DEPENDENCIES(OBJC)
-AC_SUBST(OBJC)
+AC_PROG_OBJC
+AM_PROG_UPC
 END
 
 cat > Makefile.am << 'END'
 bin_PROGRAMS = foo
-foo_SOURCES = 1.f 2.for 3.f90 4.F 5.r 6.m
+foo_SOURCES = 1.f 2.for 3.f90 4.f95 5.F 6.F90 7.F95 8.r 9.m 10.upc
 END
 
 $ACLOCAL || exit 1
 $AUTOMAKE || exit 1
 
-for ext in f for f90 F r m
+for ext in f for f90 f95 F F90 F95 r m upc
 do
    grep "^$ext\.o:" Makefile.in && exit 1
 done

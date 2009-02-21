@@ -2,8 +2,8 @@
 
 ## Makefile for Automake.
 
-## Copyright (C) 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004
-## Free Software Foundation, Inc.
+## Copyright (C) 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004,
+## 2005, 2006  Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 ## 02110-1301, USA.
 
-## We need `.' in SUBDIRS because we want `check' to build `.' before
-## tests.
-SUBDIRS = . doc m4 lib tests
+## lib goes first, because it builds Config.pm, used by aclocal and
+## automake (run in doc, tests, and in the rebuild rules.)
+## `.' goes before doc and tests, because the latter two directories
+## run aclocal and automake.
+SUBDIRS = lib . doc m4 tests
 
 bin_SCRIPTS = automake aclocal
 
@@ -31,7 +33,14 @@ AUTOMAKESOURCES = automake.in aclocal.in
 
 TAGS_FILES = $(AUTOMAKESOURCES)
 
-EXTRA_DIST = ChangeLog.96 ChangeLog.98 ChangeLog.00 ChangeLog.01 ChangeLog.02 \
+EXTRA_DIST = \
+  ChangeLog.96 \
+  ChangeLog.98 \
+  ChangeLog.00 \
+  ChangeLog.01 \
+  ChangeLog.02 \
+  ChangeLog.03 \
+  ChangeLog.04 \
   $(AUTOMAKESOURCES)
 
 ## Make versioned links.  We only run the transform on the root name;
@@ -71,16 +80,11 @@ do_subst = sed \
 ## These files depend on Makefile so they are rebuilt if $(VERSION),
 ## $(datadir) or other do_subst'ituted variables change.
 ## Use chmod a-w to prevent people from editing the wrong file by accident.
-automake: automake.in Makefile
+automake: automake.in
+aclocal: aclocal.in
+automake aclocal: Makefile
 	rm -f $@ $@.tmp
-	$(do_subst) $(srcdir)/automake.in >$@.tmp
-	chmod +x $@.tmp
-	chmod a-w $@.tmp
-	mv -f $@.tmp $@
-
-aclocal: aclocal.in Makefile
-	rm -f $@ $@.tmp
-	$(do_subst) $(srcdir)/aclocal.in >$@.tmp
+	$(do_subst) $(srcdir)/$@.in >$@.tmp
 	chmod +x $@.tmp
 	chmod a-w $@.tmp
 	mv -f $@.tmp $@
@@ -137,6 +141,13 @@ maintainer-check: automake aclocal
 	  echo "Found incorrect use of mkinstalldirs in the lines above" 1>&2; \
 	  exit 1; \
 	else :; fi
+## Make sure all calls to PRE/NORMAL/POST_INSTALL/UNINSTALL
+	@if grep -E -n '\((PRE|NORMAL|POST)_(|UN)INSTALL\)' \
+                 $(srcdir)/lib/am/[a-z]*.am | \
+	      grep -v ':##' | grep -v ':	@\$$('; then \
+	  echo "Found incorrect use of PRE/NORMAL/POST_INSTALL/UNINSTALL in the lines above" 1>&2; \
+	  exit 1; \
+	else :; fi
 ## We never want to use "undef", only "delete", but for $/.
 	@if grep -n -w 'undef ' $(srcdir)/automake.in | \
 	      grep -F -v 'undef $$/'; then \
@@ -155,7 +166,7 @@ maintainer-check: automake aclocal
 	  exit 1; \
 	fi
 ## Using @_ in a scalar context is most probably a programming error.
-	@if grep -Hn '[^) ] *= *@_' $(srcdir)/automake.in; then \
+	@if grep -Hn '[^@_A-Za-z0-9][_A-Za-z0-9]*[^) ] *= *@_' $(srcdir)/automake.in; then \
 	  echo "Using @_ in a scalar context in the lines above." 1>&2; \
 	  exit 1; \
 	fi
@@ -173,6 +184,12 @@ maintainer-check: automake aclocal
 ## Don't let AMDEP_TRUE substitution appear in automake.in.
 	@if grep '@AMDEP''_TRUE@' $(srcdir)/automake.in; then \
 	  echo "Don't put AMDEP_TRUE substitution in automake.in" 1>&2; \
+	  exit 1; \
+	fi
+## Tests should never call make directly.
+	@if grep '^[^#].*(MAKE) ' $(srcdir)/lib/am/*.am $(srcdir)/automake.in |\
+		grep -v 'AM_MAKEFLAGS'; then \
+	  echo 'Use $$(MAKE) $$(AM_MAKEFLAGS).' 1>&2; \
 	  exit 1; \
 	fi
 ## Tests should never call make directly.
@@ -210,6 +227,13 @@ maintainer-check: automake aclocal
 	  echo 'Do not run "perl" in the above tests.  Use "$$PERL" instead.' 1>&2; \
 	  exit 1; \
 	fi
+## Setting `required' after sourcing `./defs' is a bug.
+	@for file in $(srcdir)/tests/*.test; do \
+	  if out=`sed -n '/defs/,$${/required=/p;}' $$file`; test -n "$$out"; then \
+	    echo 'Do not set "required" after sourcing "defs" in '"$$file: $$out" 1>&2; \
+	    exit 1; \
+	  fi; \
+	done
 ## Overriding a Makefile macro on the command line is not portable when
 ## recursive targets are used.  Better use an envvar.  SHELL is an exception,
 ## POSIX says it can't come from the environment.
@@ -244,6 +268,11 @@ maintainer-check: automake aclocal
 	  echo 'Do not use egrep or fgrep in the above files, they are not portable.' 1>&2; \
 	  exit 1; \
 	fi
+	@if grep 'mkdir_p' $(srcdir)/automake.in \
+	      $(srcdir)/lib/am/*.am $(srcdir)/tests/*.test; then \
+	  echo 'Do not use mkdir_p in the above files, use MKDIR_P.' 1>&2; \
+	  exit 1; \
+	fi
 ## Try to make sure all @...@ substitutions are covered by our
 ## substitution rule.
 	@if test `grep -E '^[^#]*@[A-Za-z_0-9]+@' aclocal | wc -l` -ne 0; then \
@@ -260,6 +289,11 @@ maintainer-check: automake aclocal
 	fi
 	@if grep '	' $(srcdir)/doc/automake.texi; then \
 	  echo 'Do not use tabs in the manual.' 1>&2; \
+	  exit 1; \
+	fi
+	@if grep -E '([^@]|^)@([	 ][^@]|$$)' $(srcdir)/doc/automake.texi; \
+	then \
+	  echo 'Unescaped @.' 1>&2; \
 	  exit 1; \
 	fi
 

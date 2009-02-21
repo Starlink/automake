@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1997, 2001, 2002  Free Software Foundation, Inc.
+# Copyright (C) 2006  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -15,26 +15,31 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Automake; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-# Boston, MA 02111-1307, USA.
+# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
 
-# Test to make sure lisp handling works.
+# Check for _AM_SUBST_NOTMAKE.
 
 . ./defs || exit 1
 
+set -e
+
 cat >> configure.in << 'END'
-AM_PATH_LISPDIR
+AC_SUBST([backslash], "\\")
+_AM_SUBST_NOTMAKE([backslash])
+AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
-lisp_LISP = foo.el
+test:
+	@echo $(backslash) @backslash@$$
 END
 
-: > foo.el
-: > elisp-comp
+$ACLOCAL
+$AUTOCONF
+$AUTOMAKE
+./configure
 
-$ACLOCAL || exit 1
-$AUTOMAKE || exit 1
-
-grep '^ELCFILES.*ELCFILES' Makefile.in && exit 1
-exit 0
+# If _AM_SUBST_NOTMAKE is not honored, the backslash
+# variable will not be empty.
+$MAKE test | grep '^[$]$'
