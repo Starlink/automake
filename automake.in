@@ -447,7 +447,7 @@ my %required_targets =
    'install-man' => 1,
   );
 
-# Set to 1 if this run will create the Makefile.in that distribute
+# Set to 1 if this run will create the Makefile.in that distributes
 # the files in config_aux_dir.
 my $automake_will_process_aux_dir = 0;
 
@@ -540,7 +540,7 @@ my %dep_files;
 my @dist_targets;
 
 # Keep track of all programs declared in this Makefile, without
-# $(EXEEXT).  @substitution@ are not listed.
+# $(EXEEXT).  @substitutions@ are not listed.
 my %known_programs;
 
 # Keys in this hash are the basenames of files which must depend on
@@ -3695,7 +3695,7 @@ sub handle_dist ()
 
 # check_directory ($NAME, $WHERE)
 # -------------------------------
-# Ensure $NAME is a directory, and that it uses sane name.
+# Ensure $NAME is a directory, and that it uses a sane name.
 # Use $WHERE as a location in the diagnostic, if any.
 sub check_directory ($$)
 {
@@ -5855,7 +5855,7 @@ sub cond_stack_endif ($$$)
 # &define_pretty_variable ($VAR, $COND, $WHERE, @VALUE)
 # -----------------------------------------------------
 # Like define_variable, but the value is a list, and the variable may
-# be defined conditionally.  The second argument is the Condition
+# be defined conditionally.  The second argument is the condition
 # under which the value should be defined; this should be the empty
 # string to define the variable unconditionally.  The third argument
 # is a list holding the values to use for the variable.  The value is
@@ -6621,7 +6621,7 @@ sub file_contents_internal ($$$%)
 	  my $flat_deps = &flatten ($dependencies);
 	  my @deps = split (' ', $flat_deps);
 
-	  foreach (split (' ' , $targets))
+	  foreach (split (' ', $targets))
 	    {
 	      # FIXME: 1. We are not robust to people defining several targets
 	      # at once, only some of them being in %dependencies.  The
@@ -6961,7 +6961,7 @@ sub am_install_var
       # Use the location of the currently processed variable as context.
       $where->push_context ("while processing `$one_name'");
 
-      # The variable containing all file to distribute.
+      # The variable containing all files to distribute.
       my $distvar = "\$($one_name)";
       $distvar = shadow_unconditionally ($one_name, $where)
 	if ($dist_p && $one_var->has_conditional_contents);
@@ -7184,6 +7184,7 @@ sub require_file_internal ($$$@)
 		}
 
 	      my $trailer = '';
+	      my $trailer2 = '';
 	      my $suppress = 0;
 
 	      # Only install missing files according to our desired
@@ -7199,6 +7200,17 @@ sub require_file_internal ($$$@)
 		      # can, copy if we must.  Note: delete the file
 		      # first, in case it is a dangling symlink.
 		      $message = "installing `$fullfile'";
+
+		      # The license file should not be volatile.
+		      if ($file eq "COPYING")
+		        {
+			  $message .= " using GNU General Public License v3 file";
+			  $trailer2 = "\n    Consider adding the COPYING file"
+				    . " to the version control system"
+				    . "\n    for your code, to avoid questions"
+				    . " about which license your project uses.";
+			}
+
 		      # Windows Perl will hang if we try to delete a
 		      # file that doesn't exist.
 		      unlink ($fullfile) if -f $fullfile;
@@ -7228,7 +7240,7 @@ sub require_file_internal ($$$@)
 			  # an auxiliary file and we are not processing
 			  # the top level Makefile.  Furthermore Automake
 			  # hasn't been asked to create the Makefile.in
-			  # that distribute the aux dir files.
+			  # that distributes the aux dir files.
 			  error ($where, 'Please make a full run of automake'
 				 . " so $fullfile gets distributed.");
 			}
@@ -7251,7 +7263,7 @@ sub require_file_internal ($$$@)
 	      next
 		if !$suppress && rule $file;
 
-	      msg ($suppress ? 'note' : 'error', $where, "$message$trailer");
+	      msg ($suppress ? 'note' : 'error', $where, "$message$trailer$trailer2");
 	    }
 	}
     }

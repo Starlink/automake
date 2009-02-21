@@ -361,6 +361,7 @@ path-check: distdir
 ## Program to use to fetch files.
 WGET = wget
 WGET_SV_CVS = $(WGET) http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~/
+WGET_SV_GIT_CF = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;hb=HEAD;f='
 WGET_SV_GIT_AC = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=blob_plain;hb=HEAD;f='
 WGET_SV_GIT_GL = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f='
 WGET_GCC = $(WGET) 'http://gcc.gnu.org/viewcvs/*checkout*/trunk/'
@@ -381,8 +382,8 @@ fetch:
 	mkdir Fetchdir
 ## If a get fails then that is a problem.
 	(cd Fetchdir && \
-	$(WGET_SV_CVS)config/config/config.guess -O config.guess && \
-	$(WGET_SV_CVS)config/config/config.sub -O config.sub && \
+	$(WGET_SV_GIT_CF)config.guess -O config.guess && \
+	$(WGET_SV_GIT_CF)config.sub -O config.sub && \
 	$(WGET_SV_CVS)texinfo/texinfo/doc/texinfo.tex -O texinfo.tex && \
 	$(WGET_SV_GIT_GL)doc/INSTALL -O INSTALL && \
 	$(WGET_GCC)config-ml.in -O config-ml.in && \
@@ -401,3 +402,32 @@ fetch:
 	test $$stat = 0 || \
 	  echo "See Fetchdir/update.patch for a log of the changes."; \
 	exit $$stat
+
+## Generate release statistics, for the table in automake.texi.
+## This has to be run in an up to date build tree, but there must
+## be no temp files nor unused other files lying around!
+release-stats: ps
+	@am=`wc -l < automake` && \
+	acl=`wc -l < aclocal` && \
+	pmfiles="lib/Automake/*.pm" && \
+	if test . != '$(srcdir)'; then pmfiles="$$pmfiles $(srcdir)/lib/Automake/*.pm"; \
+	else :; fi && \
+	pm=`cat $$pmfiles | wc -l` && \
+	dot_am_files=`ls -1 $(srcdir)/lib/am/*.am | grep -v Makefile.am` && \
+	amf=`echo "$$dot_am_files" | wc -l` && \
+	aml=`cat $$dot_am_files | wc -l` && \
+	m4f=`ls -1 $(srcdir)/m4/*.m4 | wc -l` && \
+	m4l=`cat $(srcdir)/m4/*.m4 | wc -l` && \
+	doc_text=`cd doc && LC_ALL=C pstops 0 automake.ps unused.ps 2>&1` && \
+	rm -f doc/unused.ps && \
+	doc=`echo "$$doc_text" | sed -n 's/.*Wrote \([1-9][0-9]*\) pages.*/\1/p'` && \
+	tests="tests/*.test"; \
+	if test . != '$(srcdir)'; then tests="$$tests $(srcdir)/tests/*.test"; \
+	else :; fi && \
+	t=`ls -1 $$tests | wc -l` && \
+	tgen=`ls -1 $$tests | grep '.-p\.test' | wc -l` && \
+	today=`date +%Y-%m-%d` && \
+	echo "add this to the table in doc/automake.texi after verification:" && \
+	printf '@item %s @tab %-6s @tab %4d @tab %4d @tab %4d @tab %4d %-4s @tab %4d %-4s @tab %3d @tab %d %-4s\n' \
+	              $$today $(VERSION) $$am    $$acl    $$pm   $$aml "($$amf)" $$m4l "($$m4f)" $$doc $$t "($$tgen)"
+.PHONY: release-stats
