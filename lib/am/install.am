@@ -90,7 +90,7 @@ if %?INSTALLMANIFEST%
 # followed by the full path of the file being installed.
 install: %maybe_BUILT_SOURCES% all-am
 	if test -n "$(STAR_MANIFEST_DIR)" -a $(MANIFEST) = false; then \
-	    $(MAKE) SHELL=/bin/sh $(AM_MAKEFLAGS) install-manifest; \
+	    $(MAKE) $(AM_MAKEFLAGS) install-manifest; \
 	else \
 	    $(MAKE) $(AM_MAKEFLAGS) $(REAL_INSTALL); \
 	fi
