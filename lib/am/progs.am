@@ -1,6 +1,6 @@
 ## automake - create Makefile.in from Makefile.am
 ## Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2003, 2004,
-## 2006, 2007 Free Software Foundation, Inc.
+## 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,10 +13,7 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
-
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## ------------ ##
 ## Installing.  ##
@@ -24,39 +21,52 @@
 
 if %?INSTALL%
 am__installdirs += "$(DESTDIR)$(%NDIR%dir)"
-?BASE?%DIR%PROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-?!BASE?%DIR%PROGRAMS_INSTALL = $(install_sh_PROGRAM)
-?EXEC?.PHONY install-exec-am: install-%DIR%PROGRAMS
-?!EXEC?.PHONY install-data-am: install-%DIR%PROGRAMS
+.PHONY install-%EXEC?exec:data%-am: install-%DIR%PROGRAMS
 install-%DIR%PROGRAMS: $(%DIR%_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(%NDIR%dir)" || $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)"
 ## Funny invocation because Makefile variable can be empty, leading to
 ## a syntax error in sh.
-	@list='$(%DIR%_PROGRAMS)'; for p in $$list; do \
+	@list='$(%DIR%_PROGRAMS)'; test -n "$(%NDIR%dir)" || list=; \
+	for p in $$list; do echo "$$p $$p"; done | \
 ## On Cygwin with libtool test won't see `foo.exe' but instead `foo'.
 ## So we check for both.
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-?LIBTOOL?	     || test -f $$p1 \
-	  ; then \
-## Compute basename of source file.  Unless this is a nobase_ target, we
-## want to install 'python/foo.py' as '$(DESTDIR)$(%NDIR%dir)/foo.yo',
-## not '$(DESTDIR)$(%NDIR%dir)/python/foo.yo'.
-## However in all cases $(transform) applies only to the basename,
-## so we have to strip the directory part.
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-## Prepend the directory part if nobase_ is used.
-?!BASE?	    f=`echo "$$p1" | sed 's|[^/]*$$||'`"$$f"; \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p%LIBTOOL? || test -f $$p1%; \
+	  then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+## We now have a list of sourcefile pairs, separated by newline.
+## Turn that into "sourcefile source_base target_dir xformed_target_base",
+## with newlines being turned into spaces in a second step.
+	sed -e 'p;s,.*/,,;n;h' -e '%BASE?s|.*|.|:s|[^/]*$$||; s|^$$|.|%' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+## The following awk script turns that into one line containing directories
+## and then lines of 'type target_name_or_directory sources...', with type
+## 'd' designating directories, and 'f' files.
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+?!BASE?	  case $$type in \
+?!BASE?	  d) echo " $(MKDIR_P) '$(DESTDIR)$(%NDIR%dir)/$$dir'"; \
+?!BASE?	     $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)/$$dir" || exit $$?;; \
+?!BASE?	  f) \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+?!LIBTOOL?	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(%NDIR%dir)$$dir'"; \
+?!LIBTOOL?	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(%NDIR%dir)$$dir" || exit $$?; \
 ## Note that we explicitly set the libtool mode.  This avoids any
 ## lossage if the install program doesn't have a name that libtool
 ## expects.
-?LIBTOOL?	   echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(%DIR%PROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-?LIBTOOL?	   $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(%DIR%PROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(%NDIR%dir)/$$f" || exit 1; \
-?!LIBTOOL?	   echo " $(INSTALL_PROGRAM_ENV) $(%DIR%PROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-?!LIBTOOL?	   $(INSTALL_PROGRAM_ENV) $(%DIR%PROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(%NDIR%dir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
+?LIBTOOL?	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(%NDIR%dir)$$dir'"; \
+?LIBTOOL?	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(%NDIR%dir)$$dir" || exit $$?; \
+	    } \
+?!BASE?	  ;; esac \
+	; done
+
 endif %?INSTALL%
 
 
@@ -68,14 +78,16 @@ if %?INSTALL%
 .PHONY uninstall-am: uninstall-%DIR%PROGRAMS
 uninstall-%DIR%PROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(%DIR%_PROGRAMS)'; for p in $$list; do \
-## Remove any leading directory before applying $(transform).
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-## Prepend the directory part if nobase_ is used.
-?!BASE?	  f=`echo "$$p" | sed 's|[^/]*$$||'`"$$f"; \
-	  echo " rm -f '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(%NDIR%dir)/$$f"; \
-	done
+	@list='$(%DIR%_PROGRAMS)'; test -n "$(%NDIR%dir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+## Remove any leading directory before applying $(transform),
+## but keep the directory part in the hold buffer, in order to
+## reapply it again afterwards in the nobase case.  Append $(EXEEXT).
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/'%BASE? : -e 'x;s,[^/]*$$,,;G;s,\n,,'%`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(%NDIR%dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(%NDIR%dir)" && rm -f $$files
 endif %?INSTALL%
 
 
@@ -94,11 +106,13 @@ clean-%DIR%PROGRAMS:
 ## Cleaning the `_libs/' or `.libs/' directory is done from clean-libtool.
 ## FIXME: In the future (i.e., when it works) it would be nice to delegate
 ## this task to `libtool --mode=clean'.
-?LIBTOOL?	@list='$(%DIR%_PROGRAMS)'; for p in $$list; do \
-?LIBTOOL?	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-?LIBTOOL?	  echo " rm -f $$p $$f"; \
-?LIBTOOL?	  rm -f $$p $$f ; \
-?LIBTOOL?	done
+?LIBTOOL?	@list='$(%DIR%_PROGRAMS)'; test -n "$$list" || exit 0; \
+?LIBTOOL?	echo " rm -f" $$list; \
+?LIBTOOL?	rm -f $$list || exit $$?; \
+?LIBTOOL?	test -n "$(EXEEXT)" || exit 0; \
+?LIBTOOL?	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+?LIBTOOL?	echo " rm -f" $$list; \
+?LIBTOOL?	rm -f $$list
 
 
 ## ---------- ##

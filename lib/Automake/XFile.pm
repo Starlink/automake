@@ -1,4 +1,4 @@
-# Copyright (C) 2001, 2003, 2004, 2006, 2008 Free Software Foundation,
+# Copyright (C) 2001, 2003, 2004, 2006, 2008, 2009 Free Software Foundation,
 # Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -12,9 +12,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Written by Akim Demaille <akim@freefriends.org>.
 
@@ -224,16 +222,18 @@ sub lock
   # first of flock(2), fcntl(2), or lockf(3) that works.  These can fail on
   # NFS-backed files, with ENOLCK (GNU/Linux) or EOPNOTSUPP (FreeBSD); we
   # usually ignore these errors.  If $ENV{MAKEFLAGS} suggests that a parallel
-  # invocation of GNU `make' has invoked the tool we serve, report all locking
+  # invocation of `make' has invoked the tool we serve, report all locking
   # failures and abort.
   #
   # On Unicos, flock(2) and fcntl(2) over NFS hang indefinitely when `lockd' is
   # not running.  NetBSD NFS clients silently grant all locks.  We do not
   # attempt to defend against these dangers.
+  #
+  # -j is for parallel BSD make, -P is for parallel HP-UX make.
   if (!flock ($fh, $mode))
     {
       my $make_j = (exists $ENV{'MAKEFLAGS'}
-		    && " -$ENV{'MAKEFLAGS'}" =~ / (-[BdeikrRsSw]*j|---?jobs)/);
+		    && " -$ENV{'MAKEFLAGS'}" =~ / (-[BdeikrRsSw]*[jP]|--[jP]|---?jobs)/);
       my $note = "\nforgo `make -j' or use a file system that supports locks";
       my $file = $fh->name;
 

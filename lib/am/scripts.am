@@ -1,6 +1,6 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 1994, 1995, 1996, 1998, 1999, 2001, 2003, 2004, 2006
-## Free Software Foundation, Inc.
+## Copyright (C) 1994, 1995, 1996, 1998, 1999, 2001, 2003, 2004, 2006, 2007,
+## 2008, 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,14 +13,10 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if %?INSTALL%
-if ! %?BASE%
 include inst-vars.am
-endif ! %?BASE%
 endif %?INSTALL%
 
 ## ------------ ##
@@ -30,34 +26,46 @@ endif %?INSTALL%
 if %?INSTALL%
 ## if doesn't work properly for Automake variables yet.
 am__installdirs += "$(DESTDIR)$(%NDIR%dir)"
-?BASE?%DIR%SCRIPT_INSTALL = $(INSTALL_SCRIPT)
-?!BASE?%DIR%SCRIPT_INSTALL = $(install_sh_SCRIPT)
-?EXEC?.PHONY install-exec-am: install-%DIR%SCRIPTS
-?!EXEC?.PHONY install-data-am: install-%DIR%SCRIPTS
+.PHONY install-%EXEC?exec:data%-am: install-%DIR%SCRIPTS
 install-%DIR%SCRIPTS: $(%DIR%_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(%NDIR%dir)" || $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)"
-?!BASE?	@$(am__vpath_adj_setup) \
 ## Funny invocation because Makefile variable can be empty, leading to
 ## a syntax error in sh.
-?!BASE?	list='$(%DIR%_SCRIPTS)'; for p in $$list; do \
-?BASE?	@list='$(%DIR%_SCRIPTS)'; for p in $$list; do \
-?!BASE?	  $(am__vpath_adj) p=$$f; \
+	@list='$(%DIR%_SCRIPTS)'; test -n "$(%NDIR%dir)" || list=; \
+?!BASE?	$(am__nobase_strip_setup); \
+	for p in $$list; do \
 ## A file can be in the source directory or the build directory.
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f $$d$$p; then \
-## If the _SCRIPTS variable has an entry like foo/bar, install it as
-## $(destdir)/bar, not $(destdir)/foo/bar.  The user can make a
-## new dir variable or use a nobase_ target for the latter case.
-## However in all cases $(transform) applies only to the basename,
-## so we have to strip the directory part.
-	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-## Prepend the directory part if nobase_ is used.
-?!BASE?	    f=`echo "$$p" | sed 's|[^/]*$$||'`"$$f"; \
-	    echo " $(%DIR%SCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-	    $(%DIR%SCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(%NDIR%dir)/$$f"; \
-	  else :; fi; \
-	done
+## A script may or may not exist.
+	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
+	done | \
+## We now have a list of "sourcefile newline (nobase-)target" pairs.
+## Turn that into "sourcefile source_base target_dir xformed_target_base",
+## with newlines being turned into spaces in a second step.
+	sed -e 'p;s,.*/,,;n' \
+?BASE?	    -e 'h;s|.*|.|' \
+?!BASE?	    -e "s|$$srcdirstrip/||" -e 'h;s|[^/]*$$||; s|^$$|.|' \
+	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
+	      if (++n[d] == $(am__install_max)) { \
+		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
+	    else { print "f", d "/" $$4, $$1 } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+?!BASE?	  case $$type in \
+?!BASE?	  d) echo " $(MKDIR_P) '$(DESTDIR)$(%NDIR%dir)/$$dir'"; \
+?!BASE?	     $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)/$$dir" || exit $$?;; \
+?!BASE?	  f) \
+	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	     test -z "$$files" || { \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(%NDIR%dir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(%NDIR%dir)$$dir" || exit $$?; \
+	     } \
+?!BASE?	  ;; esac \
+	; done
 endif %?INSTALL%
 
 
@@ -69,17 +77,15 @@ if %?INSTALL%
 .PHONY uninstall-am: uninstall-%DIR%SCRIPTS
 uninstall-%DIR%SCRIPTS:
 	@$(NORMAL_UNINSTALL)
-?!BASE?	@$(am__vpath_adj_setup) \
-?!BASE?	list='$(%DIR%_SCRIPTS)'; for p in $$list; do \
-?BASE?	@list='$(%DIR%_SCRIPTS)'; for p in $$list; do \
-?!BASE?	  $(am__vpath_adj) p=$$f; \
-## Remove any leading directory before applying $(transform).
-	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-## Prepend the directory part if nobase_ is used.
-?!BASE?	  f=`echo "$$p" | sed 's|[^/]*$$||'`"$$f"; \
-	  echo " rm -f '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(%NDIR%dir)/$$f"; \
-	done
+	@list='$(%DIR%_SCRIPTS)'; test -n "$(%NDIR%dir)" || exit 0; \
+?BASE?	files=`for p in $$list; do echo "$$p"; done | \
+?BASE?	       sed -e 's,.*/,,;$(transform)'`; \
+?!BASE?	$(am__nobase_strip_setup); \
+?!BASE?	files=`$(am__nobase_strip) \
+?!BASE?	       -e 'h;s,.*/,,;$(transform);x;s|[^/]*$$||;G;s,\n,,'`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(%NDIR%dir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(%NDIR%dir)" && rm -f $$files
 endif %?INSTALL%
 
 

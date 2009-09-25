@@ -2,24 +2,20 @@
 # @configure_input@
 #
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 #
-# This file is part of GNU Automake.
-#
-# GNU Automake is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
-# GNU Automake is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with autoconf; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Defines for Automake testing environment.
 # Tom Tromey <tromey@cygnus.com>
@@ -44,27 +40,19 @@ test -f ./defs || {
    exit 1
 }
 
-# If srcdir is not set, then we are not running from `make check', be verbose.
 if test -z "$srcdir"; then
-   VERBOSE=x
    # compute $srcdir.
    srcdir=`echo "$0" | sed -e 's,/[^\\/]*$,,'`
-   test $srcdir = $0 && srcdir=.
+   test "$srcdir" = $0 && srcdir=.
 else :; fi
 
 # Ensure $srcdir is set correctly.
-test -f $srcdir/defs.in || {
+test -f "$srcdir/defs.in" || {
    echo "$srcdir/defs.in not found, check \$srcdir" 1>&2
    exit 1
 }
 
 me=`echo "$0" | sed -e 's,.*[\\/],,;s/\.test$//'`
-
-# See how redirections should work.  User can set VERBOSE to see all
-# output.
-test -z "$VERBOSE" && {
-   exec > /dev/null 2>&1
-}
 
 # Make sure we override the user shell.
 SHELL='@SHELL@'
@@ -73,7 +61,7 @@ export SHELL
 test -z "$PERL" && PERL='@PERL@'
 test -z "$MAKE" && MAKE=make
 test -z "$AUTOCONF" && AUTOCONF="@am_AUTOCONF@"
-test -z "$AUTOHEADER" && AUTOHEADER="@AUTOHEADER@"
+test -z "$AUTOHEADER" && AUTOHEADER="@am_AUTOHEADER@"
 test -z "$AUTOUPDATE" && AUTOUPDATE=autoupdate
 test -z "$MISSING" && MISSING=`pwd`/../lib/missing
 # Use -Werror because this also turns some Perl warnings into error.
@@ -92,143 +80,147 @@ export ACLOCAL_TESTSUITE_FLAGS
 test -z "$AUTOMAKE" && AUTOMAKE="automake-@APIVERSION@ --foreign -Werror -Wall"
 
 PATH="`pwd`@PATH_SEPARATOR@$PATH"
-echo $PATH
+echo "$PATH"
 # Some shells forget to export modified environment variables.
 # (See note about `export' in the Autoconf manual.)
 export PATH
 
-if test -n "$required"
-then
-  for tool in $required
-  do
-    # Check that each required tool is present.
-    case $tool in
-      bison)
-	# Since bison is required, we pick YACC for ./configure.
-	YACC='bison -y'
-	export YACC
-	echo "$me: running bison --version"
-	( bison --version ) || exit 77
-	;;
-      bzip2)
-	# Do not use --version, bzip2 still tries to compress stdin.
-	echo "$me: running bzip2 --help"
-	( bzip2 --help ) || exit 77
-	;;
-      etags)
-	# Exuberant Ctags will create a TAGS file even
-	# when asked for --help or --version.  (Emacs's etags
-	# does not have such problem.)  Use -o /dev/null
-	# to make sure we do not pollute the tests/ directory.
-	echo "$me: running etags --version -o /dev/null"
-	( etags --version -o /dev/null ) || exit 77
-	;;
-      GNUmake)
-	# Use --version AND -v, because SGI Make doesn't fail on --version.
-	# Also grep for GNU because newer versions of FreeBSD make do
-	# not complain about `--version' (they seem to silently ignore it).
-	echo "$me: running $MAKE --version -v | grep GNU"
-	( $MAKE --version -v | grep GNU ) || exit 77
-	;;
-      gcc)
-        # When gcc is required, export `CC=gcc' so that ./configure
-        # always use it.  This is important only when the user
-        # has defined CC in his environment, otherwise ./configure will
-        # prefer gcc to other compilers.
-        CC=gcc
-	export CC
-	echo "$me: running $CC --version"
-	( $CC --version ) || exit 77
-	;;
-      gcj)
-	GCJ=gcj
-	export GCJ
-	echo "$me: running $GCJ --version"
-	( $GCJ --version ) || exit 77
-	( $GCJ -v ) || exit 77
-	;;
-      g++)
-	CXX=g++
-	export CXX
-	echo "$me: running $CXX --version"
-	( $CXX --version ) || exit 77
-	;;
-      icc)
-        CC=icc
-	export CC
-	# There is no way to ask *only* the compiler's version.
-	# This tool always wants to do something (by default
-	# it will try link *nothing* and complain it cannot find
-	# main(); funny).  Use -help so it does not try linking anything.
-	echo "$me: running $CC -V -help"
-	( $CC -V -help ) || exit 77
-	;;
-      makedepend)
-	echo "$me: running makedepend -f-"
-	( makedepend -f- ) || exit 77
-	;;
-      makeinfo-html)
-	# Make sure makeinfo understands --html.
-	echo "$me: running makeinfo --html --version"
-	( makeinfo --html --version ) || exit 77
-	;;
-      non-root)
-	# Skip this test case if the user is root.
-	# We try to append to a read-only file to detect this.
-	priv_check_temp=priv-check.$$
-	touch $priv_check_temp || exit 1
-	chmod a-w $priv_check_temp || exit 1
-	(echo foo >> $priv_check_temp) >/dev/null 2>&1
-	overwrite_status=$?
-	rm -f $priv_check_temp
-	test $overwrite_status = 0 && exit 77
-	;;
-      python)
-	# Python doesn't support --version, it has -V
-	echo "$me: running python -V"
-	( python -V ) || exit 77
-	;;
-      ro-dir)
-	# Skip this test case if read-only directories aren't supported
-	# (e.g., under DOS.)
-	ro_dir_temp=ro_dir.$$
-	mkdir $ro_dir_temp || exit 1
-	chmod a-w $ro_dir_temp || exit 1
-	(: > $ro_dir_temp/probe) >/dev/null 2>/dev/null
-	create_status=$?
-	rm -rf $ro_dir_temp
-	test $create_status = 0 && exit 77
-	;;
-      runtest)
-	# DejaGnu's runtest program. We rely on being able to specify
-	# the program on the runtest command-line. This requires
-	# DejaGnu 1.4.3 or later.
-	echo "$me: running runtest --version"
-	(runtest SOMEPROGRAM=someprogram --version) || exit 77
-	;;
-      tex)
-        # No all versions of Tex support `--version', so we use
-        # a configure check.
-        test -n "@TEX@" || exit 77
-	;;
-      texi2dvi-o)
-        # Texi2dvi supports `-o' since Texinfo 4.1.
-	echo "$me: running texi2dvi -o /dev/null --version"
-	( texi2dvi -o /dev/null --version ) || exit 77
-	;;
-      # Generic case: the tool must support --version.
-      *)
-	echo "$me: running $tool --version"
-	( $tool --version ) || exit 77
-	;;
-    esac
-    # Additional variables to define if some $tool is required.
-    case $tool in
-      gcc)
-	;;
-    esac
-  done
-fi
+for tool in : $required
+do
+  # Check that each required tool is present.
+  case $tool in
+    :) ;;
+    bison)
+      # Since bison is required, we pick YACC for ./configure.
+      YACC='bison -y'
+      export YACC
+      echo "$me: running bison --version"
+      ( bison --version ) || exit 77
+      ;;
+    bzip2)
+      # Do not use --version, bzip2 still tries to compress stdin.
+      echo "$me: running bzip2 --help"
+      ( bzip2 --help ) || exit 77
+      ;;
+    etags)
+      # Exuberant Ctags will create a TAGS file even
+      # when asked for --help or --version.  (Emacs's etags
+      # does not have such problem.)  Use -o /dev/null
+      # to make sure we do not pollute the tests/ directory.
+      echo "$me: running etags --version -o /dev/null"
+      ( etags --version -o /dev/null ) || exit 77
+      ;;
+    GNUmake)
+      # Use --version AND -v, because SGI Make doesn't fail on --version.
+      # Also grep for GNU because newer versions of FreeBSD make do
+      # not complain about `--version' (they seem to silently ignore it).
+      echo "$me: running $MAKE --version -v | grep GNU"
+      ( $MAKE --version -v | grep GNU ) || exit 77
+      ;;
+    gcc)
+      # When gcc is required, export `CC=gcc' so that ./configure
+      # always use it.  This is important only when the user
+      # has defined CC in his environment, otherwise ./configure will
+      # prefer gcc to other compilers.
+      CC=gcc
+      export CC
+      echo "$me: running $CC --version"
+      ( $CC --version ) || exit 77
+      ;;
+    gcj)
+      GCJ=gcj
+      export GCJ
+      echo "$me: running $GCJ --version"
+      ( $GCJ --version ) || exit 77
+      ( $GCJ -v ) || exit 77
+      ;;
+    g++)
+      CXX=g++
+      export CXX
+      echo "$me: running $CXX --version"
+      ( $CXX --version ) || exit 77
+      ;;
+    icc)
+      CC=icc
+      export CC
+      # There is no way to ask *only* the compiler's version.
+      # This tool always wants to do something (by default
+      # it will try link *nothing* and complain it cannot find
+      # main(); funny).  Use -help so it does not try linking anything.
+      echo "$me: running $CC -V -help"
+      ( $CC -V -help ) || exit 77
+      ;;
+    makedepend)
+      echo "$me: running makedepend -f-"
+      ( makedepend -f- ) || exit 77
+      ;;
+    makeinfo-html)
+      # Make sure makeinfo understands --html.
+      echo "$me: running makeinfo --html --version"
+      ( makeinfo --html --version ) || exit 77
+      ;;
+    non-root)
+      # Skip this test case if the user is root.
+      # We try to append to a read-only file to detect this.
+      priv_check_temp=priv-check.$$
+      touch $priv_check_temp || exit 1
+      chmod a-w $priv_check_temp || exit 1
+      (echo foo >> $priv_check_temp) >/dev/null 2>&1
+      overwrite_status=$?
+      rm -f $priv_check_temp
+      test $overwrite_status = 0 && exit 77
+      ;;
+    python)
+      # Python doesn't support --version, it has -V
+      echo "$me: running python -V"
+      ( python -V ) || exit 77
+      ;;
+    ro-dir)
+      # Skip this test case if read-only directories aren't supported
+      # (e.g., under DOS.)
+      ro_dir_temp=ro_dir.$$
+      mkdir $ro_dir_temp || exit 1
+      chmod a-w $ro_dir_temp || exit 1
+      (: > $ro_dir_temp/probe) >/dev/null 2>/dev/null
+      create_status=$?
+      rm -rf $ro_dir_temp
+      test $create_status = 0 && exit 77
+      ;;
+    rst2html)
+      # Try the variants that are tried in check.am.
+      while :; do
+	for r2h in $RST2HTML rst2html rst2html.py; do
+	  echo "$me: running $r2h --version"
+	  $r2h --version && break 2
+	done
+	exit 77
+      done
+      ;;
+    runtest)
+      # DejaGnu's runtest program. We rely on being able to specify
+      # the program on the runtest command-line. This requires
+      # DejaGnu 1.4.3 or later.
+      echo "$me: running runtest --version"
+      (runtest SOMEPROGRAM=someprogram --version) || exit 77
+      ;;
+    tex)
+      # No all versions of Tex support `--version', so we use
+      # a configure check.
+      test -n "@TEX@" || exit 77
+      ;;
+    texi2dvi-o)
+      # Texi2dvi supports `-o' since Texinfo 4.1.
+      echo "$me: running texi2dvi -o /dev/null --version"
+      ( texi2dvi -o /dev/null --version ) || exit 77
+      ;;
+    # Generic case: the tool must support --version.
+    *)
+      echo "$me: running $tool --version"
+      ( $tool --version ) || exit 77
+      ;;
+  esac
+done
+
 
 # Always use an absolute srcdir.  Otherwise symlinks made in subdirs
 # of the test dir just won't work.
@@ -241,16 +233,50 @@ case "$srcdir" in
     ;;
 esac
 
-chmod -R a+rwx testSubDir > /dev/null 2>&1
-rm -rf testSubDir > /dev/null 2>&1
-mkdir testSubDir
+# We use a trap below for cleanup.  This requires us to go through
+# hoops to get the right exit status transported through the signal.
+# So use `Exit STATUS' instead of `exit STATUS' inside of the tests.
+# Turn off errexit here so that we don't trip the bug with OSF1/Tru64
+# sh inside this function.
+Exit ()
+{
+  set +e
+  (exit $1)
+  exit $1
+}
+
+curdir=`pwd`
+testSubDir=$me.dir
+chmod -R u+rwx $testSubDir > /dev/null 2>&1
+rm -rf $testSubDir > /dev/null 2>&1
+mkdir $testSubDir
+
+sh_errexit_works=@sh_errexit_works@
+if test "$sh_errexit_works" = yes; then
+  trap 'exit_status=$?
+    cd "$curdir"
+    case $exit_status,$keep_testdirs in
+    0,)
+      chmod -R a+rwx $testSubDir > /dev/null 2>&1
+      rm -rf "$testSubDir" ;;
+    esac
+    test "$signal" != 0 &&
+      echo "$as_me: caught signal $signal"
+    echo "$as_me: exit $exit_status"
+    exit $exit_status
+  ' 0
+  for signal in 1 2 13 15; do
+    trap 'signal='$signal'; { Exit 1; }' $signal
+  done
+fi
+signal=0
 
 # Copy in some files we need.
 for file in install-sh missing depcomp; do
-   cp $srcdir/../lib/$file testSubDir/$file || exit 1
+   cp "$srcdir/../lib/$file" "$testSubDir/$file" || Exit 1
 done
 
-cd ./testSubDir
+cd ./$testSubDir
 
 # Build appropriate environment in test directory.  Eg create
 # configure.in, touch all necessary files, etc.
@@ -271,6 +297,17 @@ unset MFLAGS
 unset MAKEFLAGS
 unset MAKELEVEL
 unset DESTDIR
+# Unset verbosity flag.
+unset V
+# Also unset variables that control our test driver.  While not
+# conceptually independent, they cause some changed semantics we
+# need to control (and test for) in some of the tests to ensure
+# backward-compatible behavior.
+unset DISABLE_HARD_ERRORS
+unset TESTS
+unset TEST_LOGS
+unset RECHECK_LOGS
+unset VERBOSE
 
 echo "=== Running test $0"
 
@@ -288,8 +325,8 @@ case $required in
     if test -f $aclocaldir/dirlist; then
        extra_includes=`
        <$aclocaldir/dirlist \
-       sed -ne 's/#.*//;s/[	 ][	 ]*$//g;s/..*/ -I &/p' |
-	 tr -d '\n'`
+       sed  's/#.*//;s/[	 ][	 ]*$//g' \
+       | while read dir; do test ! -d "$dir" || echo "-I $dir"; done`
     else :; fi
 
     libtool_found=no
@@ -304,8 +341,14 @@ case $required in
        fi
     done
     case $required in
-      *libtool* ) test $libtool_found = yes || exit 77 ;;
-      *gettext* ) test $gettext_found = yes || exit 77 ;;
+      *libtool* ) test $libtool_found = yes || Exit 77 ;;
+      *gettext* ) test $gettext_found = yes || Exit 77 ;;
+    esac
+    # Libtool cannot cope with spaces in the build tree.  Our testsuite setup
+    # cannot cope with spaces in the source tree name for Libtool and gettext
+    # tests.
+    case $srcdir,`pwd` in
+      *\ * | *\	*) Exit 77 ;;
     esac
     ACLOCAL="$ACLOCAL -Wno-syntax -I $srcdir/../m4 $extra_includes -I $aclocaldir"
     ;;
@@ -340,7 +383,8 @@ old_timestamp=198309271735.59
 # Resolve ties in favor of FILE.
 is_newest ()
 {
-  test x`find "$@" -newer "$1"` = x
+  is_newest_files=`find "$@" -newer "$1"`
+  test -z "$is_newest_files"
 }
 
 
@@ -354,9 +398,9 @@ AUTOMAKE_run ()
   shift
   exitcode=0
   $AUTOMAKE ${1+"$@"} >stdout 2>stderr || exitcode=$?
-  cat stderr
+  cat stderr >&2
   cat stdout
-  test $exitcode = $expected_exitcode || exit 1
+  test $exitcode = $expected_exitcode || Exit 1
 }
 
 # AUTOMAKE_fails [options...]
@@ -368,10 +412,7 @@ AUTOMAKE_fails ()
   AUTOMAKE_run 1 ${1+"$@"}
 }
 
-# Turn on shell traces when VERBOSE is set.
-if test -n "$VERBOSE"; then
-  set -x
-else
-  :
-fi
+# Turn on shell traces.
+set -x
+
 pwd

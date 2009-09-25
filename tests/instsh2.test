@@ -1,31 +1,27 @@
 #! /bin/sh
 # Copyright (C) 2002, 2004, 2006, 2008  Free Software Foundation, Inc.
 #
-# This file is part of GNU Automake.
-#
-# GNU Automake is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
-# GNU Automake is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Automake; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Various install-sh checks
 
-. ./defs || exit 1
+. ./defs || Exit 1
 set -e
 
 # Basic errors
-./install-sh && exit 1
-./install-sh -m 644 dest && exit 1
+./install-sh && Exit 1
+./install-sh -m 644 dest && Exit 1
 
 # Directories
 
@@ -78,8 +74,8 @@ test -f d4/z
 ./install-sh -T x d3/y
 test -f x
 test -f d3/y
-./install-sh -T x d3 && exit 1
-./install-sh -T x d4// && exit 1
+./install-sh -T x d3 && Exit 1
+./install-sh -T x d4// && Exit 1
 
 # Ensure that install-sh works with names that include spaces
 touch 'a  b'

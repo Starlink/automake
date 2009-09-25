@@ -2,7 +2,7 @@
 
 ## Makefile for Automake.
 
-## Copyright (C) 2003, 2006  Free Software Foundation, Inc.
+## Copyright (C) 2003, 2006, 2008  Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -15,12 +15,29 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 info_TEXINFOS = automake.texi
 automake_TEXINFOS = fdl.texi
+
+dist_man1_MANS = \
+  $(srcdir)/aclocal.1 \
+  $(srcdir)/automake.1 \
+  $(srcdir)/aclocal-$(APIVERSION).1 \
+  $(srcdir)/automake-$(APIVERSION).1
+MAINTAINERCLEANFILES = $(dist_man1_MANS)
+update_mans = \
+  PATH="`pwd`/../tests$(PATH_SEPARATOR)$$PATH" && \
+  export PATH && \
+  $(HELP2MAN) --output=$@
+$(dist_man1_MANS): $(top_srcdir)/configure.ac
+$(srcdir)/aclocal.1 $(srcdir)/automake.1:
+	f=`echo $@ | sed 's|.*/||; s|\.1$$||; $(transform)'`; \
+	echo ".so man1/$$f-$(APIVERSION).1" > $@
+$(srcdir)/aclocal-$(APIVERSION).1: $(srcdir)/../aclocal.in
+	$(update_mans) aclocal-$(APIVERSION)
+$(srcdir)/automake-$(APIVERSION).1: $(srcdir)/../automake.in
+	$(update_mans) automake-$(APIVERSION)
 
 # The following requires a fixed version of the Emacs 19.30 etags.
 ETAGS_ARGS = --lang=none \

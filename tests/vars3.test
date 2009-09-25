@@ -1,27 +1,23 @@
 #! /bin/sh
 # Copyright (C) 2002  Free Software Foundation, Inc.
 #
-# This file is part of GNU Automake.
-#
-# GNU Automake is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
-# GNU Automake is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Automake; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that Automake warns about variables containing spaces
 # and other non-POSIX characters.
 
-. ./defs || exit 1
+. ./defs || Exit 1
 
 set -e
 
@@ -50,32 +46,32 @@ cat stderr
 
 # No error expected for these lines.
 grep 1: stderr
-grep 2: stderr && exit 1
-grep 3: stderr && exit 1
+grep 2: stderr && Exit 1
+grep 3: stderr && Exit 1
 grep 4: stderr
 grep 5: stderr
-grep 6: stderr && exit 1
+grep 6: stderr && Exit 1
 grep 7: stderr
 grep 8: stderr
 grep 9: stderr
-grep 10: stderr && exit 1
-grep 11: stderr && exit 1
-grep 12: stderr && exit 1
+grep 10: stderr && Exit 1
+grep 11: stderr && Exit 1
+grep 12: stderr && Exit 1
 
 # Now check some individual values.
 grep 'shell echo' stderr
-grep 'nextvariableisbad' stderr && exit 1
+grep 'nextvariableisbad' stderr && Exit 1
 grep 'addsuffix' stderr
 grep 'bad boy' stderr
-grep 'ok' stderr && exit 1
+grep 'ok' stderr && Exit 1
 grep 'three errors' stderr
 grep 'on this' stderr
 grep 'long line' stderr
 grep 'o u c h' stderr
 grep 'wildcard' stderr
 grep 'another error' stderr
-grep 'thisis' stderr && exit 1
-grep 'here' stderr && exit 1
+grep 'thisis' stderr && Exit 1
+grep 'here' stderr && Exit 1
 
 # None of these errors be diagnosed with -Wno-portability
 $AUTOMAKE -Wno-portability

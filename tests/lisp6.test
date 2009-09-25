@@ -1,27 +1,23 @@
 #! /bin/sh
-# Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2007  Free Software Foundation, Inc.
 #
-# This file is part of GNU Automake.
-#
-# GNU Automake is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
-# GNU Automake is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with GNU Automake; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
 
 # Test for conditional _LISP.
 
 required=emacs
-. ./defs || exit 1
+. ./defs || Exit 1
 
 set -e
 
@@ -51,7 +47,7 @@ echo "(require 'am-one)" > am-three.el
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
-./configure --with-lispdir=`pwd`/lisp
+./configure "--with-lispdir=`pwd`/lisp"
 
 $MAKE
 test -f am-one.elc
@@ -76,7 +72,7 @@ test ! -f am-three.elc
 test ! -f elc-stamp
 
 
-./configure --with-lispdir=`pwd`/lisp want_two=1
+./configure "--with-lispdir=`pwd`/lisp" want_two=1
 $MAKE
 test -f am-one.elc
 test -f am-two.elc
