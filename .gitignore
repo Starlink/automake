@@ -1,0 +1,15 @@
+Makefile
+aclocal
+automake
+bootstrap.log
+checkout-fixup
+config.log
+config.status
+configure-output.log
+lib/Automake/Config.pm
+make.log
+make.log.err
+tests/aclocal-1.9
+tests/automake-1.9
+tests/defs
+
