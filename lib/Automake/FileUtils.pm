@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
+
+###############################################################
+# The main copy of this file is in Automake's CVS repository. #
+# Updates should be sent to automake-patches@gnu.org.         #
+###############################################################
 
 package Automake::FileUtils;
 
@@ -52,8 +57,8 @@ use vars qw (@ISA @EXPORT);
 Return the first path for a C<$file_name> in the C<include>s.
 
 We match exactly the behavior of GNU M4: first look in the current
-directory (which includes the case of absolute file names), and, if
-the file is not absolute, just fail.  Otherwise, look in C<@include>.
+directory (which includes the case of absolute file names), and then,
+if the file name is not absolute, look in C<@include>.
 
 If the file is flagged as optional (ends with C<?>), then return undef
 if absent, otherwise exit with error.
@@ -76,22 +81,17 @@ sub find_file ($@)
   return File::Spec->canonpath ($file_name)
     if -e $file_name;
 
-  if (File::Spec->file_name_is_absolute ($file_name))
+  if (!File::Spec->file_name_is_absolute ($file_name))
     {
-      fatal "$file_name: no such file or directory"
-	unless $optional;
-      return undef;
-    }
-
-  foreach my $path (@include)
-    {
-      return File::Spec->canonpath (File::Spec->catfile ($path, $file_name))
-	if -e File::Spec->catfile ($path, $file_name)
+      foreach my $path (@include)
+	{
+	  return File::Spec->canonpath (File::Spec->catfile ($path, $file_name))
+	    if -e File::Spec->catfile ($path, $file_name)
+	}
     }
 
   fatal "$file_name: no such file or directory"
     unless $optional;
-
   return undef;
 }
 
@@ -207,18 +207,18 @@ sub up_to_date_p ($@)
 }
 
 
-=item C<handle_exec_errors ($command)>
+=item C<handle_exec_errors ($command, [$expected_exit_code = 0])>
 
 Display an error message for C<$command>, based on the content of
-C<$?> and C<$!>.
+C<$?> and C<$!>.  Be quiet if the command exited normally
+with C<$expected_exit_code>.
 
 =cut
 
-# handle_exec_errors ($COMMAND)
-# -----------------------------
-sub handle_exec_errors ($)
+sub handle_exec_errors ($;$)
 {
-  my ($command) = @_;
+  my ($command, $expected) = @_;
+  $expected = 0 unless defined $expected;
 
   $command = (split (' ', $command))[0];
   if ($!)
@@ -235,7 +235,8 @@ sub handle_exec_errors ($)
 	  # Propagate exit codes.
 	  fatal ('',
 		 "$command failed with exit status: $status",
-		 exit_code => $status);
+		 exit_code => $status)
+	    unless $status == $expected;
 	}
       elsif (WIFSIGNALED ($?))
 	{
@@ -272,24 +273,22 @@ sub xqx ($)
 }
 
 
-=item C<xsystem ($command)>
+=item C<xsystem (@argv)>
 
-Same as C<system>, but fails on errors, and reports the C<$command>
+Same as C<system>, but fails on errors, and reports the C<@argv>
 in verbose mode.
 
 =cut
 
-# xsystem ($COMMAND)
-# ------------------
-sub xsystem ($)
+sub xsystem (@)
 {
-  my ($command) = @_;
+  my (@command) = @_;
 
-  verb "running: $command";
+  verb "running: @command";
 
   $! = 0;
-  handle_exec_errors $command
-    if system $command;
+  handle_exec_errors "@command"
+    if system @command;
 }
 
 

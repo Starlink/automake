@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -19,6 +19,7 @@
 # Boston, MA 02110-1301, USA.
 
 # Make sure we allow Libtool's -dlopen/-dlpreopen
+# Also check basic support for AM_LIBTOOLFLAGS/LIBTOOLFLAGS
 
 required='libtoolize gcc'
 . ./defs || exit 1
@@ -33,12 +34,15 @@ AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
+AUTOMAKE_OPTIONS = subdir-objects
+AM_LIBTOOLFLAGS = --silent
 lib_LTLIBRARIES = libmod1.la mod2.la
-libmod1_la_SOURCES = mod1.c
+libmod1_la_SOURCES = sub/mod1.c
 libmod1_la_LDFLAGS = -module
 libmod1_la_LIBADD = -dlopen mod2.la
 mod2_la_SOURCES = mod2.c
 mod2_la_LDFLAGS = -module
+mod2_la_LIBTOOLFLAGS =
 
 bin_PROGRAMS = prg
 prg_SOURCES = prg.c
@@ -47,12 +51,12 @@ prg_LDADD = -dlopen libmod1.la -dlpreopen mod2.la
 print:
 	@echo 1BEG: $(prg_DEPENDENCIES) :END1
 	@echo 2BEG: $(libmod1_la_DEPENDENCIES) :END2
-
+	@echo 3BEG: $(LTCOMPILE) :END3
 END
 
-mkdir liba
+mkdir sub liba
 
-cat > mod1.c << 'END'
+cat > sub/mod1.c << 'END'
 int
 mod1 ()
 {
@@ -82,8 +86,10 @@ $AUTOCONF
 $AUTOMAKE --add-missing --copy
 
 ./configure
-$MAKE print >output 2>&1
+env LIBTOOLFLAGS=--silent $MAKE print >output 2>&1
 cat output
 grep '1BEG: libmod1.la mod2.la :END1' output
 grep '2BEG: mod2.la :END2' output
+grep '3BEG: .*silent.*silent.* :END3' output
+test 2 -le `grep mod2_la_LIBTOOLFLAGS Makefile | wc -l`
 $MAKE

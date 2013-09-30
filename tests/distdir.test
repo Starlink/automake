@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1996, 2001, 2002, 2003  Free Software Foundation, Inc.
+# Copyright (C) 1996, 2001, 2002, 2003, 2006  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -19,22 +19,49 @@
 # Boston, MA 02110-1301, USA.
 
 # Test to make sure subdirs in EXTRA_DIST work.  Also tests to make
-# sure "./" is ignored.
+# sure *srcdir is properly handled.  Note that using `./', as in
+#   EXTRA_DIST = ./joe
+# does not work portably: it fails with HP-UX and Tru64 make.
 
 . ./defs || exit 1
 
 set -e
 
+echo AC_OUTPUT >>configure.in
+
 cat > Makefile.am << 'END'
-EXTRA_DIST = foo/bar ./joe
+EXTRA_DIST = foo/bar joe $(top_srcdir)/woo/doo $(srcdir)/dada
+check-local:
+	test -f $(srcdir)/foo/bar
+	test -f $(srcdir)/woo/doo
+	test -f $(srcdir)/joe
+	test -f $(srcdir)/dada
 END
 
 $ACLOCAL
+$AUTOCONF
 $AUTOMAKE
 
-grep '\$(mkdir_p).*\.' Makefile.in && exit 1
-grep '\$(mkdir_p).*foo' Makefile.in
+mkdir foo woo
+touch foo/bar joe woo/doo dada
 
+mkdir build
+cd build
+../configure
+$MAKE distdir
 # Check to make sure `foo' isn't made in build directory.
-grep 'mkdir_p.*foo.*foo' Makefile.in && exit 1
+test -d foo && exit 1
+
+rm -rf distdir-1.0
+# Remove the dot from VERSION for the next grep.
+VERSION=10 MKDIR_P='echo MKDIR_P' $MAKE -e distdir >make.log || :
+
+# Make sure no `./' appear in the directory names.  srcdir is `..', so
+# this also checks that no directory is created in the source tree.
+grep 'MKDIR_P.*\.' make.log && exit 1
+
+cd ..
+./configure --prefix `pwd`
+$MAKE distcheck
+
 exit 0

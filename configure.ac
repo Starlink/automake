@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-# Free Software Foundation, Inc.
+# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006,
+# 2004, 2006  Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,13 +18,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-dnl Autoconf 2.58 defines abs_top_builddir incorrectly, so we
-dnl have to require 2.58a, otherwise all our test cases will fail
-dnl (abs_top_builddir is used in tests/automake.in).  Note that
-dnl this is a requirement for the Automake package itself.
-dnl Automake users can still use Autoconf 2.58.
-AC_PREREQ(2.58a)
-
 dnl  Since this is a Starlink-customised version of automake, change the
 dnl  package name and bug-reporting address.  Unlike autoconf, automake
 dnl  version numbers can include a fork element in the version number,
@@ -34,8 +27,11 @@ dnl  Include the TARNAME field, not because we want to distribute
 dnl  this package, but so that autoconf uses this when building some
 dnl  installation locations rather than the "starlink-automake" it
 dnl  would otherwise construct.
-AC_INIT([Starlink Automake], [1.9.6-starlink], [starlink@jiscmail.ac.uk], automake)
-dnl AC_INIT([GNU Automake], [1.9.6], [bug-automake@gnu.org])
+AC_INIT([Starlink Automake], [1.10-starlink], [starlink@jiscmail.ac.uk], automake)
+dnl AC_INIT([GNU Automake], [1.10], [bug-automake@gnu.org])
+
+dnl Require Autoconf 2.60 for AC_REQUIRE_AUX_FILE.
+AC_PREREQ(2.60)
 
 AC_CONFIG_SRCDIR(automake.in)
 AC_CONFIG_AUX_DIR(lib)
@@ -72,15 +68,19 @@ AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE-$APIVERSION"])
 
 # $AUTOMAKE and $ACLOCAL are always run after a `cd $top_srcdir',
 # hence `.' is really what we want for perllibdir, libdir, and acdir.
-ACLOCAL="perllibdir=`pwd`\"/lib$PATH_SEPARATOR./lib\" `pwd`/aclocal --acdir=m4"
+ACLOCAL="perllibdir=`pwd`\"/lib$PATH_SEPARATOR./lib\" `pwd`/aclocal --acdir=m4 -I m4"
 AUTOMAKE="perllibdir=`pwd`\"/lib$PATH_SEPARATOR./lib\" `pwd`/automake --libdir=lib"
 
 AC_PATH_PROG(PERL, perl)
 if test -z "$PERL"; then
    AC_MSG_ERROR([perl not found])
 fi
-$PERL -e 'require 5.005;' || {
-   AC_MSG_ERROR([perl 5.005 or better is required])
+$PERL -e 'require 5.006;' || {
+   AC_MSG_ERROR(
+[perl 5.6 or better is required; perl 5.8.2 or better
+is recommended.  If you have several perl versions
+installed, select the one Automake should use using
+  ./configure PERL=/path/to/perl])
 }
 
 # The test suite will skip some tests if tex is absent.

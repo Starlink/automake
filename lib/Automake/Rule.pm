@@ -1,4 +1,4 @@
-# Copyright (C) 2003  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -328,9 +328,16 @@ sub reset()
      'install-man'	    => [],
      'uninstall-man'	    => [],
 
+     'install-dvi'          => [],
+     'install-dvi-am'       => [],
+     'install-html'         => [],
+     'install-html-am'      => [],
      'install-info'         => [],
      'install-info-am'      => [],
-     'uninstall-info'       => [],
+     'install-pdf'          => [],
+     'install-pdf-am'       => [],
+     'install-ps'           => [],
+     'install-ps-am'        => [],
 
      'installcheck-am'      => [],
 
@@ -349,6 +356,8 @@ sub reset()
 
      # Phoning.
      '.PHONY'               => [],
+     # Recursive install targets (so `make -n install' works for BSD Make).
+     '.MAKE'		    => [],
      );
   %actions = ();
 }
@@ -622,7 +631,7 @@ sub define ($$$$$)
 	      if ($target !~ /^[^%]*%[^%]*$/)
 		{
 		  ## FIXME: Presently we can't diagnose duplicate user rules
-		  ## because we doesn't distinguish rules with commands
+		  ## because we don't distinguish rules with commands
 		  ## from rules that only add dependencies.  E.g.,
 		  ##   .PHONY: foo
 		  ##   .PHONY: bar

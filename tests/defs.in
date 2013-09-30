@@ -1,8 +1,8 @@
 # -*- shell-script -*-
 # @configure_input@
 #
-# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
-# Free Software Foundation, Inc.
+# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+# 2005, 2006  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -25,16 +25,18 @@
 # Tom Tromey <tromey@cygnus.com>
 
 # Be Bourne compatible.
-# (Snippet copied from configure's initialization in Autoconf 2.57.)
+# (Snippet copied from configure's initialization in Autoconf 2.59c.)
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
   emulate sh
   NULLCMD=:
   # Zsh 3.x and 4.x performs word splitting on ${1+"$@"}, which
   # is contrary to our usage.  Disable this feature.
   alias -g '${1+"$@"}'='"$@"'
-elif test -n "${BASH_VERSION+set}" && (set -o posix) >/dev/null 2>&1; then
-  set -o posix
+else
+  case `(set -o) 2>/dev/null` in *posix*) set -o posix;; esac
 fi
+BIN_SH=xpg4; export BIN_SH # for Tru64
+DUALCASE=1; export DUALCASE # for MKS sh
 
 # Ensure we are running from the right directory.
 test -f ./defs || {
@@ -44,7 +46,7 @@ test -f ./defs || {
 
 # If srcdir is not set, then we are not running from `make check', be verbose.
 if test -z "$srcdir"; then
-   test -z "$VERBOSE" && VERBOSE=x
+   VERBOSE=x
    # compute $srcdir.
    srcdir=`echo "$0" | sed -e 's,/[^\\/]*$,,'`
    test $srcdir = $0 && srcdir=.
@@ -74,7 +76,13 @@ test -z "$AUTOCONF" && AUTOCONF="@am_AUTOCONF@"
 test -z "$AUTOHEADER" && AUTOHEADER="@AUTOHEADER@"
 test -z "$AUTOUPDATE" && AUTOUPDATE=autoupdate
 test -z "$MISSING" && MISSING=`pwd`/../lib/missing
-test -z "$ACLOCAL" && ACLOCAL="aclocal-@APIVERSION@"
+# Use -Werror because this also turns some Perl warnings into error.
+# (Tests for which this is inappropriate should use -Wno-error.)
+test -z "$ACLOCAL" && ACLOCAL="aclocal-@APIVERSION@ -Werror"
+# Extra flags to pass to aclocal before all other flags added by this script.
+ACLOCAL_TESTSUITE_FLAGS=
+export ACLOCAL_TESTSUITE_FLAGS
+
 # See how Automake should be run.  We put --foreign as the default
 # strictness to avoid having to create lots and lots of files.  A test
 # can override this by specifying a different strictness.  Use -Wall
@@ -264,37 +272,40 @@ echo "=== Running test $0"
 # Use `-I $srcdir/../m4' in addition to `--acdir=$srcdir/../m4', because the
 # other `-I' directories added for libtool and gettext might contain
 # files from an old version of Automake that we don't want to use.
-aclocaldir='@prefix@/share/aclocal'
-extra_includes=""
-if [ -f $aclocaldir/dirlist ] ; then
-   extra_includes=`(tmp_inc=""
-   while read LINE ; do
-      tmp_inc="$tmp_inc -I $LINE"
-   done
-   echo $tmp_inc) < $aclocaldir/dirlist`
-fi
+# Use `-Wno-syntax' because we do not want our test suite to fail because
+# some third-party .m4 file is underquoted.
 case $required in
-  *libtool* )
+  *libtool* | *gettext* )
+    aclocaldir='@prefix@/share/aclocal'
+    extra_includes=""
+    if [ -f $aclocaldir/dirlist ] ; then
+       extra_includes=`(tmp_inc=""
+       while read LINE ; do
+	  tmp_inc="$tmp_inc -I $LINE"
+       done
+       echo $tmp_inc) < $aclocaldir/dirlist`
+    fi
+
     libtool_found=no
-    for d in $extra_includes $aclocaldir ; do
-       if [ "x$d" != "x-I" ] && [ -f "$d/libtool.m4" ] ; then
-          libtool_found=yes
-       fi
-    done
-    test "x$libtool_found" = "xyes" || exit 77
-    ACLOCAL="$ACLOCAL -I $srcdir/../m4 $extra_includes -I $aclocaldir"
-    ;;
-  *gettext* )
     gettext_found=no
     for d in $extra_includes $aclocaldir ; do
-       if [ "x$d" != "x-I" ] && [ -f "$d/gettext.m4" ] ; then
+       [ "x$d" != x-I ] || continue
+       if [ -f "$d/libtool.m4" ] ; then
+          libtool_found=yes
+       fi
+       if [ -f "$d/gettext.m4" ] ; then
           gettext_found=yes
        fi
     done
-    test "x$gettext_found" = "xyes" || exit 77
-    ACLOCAL="$ACLOCAL -I $srcdir/../m4 $extra_includes -I $aclocaldir"
+    case $required in
+      *libtool* ) test $libtool_found = yes || exit 77 ;;
+      *gettext* ) test $gettext_found = yes || exit 77 ;;
+    esac
+    ACLOCAL="$ACLOCAL -Wno-syntax -I $srcdir/../m4 $extra_includes -I $aclocaldir"
     ;;
 esac
+
+testaclocaldir='@abs_top_srcdir@/m4'
 
 # POSIX no longer requires 'egrep' and 'fgrep',
 # but some hosts lack 'grep -E' and 'grep -F'.
@@ -320,7 +331,7 @@ AUTOMAKE_run ()
   expected_exitcode=$1
   shift
   exitcode=0
-  $AUTOMAKE ${1+"$@"} 2>stderr >stdout || exitcode=$?
+  $AUTOMAKE ${1+"$@"} >stdout 2>stderr || exitcode=$?
   cat stderr
   cat stdout
   test $exitcode = $expected_exitcode || exit 1
@@ -335,8 +346,8 @@ AUTOMAKE_fails ()
   AUTOMAKE_run 1 ${1+"$@"}
 }
 
-# Turn on shell traces when VERBOSE=x.
-if test "x$VERBOSE" = xx; then
+# Turn on shell traces when VERBOSE is set.
+if test -n "$VERBOSE"; then
   set -x
 else
   :

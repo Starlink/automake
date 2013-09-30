@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002  Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -38,7 +38,7 @@ END
 
 $ACLOCAL || exit 1
 $AUTOCONF || exit 1
-$AUTOMAKE myMakefile || exit 1
+$AUTOMAKE -- myMakefile || exit 1
 
 mv myMakefile.in myMakefile.old
 echo '# Post-processed by post-processor 3.14.' > myMakefile.in

@@ -20,7 +20,10 @@ acloca14.test \
 acloca15.test \
 acloca16.test \
 acloca17.test \
+acloca18.test \
 acloca19.test \
+acloca20.test \
+acloca21.test \
 acoutnoq.test \
 acoutpt.test \
 acoutpt2.test \
@@ -36,6 +39,8 @@ alpha.test \
 alpha2.test \
 amassign.test \
 ammissing.test \
+amopt.test \
+amsubst.test \
 ansi.test \
 ansi2.test \
 ansi3.test \
@@ -50,10 +55,12 @@ ansi10.test \
 ar.test \
 ar2.test \
 asm.test \
+asm2.test \
 autohdr.test \
 autohdr2.test \
 autohdr3.test \
 autohdr4.test \
+automake.test \
 auxdir.test \
 auxdir2.test \
 auxdir3.test \
@@ -72,10 +79,13 @@ canon3.test \
 canon4.test \
 canon5.test \
 ccnoco.test \
+ccnoco2.test \
 check.test \
 check2.test \
 check3.test \
 check4.test \
+check5.test \
+check6.test \
 checkall.test \
 clean.test \
 clean2.test \
@@ -187,6 +197,8 @@ depcomp2.test \
 depcomp3.test \
 depcomp4.test \
 depcomp5.test \
+depcomp6.test \
+depcomp7.test \
 depdist.test \
 depend.test \
 depend2.test \
@@ -195,6 +207,7 @@ depend4.test \
 destdir.test \
 dirforbid.test \
 dirlist.test \
+dirlist2.test \
 discover.test \
 distcom2.test \
 distcom3.test \
@@ -230,8 +243,10 @@ extra7.test \
 f90only.test \
 flibs.test \
 fn99.test \
+fn99subdir.test \
 fnoc.test \
 fo.test	\
+fort1.test \
 fonly.test \
 fortdep.test \
 fpinst2.test \
@@ -244,6 +259,7 @@ gcj5.test \
 getopt.test \
 gettext.test \
 gettext2.test \
+gettext3.test \
 gnumake.test \
 gnuwarn.test \
 gnuwarn2.test \
@@ -258,6 +274,7 @@ implicit.test \
 include.test \
 include2.test \
 info.test \
+init.test \
 insh2.test \
 install2.test \
 installdir.test \
@@ -306,6 +323,7 @@ libtool5.test \
 libtool6.test \
 libtool7.test \
 libtool8.test \
+libtool9.test \
 license.test \
 link_c_cxx.test	\
 link_dist.test \
@@ -345,14 +363,18 @@ mdate4.test \
 missing.test \
 missing2.test \
 missing3.test \
+missing4.test \
+missing5.test \
 mkinstall.test \
 mkinst2.test \
 mkinst3.test \
+mmodely.test \
 multlib.test \
 nobase.test \
 nodef.test \
 nodef2.test \
 nodep.test \
+nodep2.test \
 nodepcomp.test \
 nodist.test \
 nodist2.test \
@@ -364,6 +386,8 @@ noinstdir.test \
 nolink.test \
 nostdinc.test \
 number.test \
+objc.test \
+objc2.test \
 obsolete.test \
 order.test \
 outdir.test \
@@ -377,6 +401,8 @@ output7.test \
 output8.test \
 output9.test \
 output10.test \
+output11.test \
+output12.test \
 overrid.test \
 parse.test \
 percent.test \
@@ -412,6 +438,9 @@ pr300-lib.test \
 pr300-ltlib.test \
 pr300-prog.test \
 pr307.test \
+pr401.test \
+pr401b.test \
+pr401c.test \
 prefix.test \
 primary.test \
 primary2.test \
@@ -485,9 +514,11 @@ subobj6.test \
 subobj7.test \
 subobj8.test \
 subobj9.test \
+subobj10.test \
 subobjname.test \
 subpkg.test \
 subpkg2.test \
+subpkg3.test \
 subst.test \
 subst2.test \
 substref.test \
@@ -504,6 +535,7 @@ suffix8.test \
 suffix9.test \
 suffix10.test \
 suffix11.test \
+suffix12.test \
 symlink.test \
 symlink2.test \
 symlink3.test \
@@ -541,8 +573,12 @@ txinfo27.test \
 txinfo28.test \
 txinfo29.test \
 txinfo30.test \
+txinfo31.test \
 transform.test \
 unused.test \
+upc.test \
+upc2.test \
+upc3.test \
 vars.test \
 vars3.test \
 vartar.test \
@@ -552,6 +588,7 @@ version3.test \
 version4.test \
 version6.test \
 version7.test \
+version8.test \
 vpath.test \
 vtexi.test \
 vtexi2.test \

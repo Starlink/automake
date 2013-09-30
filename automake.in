@@ -8,7 +8,7 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
 
 # automake - create Makefile.in from Makefile.am
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004, 2005  Free Software Foundation, Inc.
+# 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ eval 'case $# in 0) exec @PERL@ -S "$0";; *) exec @PERL@ -S "$0" "$@";; esac'
 # 02110-1301, USA.
 
 # Originally written by David Mackenzie <djm@gnu.ai.mit.edu>.
-# Perl reimplementation by Tom Tromey <tromey@redhat.com>.
+# Perl reimplementation by Tom Tromey <tromey@redhat.com>, and
+# Alexandre Duret-Lutz <adl@gnu.org>.
 
 # STARLINK-MODS: this file is substantially changed in detail from the
 # version in upstream automake, though the _structure_ should be
@@ -112,7 +113,11 @@ struct (# Short name of the language (c, f77...).
 	# This is a subroutine which is called whenever we finally
 	# determine the context in which a source file will be
 	# compiled.
-	'_target_hook' => "\$");
+	'_target_hook' => "\$",
+
+	# If TRUE, nodist_ sources will be compiled using specific rules
+	# (i.e. not inference rules).  The default is FALSE.
+	'nodist_specific' => "\$");
 
 
 sub finish ($)
@@ -246,16 +251,16 @@ my @common_sometimes =
 # Standard directories from the GNU Coding Standards, and additional
 # pkg* directories from Automake.  Stored in a hash for fast member check.
 my %standard_prefix =
-    map { $_ => 1 } (qw(bin data exec include info lib libexec lisp
-			localstate man man1 man2 man3 man4 man5 man6
-			man7 man8 man9 oldinclude pkgdatadir
-			pkgincludedir pkglibdir sbin sharedstate
-			sysconf));
+    map { $_ => 1 } (qw(bin data dataroot dvi exec html include info
+                        lib libexec lisp localstate man man1 man2 man3
+			man4 man5 man6 man7 man8 man9 oldinclude pdf
+			pkgdatadir pkgincludedir pkglibdir ps sbin
+			sharedstate sysconf));
 
 # Copyright on generated Makefile.ins.
 my $gen_copyright = "\
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004, 2005  Free Software Foundation, Inc.
+# 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -266,7 +271,7 @@ my $gen_copyright = "\
 # PARTICULAR PURPOSE.
 ";
 
-# These constants are returned by lang_*_rewrite functions.
+# These constants are returned by the lang_*_rewrite functions.
 # LANG_SUBDIR means that the resulting object file should be in a
 # subdir if the source file is.  In this case the file name cannot
 # have `..' components.
@@ -280,7 +285,7 @@ use constant COMPILE_LIBTOOL  => 1;
 use constant COMPILE_ORDINARY => 2;
 
 # We can't always associate a location to a variable or a rule,
-# when its defined by Automake.  We use INTERNAL in this case.
+# when it's defined by Automake.  We use INTERNAL in this case.
 use constant INTERNAL => new Automake::Location;
 
 
@@ -348,15 +353,24 @@ my $config_aux_dir_set_in_configure_ac = 0;
 # in Makefiles.
 my $am_config_aux_dir = '';
 
+# Directory to search for AC_LIBSOURCE files, as set by AC_CONFIG_LIBOBJ_DIR
+# in configure.ac.
+my $config_libobj_dir = '';
+
 # Whether AM_GNU_GETTEXT has been seen in configure.ac.
 my $seen_gettext = 0;
 # Whether AM_GNU_GETTEXT([external]) is used.
 my $seen_gettext_external = 0;
 # Where AM_GNU_GETTEXT appears.
 my $ac_gettext_location;
+# Whether AM_GNU_GETTEXT_INTL_SUBDIR has been seen.
+my $seen_gettext_intl = 0;
 
 # Lists of tags supported by Libtool.
 my %libtool_tags = ();
+# 1 if Libtool uses LT_SUPPORTED_TAG.  If it does, then it also
+# uses AC_REQUIRE_AUX_FILE.
+my $libtool_new_api = 0;
 
 # Most important AC_CANONICAL_* macro seen so far.
 my $seen_canonical = 0;
@@ -378,6 +392,9 @@ my $seen_multilib = 0;
 # TRUE if we've seen AM_PROG_CC_C_O
 my $seen_cc_c_o = 0;
 
+# Location of AC_REQUIRE_AUX_FILE calls, indexed by their argument.
+my %required_aux_file = ();
+
 # Where AM_INIT_AUTOMAKE is called;
 my $seen_init_automake = 0;
 
@@ -388,6 +405,10 @@ my $seen_automake_version = 0;
 # values are `FILE:LINE' strings which are used by error message
 # generation.
 my %configure_vars = ();
+
+# Ignored configure substitutions (i.e., variables not to be output in
+# Makefile.in)
+my %ignored_configure_vars = ();
 
 # Files included by $configure_ac.
 my @configure_deps = ();
@@ -407,6 +428,8 @@ my $configure_dist_common = '';
 
 # This maps languages names onto objects.
 my %languages = ();
+# Maps each linker variable onto a language object.
+my %link_languages = ();
 
 # List of targets we must always output.
 # FIXME: Complete, and remove falsely required targets.
@@ -475,6 +498,9 @@ my $am_relative_dir;
 my $in_file_name;
 my $relative_dir;
 
+# Relative path to the top directory.
+my $topsrcdir;
+
 # Greatest timestamp of the output's dependencies (excluding
 # configure's dependencies).
 my $output_deps_greatest_timestamp;
@@ -493,11 +519,6 @@ my @cond_stack;
 
 # This holds the set of included files.
 my @include_stack;
-
-# This holds a list of directories which we must create at `dist'
-# time.  This is used in some strange scenarios involving weird
-# AC_OUTPUT commands.
-my %dist_dirs;
 
 # List of dependencies for the obvious targets.
 my @all;
@@ -547,6 +568,10 @@ my %dep_files;
 # This is a list of all targets to run during "make dist".
 my @dist_targets;
 
+# Keep track of all programs declared in this Makefile, without
+# $(EXEEXT).  @substitution@ are not listed.
+my %known_programs;
+
 # Keys in this hash are the basenames of files which must depend on
 # ansi2knr.  Values are either the empty string, or the directory in
 # which the ANSI source file appears; the directory must have a
@@ -585,6 +610,12 @@ my $get_object_extension_was_run;
 
 # Record each file processed by make_paragraphs.
 my %transformed_files;
+
+# Cache each file processed by make_paragraphs.
+# (This is different from %transformed_files because
+# %transformed_files is reset for each file while %am_file_cache
+# it global to the run.)
+my %am_file_cache;
 
 ################################################################
 
@@ -642,8 +673,6 @@ sub initialize_per_input ()
 
     @include_stack = ();
 
-    %dist_dirs = ();
-
     @all = ();
     @check = ();
     @check_tests = ();
@@ -661,6 +690,8 @@ sub initialize_per_input ()
     %dep_files = ();
 
     @dist_targets = ();
+
+    %known_programs = ();
 
     %de_ansi_files = ();
 
@@ -731,7 +762,7 @@ register_language ('name' => 'cxx',
 register_language ('name' => 'objc',
 		   'Name' => 'Objective C',
 		   'config_vars' => ['OBJC'],
-		   'linker' => 'OBJCLINK',,
+		   'linker' => 'OBJCLINK',
  		   'link' => '$(OBJCLD) $(AM_OBJCFLAGS) $(OBJCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
 		   'autodep' => 'OBJC',
 		   'flags' => ['OBJCFLAGS', 'CPPFLAGS'],
@@ -743,6 +774,23 @@ register_language ('name' => 'objc',
 		   'ld' => '$(OBJC)',
 		   'pure' => 1,
 		   'extensions' => ['.m']);
+
+# Unified Parallel C.
+register_language ('name' => 'upc',
+		   'Name' => 'Unified Parallel C',
+		   'config_vars' => ['UPC'],
+		   'linker' => 'UPCLINK',
+ 		   'link' => '$(UPCLD) $(AM_UPCFLAGS) $(UPCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+		   'autodep' => 'UPC',
+		   'flags' => ['UPCFLAGS', 'CPPFLAGS'],
+		   'compile' => '$(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS)',
+		   'compiler' => 'UPCCOMPILE',
+		   'compile_flag' => '-c',
+		   'output_flag' => '-o',
+		   'lder' => 'UPCLD',
+		   'ld' => '$(UPC)',
+		   'pure' => 1,
+		   'extensions' => ['.upc']);
 
 # Headers.
 register_language ('name' => 'header',
@@ -766,7 +814,8 @@ register_language ('name' => 'yacc',
 						return ($ext,) },
 		   'rule_file' => 'yacc',
 		   '_finish' => \&lang_yacc_finish,
-		   '_target_hook' => \&lang_yacc_target_hook);
+		   '_target_hook' => \&lang_yacc_target_hook,
+		   'nodist_specific' => 1);
 register_language ('name' => 'yaccxx',
 		   'Name' => 'Yacc (C++)',
 		   'config_vars' => ['YACC'],
@@ -778,7 +827,8 @@ register_language ('name' => 'yaccxx',
 		   'output_extensions' => sub { (my $ext = $_[0]) =~ tr/y/c/;
 						return ($ext,) },
 		   '_finish' => \&lang_yacc_finish,
-		   '_target_hook' => \&lang_yacc_target_hook);
+		   '_target_hook' => \&lang_yacc_target_hook,
+		   'nodist_specific' => 1);
 
 # Lex (C & C++).
 register_language ('name' => 'lex',
@@ -792,7 +842,8 @@ register_language ('name' => 'lex',
 		   'output_extensions' => sub { (my $ext = $_[0]) =~ tr/l/c/;
 						return ($ext,) },
 		   '_finish' => \&lang_lex_finish,
-		   '_target_hook' => \&lang_lex_target_hook);
+		   '_target_hook' => \&lang_lex_target_hook,
+		   'nodist_specific' => 1);
 register_language ('name' => 'lexxx',
 		   'Name' => 'Lex (C++)',
 		   'config_vars' => ['LEX'],
@@ -804,7 +855,8 @@ register_language ('name' => 'lexxx',
 		   'output_extensions' => sub { (my $ext = $_[0]) =~ tr/l/c/;
 						return ($ext,) },
 		   '_finish' => \&lang_lex_finish,
-		   '_target_hook' => \&lang_lex_target_hook);
+		   '_target_hook' => \&lang_lex_target_hook,
+		   'nodist_specific' => 1);
 
 # Assembler.
 register_language ('name' => 'asm',
@@ -812,12 +864,30 @@ register_language ('name' => 'asm',
 		   'config_vars' => ['CCAS', 'CCASFLAGS'],
 
 		   'flags' => ['CCASFLAGS'],
-		   # Users can set AM_ASFLAGS to includes DEFS, INCLUDES,
-		   # or anything else required.  They can also set AS.
+		   # Users can set AM_CCASFLAGS to include DEFS, INCLUDES,
+		   # or anything else required.  They can also set CCAS.
+		   # Or simply use Preprocessed Assembler.
 		   'compile' => '$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)',
 		   'compiler' => 'CCASCOMPILE',
 		   'compile_flag' => '-c',
-		   'extensions' => ['.s', '.S'],
+		   'output_flag' => '-o',
+		   'extensions' => ['.s'],
+
+		   # With assembly we still use the C linker.
+		   '_finish' => \&lang_c_finish);
+
+# Preprocessed Assembler.
+register_language ('name' => 'cppasm',
+		   'Name' => 'Preprocessed Assembler',
+		   'config_vars' => ['CCAS', 'CCASFLAGS'],
+
+		   'autodep' => 'CCAS',
+		   'flags' => ['CCASFLAGS', 'CPPFLAGS'],
+		   'compile' => '$(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)',
+		   'compiler' => 'CPPASCOMPILE',
+		   'compile_flag' => '-c',
+		   'output_flag' => '-o',
+		   'extensions' => ['.S'],
 
 		   # With assembly we still use the C linker.
 		   '_finish' => \&lang_c_finish);
@@ -825,6 +895,7 @@ register_language ('name' => 'asm',
 # Fortran 77
 register_language ('name' => 'f77',
 		   'Name' => 'Fortran 77',
+		   'config_vars' => ['F77'],
 		   'linker' => 'F77LINK',
 		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
 		   'flags' => ['FFLAGS'],
@@ -844,6 +915,7 @@ register_language ('name' => 'f77',
 # Fortran
 register_language ('name' => 'fc',
                    'Name' => 'Fortran',
+		   'config_vars' => ['FC'],
                    'linker' => 'FCLINK',
                    'link' => '$(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
                    'flags' => ['FCFLAGS'],
@@ -1060,12 +1132,16 @@ sub handle_options
   my $var = var ('AUTOMAKE_OPTIONS');
   if ($var)
     {
-      # FIXME: We should disallow conditional definitions of AUTOMAKE_OPTIONS.
-      if (process_option_list ($var->rdef (TRUE)->location,
-			       $var->value_as_list_recursive (cond_filter =>
-							      TRUE)))
+      if ($var->has_conditional_contents)
 	{
-	  return 1;
+	  msg_var ('unsupported', $var,
+		   "`AUTOMAKE_OPTIONS' cannot have conditional contents");
+	}
+      foreach my $locvals ($var->value_as_list_recursive (cond_filter => TRUE,
+							  location => 1))
+  	{
+	  my ($loc, $value) = @$locvals;
+	  return 1 if (process_option_list ($loc, $value))
 	}
     }
 
@@ -1115,6 +1191,31 @@ sub get_object_extension ($)
     return $extension;
 }
 
+# check_user_variables (@LIST)
+# ----------------------------
+# Make sure each variable VAR in @LIST does not exist, suggest using AM_VAR
+# otherwise.
+sub check_user_variables (@)
+{
+  my @dont_override = @_;
+  foreach my $flag (@dont_override)
+    {
+      my $var = var $flag;
+      if ($var)
+	{
+	  for my $cond ($var->conditions->conds)
+	    {
+	      if ($var->rdef ($cond)->owner == VAR_MAKEFILE)
+		{
+		  msg_cond_var ('gnu', $cond, $flag,
+				"`$flag' is a user variable, "
+				. "you should not override it;\n"
+				. "use `AM_$flag' instead.");
+		}
+	    }
+	}
+    }
+}
 
 # Call finish function for each language that was used.
 sub handle_languages
@@ -1189,8 +1290,12 @@ sub handle_languages
 			 'AMDEP'   => $AMDEP,
 			 'FASTDEP' => $FASTDEP,
 			 '-c'      => $lang->compile_flag || '',
-			 'MORE-THAN-ONE'
-			           => (count_files_for_language ($lang->name) > 1));
+			 # These are not used, but they need to be defined
+			 # so &transform do not complain.
+			 SUBDIROBJ     => 0,
+			 'DERIVED-EXT' => 'BUG',
+			 DIST_SOURCE   => 1,
+			);
 
 	# Generate the appropriate rules for this extension.
 	if (((! option 'no-dependencies') && $lang->autodep ne 'no')
@@ -1220,7 +1325,7 @@ sub handle_languages
 	    # objects in sub-directories too.  Dependencies should
 	    # go into the appropriate sub-directories, e.g.,
 	    # `sub/$(DEPDIR)/'.  The value of this directory
-	    # need the be computed on-the-fly.
+	    # needs to be computed on-the-fly.
 	    #
 	    # DEPBASE holds the name of this directory, plus the
 	    # basename part of the object file (extensions Po, TPo,
@@ -1283,8 +1388,12 @@ sub handle_languages
 		$libtool_tag = '--tag=' . $lang->libtool_tag . ' '
 	      }
 
+	    my $ptltflags = "${derived}_LIBTOOLFLAGS";
+	    $ptltflags = 'AM_LIBTOOLFLAGS' unless set_seen $ptltflags;
+
 	    my $obj_ltcompile =
-	      "\$(LIBTOOL) $libtool_tag--mode=compile $obj_compile";
+	      "\$(LIBTOOL) $libtool_tag\$($ptltflags) \$(LIBTOOLFLAGS) "
+	      . "--mode=compile $obj_compile";
 
 	    # We _need_ `-o' for per object rules.
 	    my $output_flag = $lang->output_flag || '-o';
@@ -1420,7 +1529,7 @@ sub handle_languages
 					%transform, %lang);
 
 	# If the source to a program consists entirely of code from a
-	# `pure' language, for instance C++ for Fortran 77, then we
+	# `pure' language, for instance C++ or Fortran 77, then we
 	# don't need the C compiler code.  However if we run into
 	# something unusual then we do generate the C code.  There are
 	# probably corner cases here that do not work properly.
@@ -1445,23 +1554,7 @@ sub handle_languages
 	# ... and so is LDFLAGS.
 	push @dont_override, 'LDFLAGS' if $lang->link;
 
-	foreach my $flag (@dont_override)
-	  {
-	    my $var = var $flag;
-	    if ($var)
-	      {
-		for my $cond ($var->conditions->conds)
-		  {
-		    if ($var->rdef ($cond)->owner == VAR_MAKEFILE)
-		      {
-			msg_cond_var ('gnu', $cond, $flag,
-				      "`$flag' is a user variable, "
-				      . "you should not override it;\n"
-				      . "use `AM_$flag' instead.");
-		      }
-		  }
-	      }
-	  }
+	check_user_variables @dont_override;
     }
 
     # If the project is entirely C++ or entirely Fortran 77 (i.e., 1
@@ -1477,6 +1570,32 @@ sub handle_languages
 	define_linker_variable ($languages{'c'});
       }
 }
+
+
+# append_exeext { PREDICATE } $MACRO
+# ----------------------------------
+# Append $(EXEEXT) to each filename in $F appearing in the Makefile
+# variable $MACRO if &PREDICATE($F) is true.  @substitutions@ are
+# ignored.
+#
+# This is typically used on all filenames of *_PROGRAMS, and filenames
+# of TESTS that are programs.
+sub append_exeext (&$)
+{
+  my ($pred, $macro) = @_;
+
+  transform_variable_recursively
+    ($macro, $macro, 'am__EXEEXT', 0, INTERNAL,
+     sub {
+       my ($subvar, $val, $cond, $full_cond) = @_;
+       # Append $(EXEEXT) unless the user did it already, or it's a
+       # @substitution@.
+       $val .= '$(EXEEXT)'
+	 if $val !~ /(?:\$\(EXEEXT\)$|^[@]\w+[@]$)/ && &$pred ($val);
+       return $val;
+     });
+}
+
 
 # Check to make sure a source defined in LIBOBJS is not explicitly
 # mentioned.  This is a separate function (as opposed to being inlined
@@ -1591,6 +1710,19 @@ sub handle_single_transform ($$$$$%)
             # Found the language, so see what it says.
             &saw_extension ($extension);
 
+	    # Do we have per-executable flags for this executable?
+	    my $have_per_exec_flags = 0;
+	    my @peflags = @{$lang->flags};
+	    push @peflags, 'LIBTOOLFLAGS' if $nonansi_obj eq '.lo';
+	    foreach my $flag (@peflags)
+	      {
+		if (set_seen ("${derived}_$flag"))
+		  {
+		    $have_per_exec_flags = 1;
+		    last;
+		  }
+	      }
+
             # Note: computed subr call.  The language rewrite function
             # should return one of the LANG_* constants.  It could
             # also return a list whose first value is such a constant
@@ -1600,7 +1732,8 @@ sub handle_single_transform ($$$$$%)
             # further.
             my $subr = \&{'lang_' . $lang->name . '_rewrite'};
             my ($r, $source_extension)
-		= &$subr ($directory, $base, $extension);
+		= &$subr ($directory, $base, $extension,
+			  $nonansi_obj, $have_per_exec_flags, $var);
             # Skip this entry if we were asked not to process it.
             next if $r == LANG_IGNORE;
 
@@ -1623,24 +1756,11 @@ sub handle_single_transform ($$$$$%)
 	    }
 	    $object = $base . $this_obj_ext;
 
-	    # Do we have per-executable flags for this executable?
-	    my $have_per_exec_flags = 0;
-	    foreach my $flag (@{$lang->flags})
-	      {
-		if (set_seen ("${derived}_$flag"))
-		  {
-		    $have_per_exec_flags = 1;
-		    last;
-		  }
-	      }
-
             if ($have_per_exec_flags)
             {
                 # We have a per-executable flag in effect for this
                 # object.  In this case we rewrite the object's
-                # name to ensure it is unique.  We also require
-                # the `compile' program to deal with compilers
-                # where `-c -o' does not work.
+                # name to ensure it is unique.
 
                 # We choose the name `DERIVED_OBJECT' to ensure
                 # (1) uniqueness, and (2) continuity between
@@ -1660,9 +1780,6 @@ sub handle_single_transform ($$$$$%)
                     $dname = $var->variable_value;
                 }
                 $object = $dname . '-' . $object;
-
-                require_conf_file ("$am_file.am", FOREIGN, 'compile')
-                    if $lang->name eq 'c';
 
 		prog_error ($lang->name . " flags defined without compiler")
 		  if ! defined $lang->compile;
@@ -1693,7 +1810,7 @@ sub handle_single_transform ($$$$$%)
 	    # thought that inferences rules would work for
 	    # subdirectory objects too.  Later, on 1999-11-22,
 	    # automake was changed to output explicit rules even for
-	    # subdir-objects.  Nobody remembers why, but this occured
+	    # subdir-objects.  Nobody remembers why, but this occurred
 	    # soon after the merge of the user-dep-gen-branch so it
 	    # might be related.  In late 2003 people complained about
 	    # the size of the generated Makefile.ins (libgcj, with
@@ -1706,8 +1823,11 @@ sub handle_single_transform ($$$$$%)
 	    # Using inference rules for subdir-objects has been tested
 	    # with GNU make, Solaris make, Ultrix make, BSD make,
 	    # HP-UX make, and OSF1 make successfully.
-            if ($renamed ||
-		($directory ne '' && ! option 'subdir-objects'))
+            if ($renamed
+		|| ($directory ne '' && ! option 'subdir-objects')
+		# We must also use specific rules for a nodist_ source
+		# if its language requests it.
+		|| ($lang->nodist_specific && ! $transform{'DIST_SOURCE'}))
             {
                 my $obj_sans_ext = substr ($object, 0,
 					   - length ($this_obj_ext));
@@ -1753,6 +1873,7 @@ sub handle_single_transform ($$$$$%)
             # This is probably the result of a direct suffix rule.
             # In this case we just accept the rewrite.
             $object = "$base$extension";
+            $object = "$directory/$object" if $directory ne '';
             $linker = '';
         }
         else
@@ -1822,7 +1943,7 @@ sub handle_single_transform ($$$$$%)
 
 		# For Java, the way we're handling it right now, a
 		# `..' component doesn't make sense.
-                if ($lang->name eq 'java' && $object =~ /(\/|^)\.\.\//)
+                if ($lang && $lang->name eq 'java' && $object =~ /(\/|^)\.\.\//)
 		  {
 		    err_am "`$full' should not contain a `..' component";
 		  }
@@ -1862,7 +1983,7 @@ sub handle_single_transform ($$$$$%)
             $depfile =~ s/\.([^.]*)$/.P$1/;
             $depfile =~ s/\$\(OBJEXT\)$/o/;
             $dep_files{dirname ($depfile) . '/$(DEPDIR)/'
-			   . basename ($depfile)} = 1;
+			 . basename ($depfile)} = 1;
         }
     }
 
@@ -1920,10 +2041,10 @@ sub define_objects_from_sources ($$$$$$$%)
 # Arguments are:
 #   canonical (transformed) name of target to build
 #   actual target of object to build
-#   object extension (i.e. either `.o' or `$o'.
+#   object extension (i.e., either `.o' or `$o')
 #   location of the source variable
 #   extra arguments to pass to file_contents when producing rules
-# Return result is name of linker variable that must be used.
+# Return the name of the linker variable that must be used.
 # Empty return means just use `LINK'.
 sub handle_source_transform ($$$$%)
 {
@@ -1931,7 +2052,7 @@ sub handle_source_transform ($$$$%)
     # object extension.
     my ($one_file, $unxformed, $obj, $where, %transform) = @_;
 
-    my ($linker) = '';
+    my $linker = '';
 
     # No point in continuing if _OBJECTS is defined.
     return if reject_var ($one_file . '_OBJECTS',
@@ -2067,9 +2188,9 @@ sub handle_lib_objects
 	   if ($val !~ /^-[lL]/ &&
 	       # Skip -dlopen and -dlpreopen; these are explicitly allowed
 	       # for Libtool libraries or programs.  (Actually we are a bit
-	       # laxest here since this code also applies to non-libtool
+	       # laxe here since this code also applies to non-libtool
 	       # libraries or programs, for which -dlopen and -dlopreopen
-	       # are pure non-sence.  Diagnosting this doesn't seems very
+	       # are pure nonsense.  Diagnosing this doesn't seems very
 	       # important: the developer will quickly get complaints from
 	       # the linker.)
 	       $val !~ /^-dl(?:pre)?open$/ &&
@@ -2137,14 +2258,58 @@ sub handle_lib_objects
   return $seen_libobjs;
 }
 
+# handle_LIBOBJS_or_ALLOCA ($VAR)
+# -------------------------------
+# Definitions common to LIBOBJS and ALLOCA.
+# VAR should be one of LIBOBJS, LTLIBOBJS, ALLOCA, or LTALLOCA.
+sub handle_LIBOBJS_or_ALLOCA ($)
+{
+  my ($var) = @_;
+
+  my $dir = '';
+
+  # If LIBOBJS files must be built in another directory we have
+  # to define LIBOBJDIR and ensure the files get cleaned.
+  # Otherwise LIBOBJDIR can be left undefined, and the cleaning
+  # is achieved by `rm -f *.$(OBJEXT)' in compile.am.
+  if ($config_libobj_dir
+      && $relative_dir ne $config_libobj_dir)
+    {
+      if (option 'subdir-objects')
+	{
+	  # In the top-level Makefile we do not use $(top_builddir), because
+	  # we are already there, and since the targets are built without
+	  # a $(top_builddir), it helps BSD Make to match them with
+	  # dependencies.
+	  $dir = "$config_libobj_dir/" if $config_libobj_dir ne '.';
+	  $dir = "$topsrcdir/$dir" if $relative_dir ne '.';
+	  define_variable ('LIBOBJDIR', "$dir", INTERNAL);
+	  $clean_files{"\$($var)"} = MOSTLY_CLEAN;
+	  # If LTLIBOBJS is used, we must also clear LIBOBJS (which might
+	  # be created by libtool as a side-effect of creating LTLIBOBJS).
+	  $clean_files{"\$($var)"} = MOSTLY_CLEAN if $var =~ s/^LT//;
+
+	}
+      else
+	{
+	  error ("`\$($var)' cannot be used outside `$dir' if"
+		 . " `subdir-objects' is not set");
+	}
+    }
+
+  return $dir;
+}
+
 sub handle_LIBOBJS ($$$)
 {
   my ($var, $cond, $lt) = @_;
+  my $myobjext = $lt ? 'lo' : 'o';
   $lt ||= '';
-  my $myobjext = ($1 ? 'l' : '') . 'o';
 
   $var->requires_variables ("\@${lt}LIBOBJS\@ used", $lt . 'LIBOBJS')
     if ! keys %libsources;
+
+  my $dir = handle_LIBOBJS_or_ALLOCA "${lt}LIBOBJS";
 
   foreach my $iter (keys %libsources)
     {
@@ -2156,19 +2321,19 @@ sub handle_LIBOBJS ($$$)
 
       if ($iter =~ /\.h$/)
 	{
-	  require_file_with_macro ($cond, $var, FOREIGN, $iter);
+	  require_libsource_with_macro ($cond, $var, FOREIGN, $iter);
 	}
       elsif ($iter ne 'alloca.c')
 	{
 	  my $rewrite = $iter;
 	  $rewrite =~ s/\.c$/.P$myobjext/;
-	  $dep_files{'$(DEPDIR)/' . $rewrite} = 1;
+	  $dep_files{$dir . '$(DEPDIR)/' . $rewrite} = 1;
 	  $rewrite = "^" . quotemeta ($iter) . "\$";
 	  # Only require the file if it is not a built source.
 	  my $bs = var ('BUILT_SOURCES');
 	  if (! $bs || ! grep (/$rewrite/, $bs->value_as_list_recursive))
 	    {
-	      require_file_with_macro ($cond, $var, FOREIGN, $iter);
+	      require_libsource_with_macro ($cond, $var, FOREIGN, $iter);
 	    }
 	}
     }
@@ -2177,12 +2342,14 @@ sub handle_LIBOBJS ($$$)
 sub handle_ALLOCA ($$$)
 {
   my ($var, $cond, $lt) = @_;
-  my $myobjext = ($lt ? 'l' : '') . 'o';
+  my $myobjext = $lt ? 'lo' : 'o';
   $lt ||= '';
+  my $dir = handle_LIBOBJS_or_ALLOCA "${lt}ALLOCA";
+
   $var->requires_variables ("\@${lt}ALLOCA\@ used", $lt . 'ALLOCA');
-  $dep_files{'$(DEPDIR)/alloca.P' . $myobjext} = 1;
-  require_file_with_macro ($cond, $var, FOREIGN, 'alloca.c');
-  &saw_extension ('c');
+  $dep_files{$dir . '$(DEPDIR)/alloca.P' . $myobjext} = 1;
+  require_libsource_with_macro ($cond, $var, FOREIGN, 'alloca.c');
+  &saw_extension ('.c');
 }
 
 # Canonicalize the input parameter
@@ -2225,16 +2392,22 @@ sub handle_compile ()
     my $default_includes = '';
     if (! option 'nostdinc')
       {
-	$default_includes = ' -I. -I$(srcdir)';
+	my @incs = ('-I.');
 
 	my $var = var 'CONFIG_HEADER';
 	if ($var)
 	  {
 	    foreach my $hdr (split (' ', $var->variable_value))
 	      {
-		$default_includes .= ' -I' . dirname ($hdr);
+		push @incs, '-I' . dirname ($hdr);
 	      }
 	  }
+	# We want `-I. -I$(srcdir)', but the latter -I is redundant
+	# and unaesthetic in non-VPATH builds.  We use `-I.@am__isrc@`
+	# instead.  It will be replaced by '-I.' or '-I. -I$(srcdir)'.
+	# Items in CONFIG_HEADER are never in $(srcdir) so it is safe
+	# to just append @am__isrc@.
+	$default_includes = ' ' . uniq (@incs) . subst ('am__isrc');
       }
 
     my (@mostly_rms, @dist_rms);
@@ -2303,8 +2476,10 @@ sub handle_libtool
   return unless var ('LIBTOOL');
 
   # Libtool requires some files, but only at top level.
+  # (Starting with Libtool 2.0 we do not have to bother.  These
+  # requirements are done with AC_REQUIRE_AUX_FILE.)
   require_conf_file_with_macro (TRUE, 'LIBTOOL', FOREIGN, @libtool_files)
-    if $relative_dir eq '.';
+    if $relative_dir eq '.' && ! $libtool_new_api;
 
   my @libtool_rms;
   foreach my $item (sort keys %libtool_clean_directories)
@@ -2313,6 +2488,8 @@ sub handle_libtool
       # .libs is for Unix, _libs for DOS.
       push (@libtool_rms, "\t-rm -rf ${dir}.libs ${dir}_libs");
     }
+
+  check_user_variables 'LIBTOOLFLAGS';
 
   # Output the libtool compilation rules.
   $output_rules .= &file_contents ('libtool',
@@ -2344,6 +2521,8 @@ sub handle_programs
       # will confuse &handle_source_transform and &check_canonical_spelling.
       # We'll add $(EXEEXT) back later anyway.
       $one_file =~ s/\$\(EXEEXT\)$//;
+
+      $known_programs{$one_file} = $where;
 
       # Canonicalize names and check for misspellings.
       my $xname = &check_canonical_spelling ($one_file, '_LDADD', '_LDFLAGS',
@@ -2380,15 +2559,7 @@ sub handle_programs
       set_seen ($xname . '_LDFLAGS');
 
       # Determine program to use for link.
-      my $xlink;
-      if (var ($xname . '_LINK'))
-	{
-	  $xlink = $xname . '_LINK';
-	}
-      else
-	{
-	  $xlink = $linker ? $linker : 'LINK';
-	}
+      my $xlink = &define_per_target_linker_variable ($linker, $xname);
 
       my $linkmagic = derive_linkmagic ($xlink);
 
@@ -2931,15 +3102,7 @@ sub handle_ltlibraries
 					     NONLIBTOOL => 0, LIBTOOL => 1);
 
       # Determine program to use for link.
-      my $xlink;
-      if (var ($xlib . '_LINK'))
-	{
-	  $xlink = $xlib . '_LINK';
-	}
-      else
-	{
-	  $xlink = $linker ? $linker : 'LINK';
-	}
+      my $xlink = &define_per_target_linker_variable ($linker, $xlib);
 
       my $linkmagic = derive_linkmagic ($xlink);
 
@@ -3045,30 +3208,22 @@ sub check_typos ()
   # It is ok if the user sets this particular variable.
   set_seen 'AM_LDFLAGS';
 
-  foreach my $var (variables)
+  foreach my $primary ('SOURCES', 'LIBADD', 'LDADD', 'LDFLAGS', 'DEPENDENCIES')
     {
-      my $varname = $var->name;
-      # A configure variable is always legitimate.
-      next if exists $configure_vars{$varname};
-
-      my $check = 0;
-      foreach my $primary ('_SOURCES', '_LIBADD', '_LDADD', '_LDFLAGS',
-			   '_DEPENDENCIES')
+      foreach my $var (variables $primary)
 	{
-	  if ($varname =~ /^(.*)$primary$/)
+	  my $varname = $var->name;
+	  # A configure variable is always legitimate.
+	  next if exists $configure_vars{$varname};
+
+	  for my $cond ($var->conditions->conds)
 	    {
-	      $check = $1;
-	      last;
+	      $varname =~ /^(?:nobase_)?(?:dist_|nodist_)?(.*)_[[:alnum:]]+$/;
+	      msg_var ('syntax', $var, "variable `$varname' is defined but no"
+		       . " program or\nlibrary has `$1' as canonic name"
+		       . " (possible typo)")
+		unless $var->rdef ($cond)->seen;
 	    }
-	}
-      next unless $check;
-
-      for my $cond ($var->conditions->conds)
-	{
-	  msg_var ('syntax', $var, "variable `$varname' is defined but no"
-		   . " program or\nlibrary has `$check' as canonic name"
-		   . " (possible typo)")
-	    unless $var->rdef ($cond)->seen;
 	}
     }
 }
@@ -3135,7 +3290,7 @@ sub scan_texinfo_file ($)
 	  next if $outfile;
 
 	  $outfile = $1;
-	  if ($outfile =~ /\.(.+)$/ && $1 ne 'info')
+	  if ($outfile =~ /\.([^.]+)$/ && $1 ne 'info')
 	    {
 	      error ("$filename:$.",
 		     "output `$outfile' has unrecognized extension");
@@ -3700,9 +3855,9 @@ sub handle_data
       }
 
     &am_install_var ('-noextra', '-candist', 'data', 'DATA',
-                     'data', 'sysconf', 'sharedstate', 'localstate',
-                     'pkgdata', 'lisp', 'noinst', 'check',
-                     @stardirs);
+		     'data', 'dataroot', 'dvi', 'html', 'pdf', 'ps',
+		     'sysconf', 'sharedstate', 'localstate',
+		     'pkgdata', 'lisp', 'noinst', 'check');
 }
 
 # Handle TAGS.
@@ -3829,13 +3984,12 @@ sub for_dist_common
     return $a cmp $b;
 }
 
-
 # handle_dist
 # -----------
 # Handle 'dist' target.
 sub handle_dist ()
 {
-  # Substutions for distdit.am
+  # Substitutions for distdir.am
   my %transform;
 
   # Define DIST_SUBDIRS.  This must always be done, regardless of the
@@ -3946,41 +4100,9 @@ sub handle_dist ()
   # originally, but there were so many requests that I finally
   # relented.
   my $extra_dist = var ('EXTRA_DIST');
-  if ($extra_dist)
-    {
-      # FIXME: This should be fixed to work with conditions.  That
-      # will require only making the entries in %dist_dirs under the
-      # appropriate condition.  This is meaningful if the nature of
-      # the distribution should depend upon the configure options
-      # used.
-      foreach ($extra_dist->value_as_list_recursive (skip_ac_subst => 1))
-	{
-	  next unless s,/+[^/]+$,,;
-	  $dist_dirs{$_} = 1
-	    unless $_ eq '.';
-	}
-    }
-
-  # We have to check DIST_COMMON for extra directories in case the
-  # user put a source used in AC_OUTPUT into a subdir.
-  my $topsrcdir = backname ($relative_dir);
-  foreach (rvar ('DIST_COMMON')->value_as_list_recursive (skip_ac_subst => 1))
-    {
-      s/\$\(top_srcdir\)/$topsrcdir/;
-      s/\$\(srcdir\)/./;
-      # Strip any leading `./'.
-      s,^(:?\./+)*,,;
-      next unless s,/+[^/]+$,,;
-      $dist_dirs{$_} = 1
-	unless $_ eq '.';
-    }
 
   $transform{'DISTCHECK-HOOK'} = !! rule 'distcheck-hook';
   $transform{'GETTEXT'} = $seen_gettext && !$seen_gettext_external;
-
-  # Prepend $(distdir) to each directory given.
-  my %rewritten = map { '$(distdir)/' . "$_" => 1 } keys %dist_dirs;
-  $transform{'DISTDIRS'} = join (' ', sort keys %rewritten);
 
   # If the target `dist-hook' exists, make sure it is run.  This
   # allows users to do random weird things to the distribution
@@ -4143,6 +4265,25 @@ sub scan_aclocal_m4 ()
 }
 
 
+# Helper function for substitute_ac_subst_variables.
+sub substitute_ac_subst_variables_worker($)
+{
+  my ($token) = @_;
+  return "\@$token\@" if var $token;
+  return "\${$token\}";
+}
+
+# substitute_ac_subst_variables ($TEXT)
+# -------------------------------------
+# Replace any occurrence of ${FOO} in $TEXT by @FOO@ if FOO is an AC_SUBST
+# variable.
+sub substitute_ac_subst_variables ($)
+{
+  my ($text) = @_;
+  $text =~ s/\${([^ \t=:+{}]+)}/&substitute_ac_subst_variables_worker ($1)/ge;
+  return $text;
+}
+
 # @DEPENDENCIES
 # &prepend_srcdir (@INPUTS)
 # -------------------------
@@ -4184,6 +4325,9 @@ sub rewrite_inputs_into_dependencies ($@)
 
   for my $i (@inputs)
     {
+      # We cannot create dependencies on shell variables.
+      next if (substitute_ac_subst_variables $i) =~ /\$/;
+
       if (exists $ac_config_files_location{$i})
 	{
 	  my $di = dirname $i;
@@ -4204,7 +4348,7 @@ sub rewrite_inputs_into_dependencies ($@)
 	{
 	  msg ('error', $ac_config_files_location{$file},
 	       "required file `$i' not found")
-	    unless exists $output_files{$i} || -f $i;
+	    unless $i =~ /\$/ || exists $output_files{$i} || -f $i;
 	  ($i) = prepend_srcdir ($i);
 	  push_dist_common ($i);
 	}
@@ -4303,7 +4447,10 @@ sub handle_configure ($$$@)
 	  # This will also distribute all inputs.
 	  @ins = rewrite_inputs_into_dependencies ($config_h_path, @ins);
 
-	  # Header defined and in this directory.
+	  # Cannot define rebuild rules for filenames with shell variables.
+	  next if (substitute_ac_subst_variables $config_h_path) =~ /\$/;
+
+	  # Header defined in this directory.
 	  my @files;
 	  if (-f $config_h_path . '.top')
 	    {
@@ -4348,7 +4495,7 @@ sub handle_configure ($$$@)
   my $mkidpath = "$config_aux_dir/mkinstalldirs";
   if (-f $mkidpath)
     {
-      # Use require_file so that any existingscript gets updated
+      # Use require_file so that any existing script gets updated
       # by --force-missing.
       require_conf_file ($mkidpath, FOREIGN, 'mkinstalldirs');
       define_variable ('mkinstalldirs',
@@ -4356,7 +4503,7 @@ sub handle_configure ($$$@)
     }
   else
     {
-      # Use $(install_sh), not $(mkdir_p) because the latter requires
+      # Use $(install_sh), not $(MKDIR_P) because the latter requires
       # at least one argument, and $(mkinstalldirs) used to work
       # even without arguments (e.g. $(mkinstalldirs) $(conditional_dir)).
       define_variable ('mkinstalldirs', '$(install_sh) -d', INTERNAL);
@@ -4410,19 +4557,6 @@ sub handle_configure ($$$@)
 
       my $local = basename ($file);
 
-      # Make sure the dist directory for each input file is created.
-      # We only have to do this at the topmost level though.  This
-      # is a bit ugly but it easier than spreading out the logic,
-      # especially in cases like AC_OUTPUT(foo/out:bar/in), where
-      # there is no Makefile in bar/.
-      if ($relative_dir eq '.')
-	{
-	  foreach (@inputs)
-	    {
-	      $dist_dirs{dirname ($_)} = 1;
-	    }
-	}
-
       # We skip files that aren't in this directory.  However, if
       # the file's directory does not have a Makefile, and we are
       # currently doing `.', then we create a rule to rebuild the
@@ -4441,6 +4575,9 @@ sub handle_configure ($$$@)
 	}
 
       my @rewritten_inputs = rewrite_inputs_into_dependencies ($file, @inputs);
+
+      # Cannot output rules for shell variables.
+      next if (substitute_ac_subst_variables $local) =~ /\$/;
 
       $output_rules .= ($local . ': '
 			. '$(top_builddir)/config.status '
@@ -4464,7 +4601,7 @@ sub handle_configure ($$$@)
       my $where = $ac_config_files_location{$link};
 
       # Skip destinations that contain shell variables.
-      if ($link !~ /\$/)
+      if ((substitute_ac_subst_variables $link) !~ /\$/)
 	{
 	  # We skip links that aren't in this directory.  However, if
 	  # the link's directory does not have a Makefile, and we are
@@ -4487,16 +4624,9 @@ sub handle_configure ($$$@)
 	}
 
       # Do not process sources that contain shell variables.
-      if ($file !~ /\$/)
+      if ((substitute_ac_subst_variables $file) !~ /\$/)
 	{
 	  my $fd = dirname ($file);
-
-	  # Make sure the dist directory for each input file is created.
-	  # We only have to do this at the topmost level though.
-	  if ($relative_dir eq '.')
-	    {
-	      $dist_dirs{$fd} = 1;
-	    }
 
 	  # We distribute files that are in this directory.
 	  # At the top-level (`.') we also distribute files whose
@@ -4718,18 +4848,20 @@ sub handle_gettext
 	       "AM_GNU_GETTEXT used but `po' not in SUBDIRS")
 	if ! grep ($_ eq 'po', @subdirs);
 
-      # intl/ is not required when AM_GNU_GETTEXT is called with
-      # the `external' option.
+      # intl/ is not required when AM_GNU_GETTEXT is called with the
+      # `external' option and AM_GNU_GETTEXT_INTL_SUBDIR is not called.
       msg_var ('syntax', $subdirs,
 	       "AM_GNU_GETTEXT used but `intl' not in SUBDIRS")
-	if (! $seen_gettext_external
+	if (! ($seen_gettext_external && ! $seen_gettext_intl)
 	    && ! grep ($_ eq 'intl', @subdirs));
 
-      # intl/ should not be used with AM_GNU_GETTEXT([external])
+      # intl/ should not be used with AM_GNU_GETTEXT([external]), except
+      # if AM_GNU_GETTEXT_INTL_SUBDIR is called.
       msg_var ('syntax', $subdirs,
 	       "`intl' should not be in SUBDIRS when "
 	       . "AM_GNU_GETTEXT([external]) is used")
-	if ($seen_gettext_external && grep ($_ eq 'intl', @subdirs));
+	if ($seen_gettext_external && ! $seen_gettext_intl
+	    && grep ($_ eq 'intl', @subdirs));
     }
 
   require_file ($ac_gettext_location, GNU, 'ABOUT-NLS');
@@ -5036,16 +5168,20 @@ sub handle_clean ($)
 
 # &target_cmp ($A, $B)
 # --------------------
-# Subroutine for &handle_factored_dependencies to let `.PHONY' be last.
+# Subroutine for &handle_factored_dependencies to let `.PHONY' and
+# other `.TARGETS' be last.
 sub target_cmp
 {
-    return 0
-        if $a eq $b;
-    return -1
-        if $b eq '.PHONY';
-    return 1
-        if $a eq '.PHONY';
-    return $a cmp $b;
+  return 0 if $a eq $b;
+
+  my $a1 = substr ($a, 0, 1);
+  my $b1 = substr ($b, 0, 1);
+  if ($a1 ne $b1)
+    {
+      return -1 if $b1 eq '.';
+      return 1 if $a1 eq '.';
+    }
+  return $a cmp $b;
 }
 
 
@@ -5056,10 +5192,15 @@ sub handle_factored_dependencies
 {
   # Reject bad hooks.
   foreach my $utarg ('uninstall-data-local', 'uninstall-data-hook',
-		     'uninstall-exec-local', 'uninstall-exec-hook')
+		     'uninstall-exec-local', 'uninstall-exec-hook',
+		     'uninstall-dvi-local',
+		     'uninstall-html-local',
+		     'uninstall-info-local',
+		     'uninstall-pdf-local',
+		     'uninstall-ps-local')
     {
       my $x = $utarg;
-      $x =~ s/(data|exec)-//;
+      $x =~ s/-.*-/-/;
       reject_rule ($utarg, "use `$x', not `$utarg'");
     }
 
@@ -5067,10 +5208,9 @@ sub handle_factored_dependencies
 	       "use `install-data-local' or `install-exec-local', "
 	       . "not `install-local'");
 
-  reject_rule ('install-info-local',
-	       "`install-info-local' target defined but "
-	       . "`no-installinfo' option not in use")
-    unless option 'no-installinfo';
+  reject_rule ('install-hook',
+	       "use `install-data-hook' or `install-exec-hook', "
+	       . "not `install-hook'");
 
   # Install the -local hooks.
   foreach (keys %dependencies)
@@ -5090,6 +5230,7 @@ sub handle_factored_dependencies
 	  $actions{"$_-am"} .=
 	    ("\t\@\$(NORMAL_INSTALL)\n"
 	     . "\t" . '$(MAKE) $(AM_MAKEFLAGS) ' . "$_-hook\n");
+	  depend ('.MAKE', "$_-am");
 	}
     }
 
@@ -5112,8 +5253,9 @@ sub handle_factored_dependencies
       # to append dependencies.  This would not work if Automake
       # refrained from defining its own .PHONY target as it does
       # with other overridden targets.
+      # Likewise for `.MAKE'.
       my @undefined_conds = (TRUE,);
-      if ($_ ne '.PHONY')
+      if ($_ ne '.PHONY' && $_ ne '.MAKE')
 	{
 	  @undefined_conds =
 	    Automake::Rule::define ($_, 'internal',
@@ -5160,6 +5302,9 @@ sub handle_tests
     {
       push (@check_tests, 'check-TESTS');
       $output_rules .= &file_contents ('check', new Automake::Location);
+
+      # Tests that are known programs should have $(EXEEXT) appended.
+      append_exeext { exists $known_programs{$_[0]} } 'TESTS';
     }
 }
 
@@ -5412,17 +5557,21 @@ sub scan_autoconf_traces ($)
 		AC_CONFIG_AUX_DIR => 1,
 		AC_CONFIG_FILES => 1,
 		AC_CONFIG_HEADERS => 1,
+		AC_CONFIG_LIBOBJ_DIR => 1,
 		AC_CONFIG_LINKS => 1,
 		AC_INIT => 0,
 		AC_LIBSOURCE => 1,
-		AC_SUBST => 1,
+                AC_REQUIRE_AUX_FILE => 1,
+		AC_SUBST_TRACE => 1,
 		AM_AUTOMAKE_VERSION => 1,
 		AM_CONDITIONAL => 2,
 		AM_ENABLE_MULTILIB => 0,
 		AM_GNU_GETTEXT => 0,
+		AM_GNU_GETTEXT_INTL_SUBDIR => 0,
 		AM_INIT_AUTOMAKE => 0,
 		AM_MAINTAINER_MODE => 0,
 		AM_PROG_CC_C_O => 0,
+                _AM_SUBST_NOTMAKE => 1,
 		LT_SUPPORTED_TAG => 1,
 		_LT_AC_TAGCONFIG => 0,
 		m4_include => 1,
@@ -5516,6 +5665,12 @@ sub scan_autoconf_traces ($)
 	      push @config_headers, $spec;
 	    }
 	}
+      elsif ($macro eq 'AC_CONFIG_LIBOBJ_DIR')
+	{
+	  $config_libobj_dir = $args[1];
+	  $relative_dir = '.';
+	  check_directory ($config_libobj_dir, $where);
+	}
       elsif ($macro eq 'AC_CONFIG_LINKS')
 	{
 	  foreach my $spec (split (' ', $args[1]))
@@ -5537,9 +5692,15 @@ sub scan_autoconf_traces ($)
 	{
 	  $libsources{$args[1]} = $here;
 	}
-      elsif ($macro eq 'AC_SUBST')
+      elsif ($macro eq 'AC_REQUIRE_AUX_FILE')
 	{
-	  # Just check for alphanumeric in AC_SUBST.  If you do
+          # Only remember the first time a file is required.
+	  $required_aux_file{$args[1]} = $where
+            unless exists $required_aux_file{$args[1]};
+	}
+      elsif ($macro eq 'AC_SUBST_TRACE')
+	{
+	  # Just check for alphanumeric in AC_SUBST_TRACE.  If you do
 	  # AC_SUBST(5), then too bad.
 	  $configure_vars{$args[1]} = $where
 	    if $args[1] =~ /^\w+$/;
@@ -5571,6 +5732,10 @@ sub scan_autoconf_traces ($)
 	  $ac_gettext_location = $where;
 	  $seen_gettext_external = grep ($_ eq 'external', @args);
 	}
+      elsif ($macro eq 'AM_GNU_GETTEXT_INTL_SUBDIR')
+	{
+	  $seen_gettext_intl = $where;
+	}
       elsif ($macro eq 'AM_INIT_AUTOMAKE')
 	{
 	  $seen_init_automake = $where;
@@ -5594,6 +5759,10 @@ sub scan_autoconf_traces ($)
 	{
 	  $seen_cc_c_o = $where;
 	}
+      elsif ($macro eq '_AM_SUBST_NOTMAKE')
+	{
+	  $ignored_configure_vars{$args[1]} = $where;
+	}
       elsif ($macro eq 'm4_include'
 	     || $macro eq 'm4_sinclude'
 	     || $macro eq 'sinclude')
@@ -5602,7 +5771,7 @@ sub scan_autoconf_traces ($)
           next if $macro ne 'm4_include' && ! -f $args[1];
 
 	  # Some modified versions of Autoconf don't use
-	  # forzen files.  Consequently it's possible that we see all
+	  # frozen files.  Consequently it's possible that we see all
 	  # m4_include's performed during Autoconf's startup.
 	  # Obviously we don't want to distribute Autoconf's files
 	  # so we skip absolute filenames here.
@@ -5619,12 +5788,13 @@ sub scan_autoconf_traces ($)
       elsif ($macro eq 'LT_SUPPORTED_TAG')
 	{
           $libtool_tags{$args[1]} = 1;
+	  $libtool_new_api = 1;
 	}
       elsif ($macro eq '_LT_AC_TAGCONFIG')
 	{
 	  # _LT_AC_TAGCONFIG is an old macro present in Libtool 1.5.
 	  # We use it to detect whether tags are supported.  Our
-	  # prefered interface is LT_SUPPORTED_TAG, but it was
+	  # preferred interface is LT_SUPPORTED_TAG, but it was
 	  # introduced in Libtool 1.6.
 	  if (0 == keys %libtool_tags)
 	    {
@@ -5802,7 +5972,10 @@ sub scan_autoconf_files ()
   # looking at a subdir Makefile.  We must set relative_dir for
   # maybe_push_required_file to work.
   $relative_dir = '.';
-  require_conf_file ($configure_ac, FOREIGN, 'install-sh', 'missing');
+  foreach my $file (keys %required_aux_file)
+    {
+      require_conf_file ($required_aux_file{$file}->get, FOREIGN, $file)
+    }
   err_am "`install.sh' is an anachronism; use `install-sh' instead"
     if -f $config_aux_dir . '/install.sh';
 
@@ -5904,7 +6077,7 @@ sub lang_sub_obj
 # Rewrite a single C source file.
 sub lang_c_rewrite
 {
-  my ($directory, $base, $ext) = @_;
+  my ($directory, $base, $ext, $nonansi_obj, $have_per_exec_flags, $var) = @_;
 
   if (option 'ansi2knr' && $base =~ /_$/)
     {
@@ -5916,15 +6089,19 @@ sub lang_c_rewrite
   if (option 'subdir-objects')
     {
       $r = LANG_SUBDIR;
-      $base = $directory . '/' . $base
-	unless $directory eq '.' || $directory eq '';
+      if ($directory && $directory ne '.')
+	{
+	  $base = $directory . '/' . $base;
 
-      err_am ("C objects in subdir but `AM_PROG_CC_C_O' "
-	      . "not in `$configure_ac'",
-	      uniq_scope => US_GLOBAL)
-	unless $seen_cc_c_o;
-
-      require_conf_file ("$am_file.am", FOREIGN, 'compile');
+	  # libtool is always able to put the object at the proper place,
+	  # so we do not have to require AM_PROG_CC_C_O when building .lo files.
+	  msg_var ('portability', $var,
+		   "compiling `$base.c' in subdir requires "
+		   . "`AM_PROG_CC_C_O' in `$configure_ac'",
+		   uniq_scope => US_GLOBAL,
+		   uniq_part => 'AM_PROG_CC_C_O subdir')
+	    unless $seen_cc_c_o || $nonansi_obj eq '.lo';
+	}
 
       # In this case we already have the directory information, so
       # don't add it again.
@@ -5935,6 +6112,18 @@ sub lang_c_rewrite
       $de_ansi_files{$base} = (($directory eq '.' || $directory eq '')
 			       ? ''
 			       : "$directory/");
+    }
+
+  if (! $seen_cc_c_o
+      && $have_per_exec_flags
+      && ! option 'subdir-objects'
+      && $nonansi_obj ne '.lo')
+    {
+      msg_var ('portability',
+	       $var, "compiling `$base.c' with per-target flags requires "
+	       . "`AM_PROG_CC_C_O' in `$configure_ac'",
+	       uniq_scope => US_GLOBAL,
+	       uniq_part => 'AM_PROG_CC_C_O per-target')
     }
 
     return $r;
@@ -5999,6 +6188,12 @@ sub lang_asm_rewrite
     return &lang_sub_obj;
 }
 
+# Rewrite a single preprocessed assembly file.
+sub lang_cppasm_rewrite
+{
+    return &lang_sub_obj;
+}
+
 # Rewrite a single Fortran 77 file.
 sub lang_f77_rewrite
 {
@@ -6036,6 +6231,12 @@ sub lang_ratfor_rewrite
 
 # Rewrite a single Objective C file.
 sub lang_objc_rewrite
+{
+    return &lang_sub_obj;
+}
+
+# Rewrite a single Unified Parallel C file.
+sub lang_upc_rewrite
 {
     return &lang_sub_obj;
 }
@@ -6127,12 +6328,13 @@ sub lang_yacc_target_hook
 						  INTERNAL))
 	  {
 	    my $condstr = $cond->subst_string;
-	    $output_rules .= ("$condstr${header}: $output\n"
-			      # Recover from removal of $header
-			      . "$condstr\t\@if test ! -f \$@; then \\\n"
-			      . "$condstr\t  rm -f $output; \\\n"
-			      . "$condstr\t  \$(MAKE) $output; \\\n"
-			      . "$condstr\telse :; fi\n");
+	    $output_rules .=
+	      "$condstr${header}: $output\n"
+	      # Recover from removal of $header
+	      . "$condstr\t\@if test ! -f \$@; then \\\n"
+	      . "$condstr\t  rm -f $output; \\\n"
+	      . "$condstr\t  \$(MAKE) \$(AM_MAKEFLAGS) $output; \\\n"
+	      . "$condstr\telse :; fi\n";
 	  }
 	# Distribute the generated file, unless its .y source was
 	# listed in a nodist_ variable.  (&handle_source_transform
@@ -6172,10 +6374,7 @@ sub yacc_lex_finish_helper
   return if defined $language_scratch{'lex-yacc-done'};
   $language_scratch{'lex-yacc-done'} = 1;
 
-  # If there is more than one distinct yacc (resp lex) source file
-  # in a given directory, then the `ylwrap' program is required to
-  # allow parallel builds to work correctly.  FIXME: for now, no
-  # line number.
+  # FIXME: for now, no line number.
   require_conf_file ($configure_ac, FOREIGN, 'ylwrap');
   &define_variable ('YLWRAP', "$am_config_aux_dir/ylwrap", INTERNAL);
 }
@@ -6187,8 +6386,7 @@ sub lang_yacc_finish
 
   reject_var 'YACCFLAGS', "`YACCFLAGS' obsolete; use `YFLAGS' instead";
 
-  &yacc_lex_finish_helper
-    if count_files_for_language ('yacc') > 1;
+  yacc_lex_finish_helper;
 }
 
 
@@ -6197,8 +6395,7 @@ sub lang_lex_finish
   return if defined $language_scratch{'lex-done'};
   $language_scratch{'lex-done'} = 1;
 
-  &yacc_lex_finish_helper
-    if count_files_for_language ('lex') > 1;
+  yacc_lex_finish_helper;
 }
 
 
@@ -6226,7 +6423,7 @@ sub resolve_linker
 {
     my (%linkers) = @_;
 
-    foreach my $l (qw(GCJLINK CXXLINK F77LINK FCLINK OBJCLINK))
+    foreach my $l (qw(GCJLINK CXXLINK F77LINK FCLINK OBJCLINK UPCLINK))
     {
 	return $l if defined $linkers{$l};
     }
@@ -6326,12 +6523,28 @@ sub register_language (%)
     unless defined $option{'flags'};
   $option{'output_extensions'} = sub { return ( '.$(OBJEXT)', '.lo' ) }
     unless defined $option{'output_extensions'};
+  $option{'nodist_specific'} = 0
+    unless defined $option{'nodist_specific'};
 
   my $lang = new Language (%option);
 
   # Fill indexes.
   $extension_map{$_} = $lang->name foreach @{$lang->extensions};
   $languages{$lang->name} = $lang;
+  my $link = $lang->linker;
+  if ($link)
+    {
+      if (exists $link_languages{$link})
+	{
+	  prog_error ("`$link' has different definitions in "
+		      . $lang->name . " and " . $link_languages{$link}->name)
+	    if $lang->link ne $link_languages{$link}->link;
+	}
+      else
+	{
+	  $link_languages{$link} = $lang;
+	}
+    }
 
   # Update the pattern of known extensions.
   accept_extensions (@{$lang->extensions});
@@ -6397,6 +6610,19 @@ sub make_conditional_string ($$)
 }
 
 
+my %_am_macro_for_cond =
+  (
+  AMDEP => "one of the compiler tests\n"
+           . "    AC_PROG_CC, AC_PROG_CXX, AC_PROG_CXX, AC_PROG_OBJC,\n"
+	   . "    AM_PROG_AS, AM_PROG_GCJ, AM_PROG_UPC",
+  am__fastdepCC => 'AC_PROG_CC',
+  am__fastdepCCAS => 'AM_PROG_AS',
+  am__fastdepCXX => 'AC_PROG_CXX',
+  am__fastdepGCJ => 'AM_PROG_GCJ',
+  am__fastdepOBJC => 'AC_PROG_OBJC',
+  am__fastdepUPC => 'AM_PROG_UPC'
+  );
+
 # $COND
 # cond_stack_if ($NEGATE, $COND, $WHERE)
 # --------------------------------------
@@ -6404,8 +6630,22 @@ sub cond_stack_if ($$$)
 {
   my ($negate, $cond, $where) = @_;
 
-  error $where, "$cond does not appear in AM_CONDITIONAL"
-    if ! $configure_cond{$cond} && $cond !~ /^TRUE|FALSE$/;
+  if (! $configure_cond{$cond} && $cond !~ /^TRUE|FALSE$/)
+    {
+      my $text = "$cond does not appear in AM_CONDITIONAL";
+      my $scope = US_LOCAL;
+      if (exists $_am_macro_for_cond{$cond})
+        {
+	  my $mac = $_am_macro_for_cond{$cond};
+	  $text .= "\n  The usual way to define `$cond' is to add ";
+	  $text .= ($mac =~ / /) ? $mac : "`$mac'";
+	  $text .= "\n  to `$configure_ac' and run `aclocal' and `autoconf' again.";
+	  # These warnings appear in Automake files (depend2.am),
+	  # so there is no need to display them more than once:
+	  $scope = US_GLOBAL;
+	}
+      error $where, $text, uniq_scope => $scope;
+    }
 
   push (@cond_stack, make_conditional_string ($negate, $cond));
 
@@ -6504,7 +6744,8 @@ sub define_pretty_variable ($$$@)
 
 # define_variable ($VAR, $VALUE, $WHERE)
 # --------------------------------------
-# Define a new user variable VAR to VALUE, but only if not already defined.
+# Define a new Automake Makefile variable VAR to VALUE, but only if
+# not already defined.
 sub define_variable ($$$)
 {
     my ($var, $value, $where) = @_;
@@ -6534,16 +6775,16 @@ sub define_configure_variable ($)
   my $pretty = VAR_ASIS;
   my $owner = VAR_CONFIGURE;
 
-  # Do not output the ANSI2KNR configure variable -- we AC_SUBST
-  # it in protos.m4, but later redefine it elsewhere.  This is
-  # pretty hacky.  We also don't output AMDEPBACKSLASH: it might
-  # be subst'd by `\', which certainly would not be appreciated by
-  # Make.
-  if ($var eq 'ANSI2KNR' || $var eq 'AMDEPBACKSLASH')
-    {
-      $pretty = VAR_SILENT;
-      $owner = VAR_AUTOMAKE;
-    }
+  # Some variables we do not want to output.  For instance it
+  # would be a bad idea to output `U = @U@` when `@U@` can be
+  # substituted as `\`.
+  $pretty = VAR_SILENT if exists $ignored_configure_vars{$var};
+
+  # ANSI2KNR is a variable that Automake wants to redefine, so
+  # it must be owned by Automake.  (It is also used as a proof
+  # that AM_C_PROTOTYPES has been run, that's why we do not simply
+  # omit the AC_SUBST.)
+  $owner = VAR_AUTOMAKE if $var eq 'ANSI2KNR';
 
   Automake::Variable::define ($var, $owner, '', TRUE, subst $var,
 			      '', $configure_vars{$var}, $pretty);
@@ -6564,7 +6805,8 @@ sub define_compiler_variable ($)
       if $lang->libtool_tag && exists $libtool_tags{$lang->libtool_tag};
     &define_variable ($var, $value, INTERNAL);
     &define_variable ("LT$var",
-		      "\$(LIBTOOL) $libtool_tag--mode=compile $value",
+		      "\$(LIBTOOL) $libtool_tag\$(AM_LIBTOOLFLAGS) "
+		      . "\$(LIBTOOLFLAGS) --mode=compile $value",
 		      INTERNAL)
       if var ('LIBTOOL');
 }
@@ -6577,7 +6819,6 @@ sub define_linker_variable ($)
 {
     my ($lang) = @_;
 
-    my ($var, $value) = ($lang->lder, $lang->ld);
     my $libtool_tag = '';
     $libtool_tag = '--tag=' . $lang->libtool_tag . ' '
       if $lang->libtool_tag && exists $libtool_tags{$lang->libtool_tag};
@@ -6586,9 +6827,57 @@ sub define_linker_variable ($)
     # CCLINK = $(CCLD) blah blah...
     &define_variable ($lang->linker,
 		      ((var ('LIBTOOL') ?
-			"\$(LIBTOOL) $libtool_tag--mode=link " : '')
+			"\$(LIBTOOL) $libtool_tag\$(AM_LIBTOOLFLAGS) "
+			. "\$(LIBTOOLFLAGS) --mode=link " : '')
 		       . $lang->link),
 		      INTERNAL);
+}
+
+sub define_per_target_linker_variable ($$)
+{
+  my ($linker, $target) = @_;
+
+  # If the user wrote a custom link command, we don't define ours.
+  return "${target}_LINK"
+    if set_seen "${target}_LINK";
+
+  my $xlink = $linker ? $linker : 'LINK';
+
+  my $lang = $link_languages{$xlink};
+  prog_error "Unknown language for linker variable `$xlink'"
+    unless $lang;
+
+  my $link_command = $lang->link;
+  if (var 'LIBTOOL')
+    {
+      my $libtool_tag = '';
+      $libtool_tag = '--tag=' . $lang->libtool_tag . ' '
+	if $lang->libtool_tag && exists $libtool_tags{$lang->libtool_tag};
+
+      $link_command =
+	"\$(LIBTOOL) $libtool_tag\$(AM_LIBTOOLFLAGS) \$(LIBTOOLFLAGS) "
+	. "--mode=link " . $link_command;
+    }
+
+  # Rewrite each occurrence of `AM_$flag' in the link
+  # command into `${derived}_$flag' if it exists.
+  my $orig_command = $link_command;
+  my @flags = (@{$lang->flags}, 'LDFLAGS');
+  push @flags, 'LIBTOOLFLAGS' if var 'LIBTOOL';
+  for my $flag (@flags)
+    {
+      my $val = "${target}_$flag";
+      $link_command =~ s/\(AM_$flag\)/\($val\)/
+	if set_seen ($val);
+    }
+
+  # If the computed command is the same as the generic command, use
+  # the command linker variable.
+  return $lang->linker
+    if $link_command eq $orig_command;
+
+  &define_variable ("${target}_LINK", $link_command, INTERNAL);
+  return "${target}_LINK";
 }
 
 ################################################################
@@ -6787,7 +7076,7 @@ sub read_am_file ($$)
 
 	    # For now we have to output all definitions of user rules
 	    # and can't diagnose duplicates (see the comment in
-	    # rule_define). So we go on and ignore the return value.
+	    # Automake::Rule::define). So we go on and ignore the return value.
 	    Automake::Rule::define ($1, $amfile, RULE_USER, $cond, $where);
 
 	    check_variable_expansions ($_, $where);
@@ -6963,6 +7252,38 @@ sub flatten
   return $_;
 }
 
+# transform($TOKEN, \%PAIRS)
+# ==========================
+# If ($TOKEN, $VAL) is in %PAIRS:
+#   - replaces %$TOKEN% with $VAL,
+#   - enables/disables ?$TOKEN? and ?!$TOKEN?,
+#   - replaces %?$TOKEN% with TRUE or FALSE.
+sub transform($$)
+{
+  my ($token, $transform) = @_;
+
+  if (substr ($token, 0, 1) eq '%')
+    {
+      my $cond = (substr ($token, 1, 1) eq '?') ? 1 : 0;
+      $token = substr ($token, 1 + $cond, -1);
+      my $val = $transform->{$token};
+      prog_error "Unknown %token% `$token'" unless defined $val;
+      if ($cond)
+	{
+	  return $val ? 'TRUE' : 'FALSE';
+	}
+      else
+	{
+	  return $val;
+	}
+    }
+  # Now $token is '?xxx?' or '?!xxx?'.
+  my $neg = (substr ($token, 1, 1) eq '!') ? 1 : 0;
+  $token = substr ($token, 1 + $neg, -1);
+  my $val = $transform->{$token};
+  prog_error "Unknown ?token? `$token' (neg = $neg)" unless defined $val;
+  return (!!$val == $neg) ? '##%' : '';
+}
 
 # @PARAGRAPHS
 # &make_paragraphs ($MAKEFILE, [%TRANSFORM])
@@ -6973,11 +7294,9 @@ sub make_paragraphs ($%)
 {
   my ($file, %transform) = @_;
 
-  # Complete %transform with global options and make it a Perl $command.
+  # Complete %transform with global options.
   # Note that %transform goes last, so it overrides global options.
-  my $command =
-    "s/$IGNORE_PATTERN//gm;"
-    . transform ('CYGNUS'      => !! option 'cygnus',
+  %transform = ('CYGNUS'      => !! option 'cygnus',
 		 'MAINTAINER-MODE'
 		 => $seen_maint_mode ? subst ('MAINTAINER_MODE_TRUE') : '',
 
@@ -6992,7 +7311,6 @@ sub make_paragraphs ($%)
 		 'CK-NEWS'      => !! option 'check-news',
 
 		 'SUBDIRS'      => !! var ('SUBDIRS'),
-		 'TOPDIR'       => backname ($relative_dir),
 		 'TOPDIR_P'     => $relative_dir eq '.',
 
 		 'BUILD'    => ($seen_canonical >= AC_CANONICAL_BUILD),
@@ -7002,31 +7320,43 @@ sub make_paragraphs ($%)
 		 'LIBTOOL'      => !! var ('LIBTOOL'),
 		 'NONLIBTOOL'   => 1,
 		 'FIRST'        => ! $transformed_files{$file},
-		 %transform)
-    # We don't need more than two consecutive new-lines.
-    . 's/\n{3,}/\n\n/g';
+		%transform);
 
   $transformed_files{$file} = 1;
+  $_ = $am_file_cache{$file};
 
-  # Swallow the file and apply the COMMAND.
-  my $fc_file = new Automake::XFile "< $file";
-  # Looks stupid?
-  verb "reading $file";
-  my $saved_dollar_slash = $/;
-  undef $/;
-  $_ = $fc_file->getline;
-  $/ = $saved_dollar_slash;
-  eval $command;
-  $fc_file->close;
-  my $content = $_;
+  if (! defined $_)
+    {
+      verb "reading $file";
+      # Swallow the whole file.
+      my $fc_file = new Automake::XFile "< $file";
+      my $saved_dollar_slash = $/;
+      undef $/;
+      $_ = $fc_file->getline;
+      $/ = $saved_dollar_slash;
+      $fc_file->close;
+
+      # Remove ##-comments.
+      # Besides we don't need more than two consecutive new-lines.
+      s/(?:$IGNORE_PATTERN|(?<=\n\n)\n+)//gom;
+
+      $am_file_cache{$file} = $_;
+    }
+
+  # Substitute Automake template tokens.
+  s/(?:%\??[\w\-]+%|\?!?[\w\-]+\?)/transform($&, \%transform)/ge;
+  # transform() may have added some ##%-comments to strip.
+  # (we use `##%' instead of `##' so we can distinguish ##%##%##% from
+  # ####### and do not remove the latter.)
+  s/^[ \t]*(?:##%)+.*\n//gm;
 
   # Split at unescaped new lines.
-  my @lines = split (/(?<!\\)\n/, $content);
+  my @lines = split (/(?<!\\)\n/, $_);
   my @res;
 
   while (defined ($_ = shift @lines))
     {
-      my $paragraph = "$_";
+      my $paragraph = $_;
       # If we are a rule, eat as long as we start with a tab.
       if (/$RULE_PATTERN/smo)
 	{
@@ -7049,7 +7379,6 @@ sub make_paragraphs ($%)
 	}
 
       push @res, $paragraph;
-      $paragraph = '';
     }
 
   return @res;
@@ -7271,62 +7600,6 @@ sub file_contents ($$%)
     return "$comments$variables$rules";
 }
 
-
-# $REGEXP
-# &transform (%PAIRS)
-# -------------------
-# For each ($TOKEN, $VAL) in %PAIRS produce a replacement expression
-# suitable for file_contents which:
-#   - replaces %$TOKEN% with $VAL,
-#   - enables/disables ?$TOKEN? and ?!$TOKEN?,
-#   - replaces %?$TOKEN% with TRUE or FALSE.
-sub transform (%)
-{
-  my (%pairs) = @_;
-  my $result = '';
-
-  while (my ($token, $val) = each %pairs)
-    {
-      $result .= "s/\Q%$token%\E/\Q$val\E/gm;";
-      if ($val)
-	{
-	  $result .= "s/\Q?$token?\E//gm;s/^.*\Q?!$token?\E.*\\n//gm;";
-	  $result .= "s/\Q%?$token%\E/TRUE/gm;";
-	}
-      else
-	{
-	  $result .= "s/\Q?!$token?\E//gm;s/^.*\Q?$token?\E.*\\n//gm;";
-	  $result .= "s/\Q%?$token%\E/FALSE/gm;";
-	}
-    }
-
-  return $result;
-}
-
-
-# &append_exeext ($MACRO)
-# -----------------------
-# Macro is an Automake magic macro which primary is PROGRAMS, e.g.
-# bin_PROGRAMS.  Make sure these programs have $(EXEEXT) appended.
-sub append_exeext ($)
-{
-  my ($macro) = @_;
-
-  prog_error "append_exeext ($macro)"
-    unless $macro =~ /_(PROGRAMS|MONOLITHS)$/;
-
-  transform_variable_recursively
-    ($macro, $macro, 'am__EXEEXT', 0, INTERNAL,
-     sub {
-       my ($subvar, $val, $cond, $full_cond) = @_;
-       # Append $(EXEEXT) unless the user did it already, or it's a
-       # @substitution@.
-       $val .= '$(EXEEXT)' unless $val =~ /(?:\$\(EXEEXT\)$|^[@]\w+[@]$)/;
-       return $val;
-     });
-}
-
-
 # @PREFIX
 # &am_primary_prefixes ($PRIMARY, $CAN_DIST, @PREFIXES)
 # -----------------------------------------------------
@@ -7350,7 +7623,7 @@ sub am_primary_prefixes ($$@)
   local $_;
   my %valid = map { $_ => 0 } @prefixes;
   $valid{'EXTRA'} = 0;
-  foreach my $var (variables)
+  foreach my $var (variables $primary)
     {
       # Automake is allowed to define variables that look like primaries
       # but which aren't.  E.g. INSTALL_sh_DATA.
@@ -7364,7 +7637,7 @@ sub am_primary_prefixes ($$@)
 
       my $varname = $var->name;
 
-      if ($varname =~ /^(nobase_)?(dist_|nodist_)?(.*)_$primary$/)
+      if ($varname =~ /^(nobase_)?(dist_|nodist_)?(.*)_[[:alnum:]]+$/)
 	{
 	  my ($base, $dist, $X) = ($1 || '', $2 || '', $3 || '');
           
@@ -7392,6 +7665,10 @@ sub am_primary_prefixes ($$@)
 	      # Ensure all extended prefixes are actually used.
 	      $valid{"$base$dist$X"} = 1;
 	    }
+	}
+      else
+	{
+	  prog_error "unexpected variable name: $varname";
 	}
     }
 
@@ -7525,7 +7802,7 @@ sub am_install_var
       # A blatant hack: we rewrite each _PROGRAMS primary to include
       # EXEEXT.
       # Starlink: ...same for MONOLITHS
-      append_exeext ($one_name)
+      append_exeext { 1 } $one_name
         if $primary eq 'PROGRAMS' or $primary eq 'MONOLITHS';
       # "EXTRA" shouldn't be used when generating clean targets,
       # all, or install targets.  We used to warn if EXTRA_FOO was
@@ -7788,7 +8065,7 @@ sub require_file_internal ($$$@)
 	      my $message = "required file `$fullfile' not found";
 	      if ($add_missing)
 		{
-		  if (-f ("$libdir/$file"))
+		  if (-f "$libdir/$file")
 		    {
 		      $suppress = 1;
 
@@ -7831,13 +8108,18 @@ sub require_file_internal ($$$@)
 			}
 		    }
 		}
+	      else
+		{
+		  $trailer = "\n  `automake --add-missing' can install `$file'"
+		    if -f "$libdir/$file";
+		}
 
 	      # If --force-missing was specified, and we have
 	      # actually found the file, then do nothing.
 	      next
 		if $found_it && $force_missing;
 
-	      # If we couldn' install the file, but it is a target in
+	      # If we couldn't install the file, but it is a target in
 	      # the Makefile, don't print anything.  This allows files
 	      # like README, AUTHORS, or THANKS to be generated.
 	      next
@@ -7866,6 +8148,24 @@ sub require_file_with_macro ($$$@)
     require_file ($macro->rdef ($cond)->location, $mystrict, @files);
 }
 
+# &require_libsource_with_macro ($COND, $MACRO, $MYSTRICT, @FILES)
+# ----------------------------------------------------------------
+# Require an AC_LIBSOURCEd file.  If AC_CONFIG_LIBOBJ_DIR was called, it
+# must be in that directory.  Otherwise expect it in the current directory.
+sub require_libsource_with_macro ($$$@)
+{
+    my ($cond, $macro, $mystrict, @files) = @_;
+    $macro = rvar ($macro) unless ref $macro;
+    if ($config_libobj_dir)
+      {
+	require_file_internal ($macro->rdef ($cond)->location, $mystrict,
+			       $config_libobj_dir, @files);
+      }
+    else
+      {
+	require_file ($macro->rdef ($cond)->location, $mystrict, @files);
+      }
+}
 
 # &require_conf_file ($WHERE, $MYSTRICT, @FILES)
 # ----------------------------------------------
@@ -7923,7 +8223,7 @@ sub require_build_directory ($)
   $clean_files{$dirstamp} = DIST_CLEAN;
 
   $output_rules .= ("$dirstamp:\n"
-		    . "\t\@\$(mkdir_p) $directory\n"
+		    . "\t\@\$(MKDIR_P) $directory\n"
 		    . "\t\@: > $dirstamp\n");
 
   return $dirstamp;
@@ -7993,6 +8293,7 @@ sub generate_makefile ($$)
 
   $relative_dir = dirname ($makefile);
   $am_relative_dir = dirname ($makefile_am);
+  $topsrcdir = backname ($relative_dir);
 
   read_main_am_file ($makefile_am);
   if (handle_options)
@@ -8023,18 +8324,6 @@ sub generate_makefile ($$)
   msg_var ('obsolete', 'INCLUDES',
 	   "`INCLUDES' is the old name for `AM_CPPFLAGS' (or `*_CPPFLAGS')")
     if var ('INCLUDES');
-
-  # At the toplevel directory, we might need config.guess, config.sub.
-  # (Libtool scripts such ltconfig as ltmain.sh are checked for in
-  # handle_libtool.)
-  if ($relative_dir eq '.')
-    {
-      # AC_CANONICAL_HOST, AC_CANONICAL_SYSTEM, and AC_CANONICAL_TARGET
-      # need config.guess and config.sub.
-      require_conf_file ($canonical_location, FOREIGN,
-			 'config.guess', 'config.sub')
-	if $seen_canonical;
-    }
 
   # Must do this after reading .am file.
   define_variable ('subdir', $relative_dir, INTERNAL);
@@ -8084,6 +8373,7 @@ sub generate_makefile ($$)
   handle_subdirs;
   handle_tags;
   handle_minor_options;
+  # Must come after handle_programs so that %known_programs is up-to-date.
   handle_tests;
 
   # Handle the Starlink-specific material here
@@ -8265,9 +8555,10 @@ sub version ()
 {
   print <<EOF;
 automake (GNU $PACKAGE) $VERSION
-Written by Tom Tromey <tromey\@redhat.com>.
+Written by Tom Tromey <tromey\@redhat.com>
+       and Alexandre Duret-Lutz <adl\@gnu.org>.
 
-Copyright 2005 Free Software Foundation, Inc.
+Copyright 2006 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 EOF
@@ -8286,7 +8577,7 @@ sub parse_arguments ()
   my $cli_where = new Automake::Location;
   my %cli_options =
     (
-     'libdir:s' 	=> \$libdir,
+     'libdir=s' 	=> \$libdir,
      'gnu' 		=> sub { set_strictness ('gnu'); },
      'gnits' 		=> sub { set_strictness ('gnits'); },
      'cygnus' 	        => sub { set_global_option ('cygnus', $cli_where); },
@@ -8297,11 +8588,11 @@ sub parse_arguments ()
 						    $cli_where); },
      'no-force' 	=> sub { $force_generation = 0; },
      'f|force-missing'  => \$force_missing,
-     'o|output-dir:s'	=> \$output_directory,
+     'o|output-dir=s'	=> \$output_directory,
      'a|add-missing' 	=> \$add_missing,
      'c|copy' 	        => \$copy_missing,
      'v|verbose' 	=> sub { setup_channel 'verb', silent => 0; },
-     'W|warnings:s'     => \&parse_warnings,
+     'W|warnings=s'     => \&parse_warnings,
      # These long options (--Werror and --Wno-error) for backward
      # compatibility.  Use -Werror and -Wno-error today.
      'Werror'           => sub { parse_warnings 'W', 'error'; },
@@ -8328,9 +8619,10 @@ sub parse_arguments ()
     or exit 1;
   @ARGV = @ARGV_backup;
 
-  # Now *really* process the options.  This time we know
-  # that --help and --version are not present.
-  Getopt::Long::GetOptions %cli_options
+  # Now *really* process the options.  This time we know that --help
+  # and --version are not present, but we specify them nonetheless so
+  # that ambiguous abbreviation are diagnosed.
+  Getopt::Long::GetOptions %cli_options, 'version' => sub {}, 'help' => sub {}
     or exit 1;
 
   if (defined $output_directory)
@@ -8343,14 +8635,40 @@ sub parse_arguments ()
       $output_directory = '.';
     }
 
+  return unless @ARGV;
+
+  if ($ARGV[0] =~ /^-./)
+    {
+      my %argopts;
+      for my $k (keys %cli_options)
+	{
+	  if ($k =~ /(.*)=s$/)
+	    {
+	      map { $argopts{(length ($_) == 1)
+			     ? "-$_" : "--$_" } = 1; } (split (/\|/, $1));
+	    }
+	}
+      if ($ARGV[0] eq '--')
+	{
+	  shift @ARGV;
+	}
+      elsif (exists $argopts{$ARGV[0]})
+	{
+	  fatal ("option `$ARGV[0]' requires an argument\n"
+		 . "Try `$0 --help' for more information.");
+	}
+      else
+	{
+	  fatal ("unrecognized option `$ARGV[0]'.\n"
+		 . "Try `$0 --help' for more information.");
+	}
+    }
+
   my $errspec = 0;
   foreach my $arg (@ARGV)
     {
-      if ($arg =~ /^-./)
-	{
-	  fatal ("unrecognized option `$arg'\n"
-		 . "Try `$0 --help' for more information.");
-	}
+      fatal ("empty argument\nTry `$0 --help' for more information.")
+	if ($arg eq '');
 
       # Handle $local:$input syntax.
       my ($local, @rest) = split (/:/, $arg);
