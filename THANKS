@@ -9,6 +9,7 @@ Alan Modra		amodra@bigpond.net.au
 Alex Hornby		alex@anvil.co.uk
 Alex Unleashed		unledev@gmail.com
 Alexander Mai		st002279@hrzpub.tu-darmstadt.de
+Alexander Martens	alexander.martens@gtd.es
 Alexander V. Lukyanov	lav@yars.free.net
 Alexander Turbov	zaufi@sendmail.ru
 Alexandre Duret-Lutz	duret_g@epita.fr
@@ -41,6 +42,7 @@ Bob Proulx		rwp@hprwp.fc.hp.com
 Bob Rossi		bob@brasko.net
 Braden N. McDaniel	braden@endoframe.com
 Brendan O'Dea		bod@compusol.com.au
+Brian Cameron		Brian.Cameron@Sun.COM
 Brian Ford		ford@vss.fsi.com
 Brian Gough		bjg@network-theory.co.uk
 Brian Jones		cbj@nortel.net
@@ -114,6 +116,7 @@ Harlan Stenn		Harlan.Stenn@pfcs.com
 He Li			tippa000@yahoo.com
 Henrik Frystyk Nielsen	frystyk@w3.org
 Ian Lance Taylor	ian@cygnus.com
+Илья Н. Голубев		gin@mo.msk.ru
 Imacat			imacat@mail.imacat.idv.tw
 Inoue			inoue@ainet.or.jp
 James Amundson		amundson@users.sourceforge.net
@@ -250,6 +253,7 @@ Philip S Tellis		philip@ncst.ernet.in
 Пухальский Юрий Андреевич pooh@cryptopro.ru
 Rainer Orth		ro@techfak.uni-bielefeld.de
 Rafael Laboissiere	laboissiere@psy.mpg.de
+Rainer Tammer		tammer@tammer.net
 Raja R Harinath		harinath@cs.umn.edu
 Ralf Corsepius		corsepiu@faw.uni-ulm.de
 Ralf Menzel		menzel@ls6.cs.uni-dortmund.de
@@ -273,6 +277,7 @@ Rusty Ballinger		rusty@rlyeh.engr.sgi.com
 Ryan T. Sammartino	ryants@shaw.ca
 Sam Hocevar		sam@zoy.org
 Sam Sirlin		sam@kalessin.jpl.nasa.gov
+Sam Steingold		sds@gnu.org
 Sander Niemeijer	niemeijer@science-and-technology.nl
 Santiago Vila		sanvila@unex.es
 Scott James Remnant	scott@netsplit.com
@@ -290,6 +295,7 @@ Tamara L. Dahlgren	dahlgren1@llnl.gov
 Tatu Ylonen		ylo@ssh.fi
 Teun Burgers		burgers@ecn.nl
 The Crimson Binome	steve@nyongwa.montreal.qc.ca
+Theodoros V. Kalamatianos thkala@gmail.com
 Thien-Thi Nguyen	ttn@glug.org
 Thomas Fitzsimmons	fitzsim@redhat.com
 Thomas Gagne		tgagne@ix.netcom.com
@@ -312,6 +318,7 @@ Werner Koch		wk@isil.d.shuttle.de
 William Pursell		bill.pursell@gmail.com
 William S Fulton	wsf@fultondesigns.co.uk
 Yann Droneaud		ydroneaud@meuh.eu.org
+Younes Younes		younes@cs.tu-berlin.de
 Zack Weinberg		zack@codesourcery.com
 
 ;; Local Variables:

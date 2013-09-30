@@ -1,3 +1,39 @@
+New in 1.10.2.
+
+  - Nothing new.
+
+Bugs fixed in 1.10.2.
+
+* Long standing bugs:
+
+  - Rebuild rules now also work for a removed `subdir/Makefile.in' in
+    an otherwise up to date tree.
+
+  - Work around AIX sh quoting issue in AC_PROG_CC_C_O, leading to
+    unnecessary use of the `compile' script.
+
+  - `config.status --file=Makefile depfiles' now also works with the
+    extra quoting used internally by Autoconf 2.62 and newer
+    (it used to work only without the `--file=' bit).
+
+* Bugs introduced by 1.10.1:
+
+  - None known.
+
+* Changes to Libtool support:
+
+  - distcheck works with Libtool 2.x even when LT_OUTPUT is used, as
+    config.lt is removed correctly now.
+
+* Miscellaneous changes:
+
+  - The manual is now distributed under the terms of the GNU FDL 1.3.
+
+  - When `automake --add-missing' causes the COPYING file to be installed,
+    it will also warn that the license file should be added to source
+    control.
+
+
 New in 1.10.1:
 
   - Automake development is done in a git repository on Savannah now, see

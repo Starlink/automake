@@ -31,7 +31,7 @@ AC_INIT([Starlink Automake], [1.10-starlink], [starlink@jiscmail.ac.uk], automak
 
 dnl Require Autoconf 2.60 for AC_REQUIRE_AUX_FILE.
 AC_PREREQ(2.60)
-dnl AC_INIT([GNU Automake], [1.10.1], [bug-automake@gnu.org])
+dnl AC_INIT([GNU Automake], [1.10.2], [bug-automake@gnu.org])
 
 AC_CONFIG_SRCDIR(automake.in)
 AC_CONFIG_AUX_DIR(lib)
@@ -61,7 +61,7 @@ dnl AM_INIT_AUTOMAKE([1.8a dist-bzip2 filename-length-max=99])
 # * Prereleases on the trunk are all incompatible -- 1.5b and 1.5c
 #   aren't the same.
 APIVERSION=`echo "$VERSION" | sed -e 's/^\([[0-9]]*\.[[0-9]]*[[a-z]]*\).*$/\1/'`
-AC_SUBST(APIVERSION)
+AC_SUBST([APIVERSION])
 
 # A versioned directory, defined here for convenience.
 AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE-$APIVERSION"])

@@ -89,6 +89,9 @@ check4.test \
 check5.test \
 check6.test \
 check7.test \
+check8.test \
+check9.test \
+check10.test \
 checkall.test \
 clean.test \
 clean2.test \
@@ -207,6 +210,7 @@ depend.test \
 depend2.test \
 depend3.test \
 depend4.test \
+depend5.test \
 destdir.test \
 dirforbid.test \
 dirlist.test \
@@ -284,6 +288,7 @@ install2.test \
 installdir.test \
 instsh.test \
 instsh2.test \
+instsh3.test \
 instdat.test \
 instdat2.test \
 instexec.test \
@@ -329,7 +334,9 @@ libtool7.test \
 libtool8.test \
 libtool9.test \
 libtoo10.test \
+libtoo11.test \
 license.test \
+license2.test \
 link_c_cxx.test	\
 link_dist.test \
 link_f90_only.test \
@@ -361,6 +368,7 @@ makej.test \
 makevars.test \
 man.test \
 man2.test \
+man3.test \
 mclean.test \
 mdate.test \
 mdate2.test \
@@ -372,6 +380,7 @@ missing2.test \
 missing3.test \
 missing4.test \
 missing5.test \
+missing6.test \
 mkinstall.test \
 mkinst2.test \
 mkinst3.test \
@@ -474,6 +483,8 @@ remake2.test \
 remake3.test \
 remake4.test \
 remake5.test \
+remake6.test \
+remake7.test \
 regex.test \
 req.test \
 reqd.test \
