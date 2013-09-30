@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002, 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -18,36 +18,46 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure dependency tracking works for Java.
+# Make sure .libs directories are removed for _PROGRAMS.
+# Report from Guillermo Ontañón.
 
-required=gcj
+required=libtoolize
 . ./defs || exit 1
+set -e
 
 cat >> configure.in << 'END'
-AM_PROG_GCJ
+AC_PROG_LIBTOOL
 AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
-bin_PROGRAMS = convert
-convert_SOURCES = convert.java
+lib_LTLIBRARIES = lib/libfoo.la
+lib_libfoo_la_SOURCES = foo.c
+bin_PROGRAMS = src/main
+check_PROGRAMS = check/test
+src_main_SOURCES = main.c
+check_test_SOURCES = main.c
+LDADD = lib/libfoo.la
 END
 
-set -e
+mkdir lib src check
+cat > foo.c << 'END'
+int foo () { return 0; }
+END
 
+cat > main.c << 'END'
+extern int foo ();
+int main () { return foo (); }
+END
+
+libtoolize
 $ACLOCAL
+$AUTOMAKE --add-missing
 $AUTOCONF
-$AUTOMAKE
-./configure >stdout
-cat stdout
-
-# Configure must be checking the dependency style of gcj ...
-grep 'dependency style of gcj' stdout >filt
-cat filt
-
-# ... only once.
-test `wc -l < filt` = 1
-
-# Accept any outcome but `none'
-# (at the time of writing it should be gcc or gcc3).
-grep -v none filt
+./configure
+$MAKE all check clean
+test ! -d src/.libs
+test ! -d src/_libs
+test ! -d check/.libs
+test ! -d check/_libs
+$MAKE distcheck

@@ -1,11 +1,11 @@
 #! /bin/sh
-# Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2008  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
 # GNU Automake is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
+# the Free Software Foundation; either version 3, or (at your option)
 # any later version.
 #
 # GNU Automake is distributed in the hope that it will be useful,
@@ -49,6 +49,7 @@ gcc ${1+"$@"}
 END
 
 chmod +x mycc
+PATH=`pwd`:$PATH
 
 cat >Makefile.am <<'EOF'
 SUBDIRS = @subdirs@
@@ -130,7 +131,7 @@ cd ..
 # Check VPATH builds
 mkdir build
 cd build
-../configure --enable-multilib CC=`pwd`/../mycc
+../configure --enable-multilib CC=mycc
 $MAKE
 $MAKE install
 $MAKE distcleancheck
@@ -138,5 +139,5 @@ $MAKE distcleancheck
 # Check standard builds.
 cd ..
 # Why to I have to specify --with-target-subdir?
-./configure --enable-multilib --with-target-subdir=. CC=`pwd`/mycc
+./configure --enable-multilib --with-target-subdir=. CC=mycc
 $MAKE

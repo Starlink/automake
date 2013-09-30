@@ -1,4 +1,4 @@
-# Copyright (C) 2003, 2004, 2006  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2006, 2007  Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -242,7 +242,7 @@ Return 1 on error, 0 otherwise.
 # -------------------------------------------------
 # Process a list of options.  Return 1 on error, 0 otherwise.
 # \%OPTIONS is the hash to fill with options data, $WHERE is
-# the location where @OPTIONS occured.
+# the location where @OPTIONS occurred.
 sub _process_option_list (\%$@)
 {
   my ($options, $where, @list) = @_;
@@ -264,6 +264,7 @@ sub _process_option_list (\%$@)
       elsif ($_ eq 'no-installman' || $_ eq 'no-installinfo'
 	     || $_ eq 'dist-shar' || $_ eq 'dist-zip'
 	     || $_ eq 'dist-tarZ' || $_ eq 'dist-bzip2'
+	     || $_ eq 'dist-lzma'
 	     || $_ eq 'no-dist-gzip' || $_ eq 'no-dist'
 	     || $_ eq 'dejagnu' || $_ eq 'no-texinfo.tex'
 	     || $_ eq 'readme-alpha' || $_ eq 'check-news'

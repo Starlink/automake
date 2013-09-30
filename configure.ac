@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006,
-# 2004, 2006  Free Software Foundation, Inc.
+# 2004, 2006, 2007, 2008  Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@ dnl  this package, but so that autoconf uses this when building some
 dnl  installation locations rather than the "starlink-automake" it
 dnl  would otherwise construct.
 AC_INIT([Starlink Automake], [1.10-starlink], [starlink@jiscmail.ac.uk], automake)
-dnl AC_INIT([GNU Automake], [1.10], [bug-automake@gnu.org])
 
 dnl Require Autoconf 2.60 for AC_REQUIRE_AUX_FILE.
 AC_PREREQ(2.60)
+dnl AC_INIT([GNU Automake], [1.10.1], [bug-automake@gnu.org])
 
 AC_CONFIG_SRCDIR(automake.in)
 AC_CONFIG_AUX_DIR(lib)
@@ -100,7 +100,7 @@ else
   am_cv_autoconf_installed=no
 fi])
 if test "$am_cv_autoconf_installed" = no; then
-  AC_MSG_ERROR([Autoconf 2.58 or better is required.
+  AC_MSG_ERROR([Autoconf 2.60 or better is required.
     Please make sure it is installed and in your PATH.])
 fi
 
@@ -121,7 +121,7 @@ fi
 
 AC_CACHE_CHECK([whether autoconf is recent enough], [am_cv_autoconf_version],
 [mkdir conftest
-echo 'AC''_PREREQ(2.58)' > conftest/conftest.ac
+echo 'AC''_PREREQ(2.60)' > conftest/conftest.ac
 if AM_RUN_LOG([cd conftest && eval $am_AUTOCONF -o /dev/null conftest.ac]);
 then
   am_cv_autoconf_version=yes
@@ -130,7 +130,7 @@ else
 fi
 rm -rf conftest])
 if test "$am_cv_autoconf_version" = no; then
-  AC_MSG_ERROR([Autoconf 2.58 or better is required.])
+  AC_MSG_ERROR([Autoconf 2.60 or better is required.])
 fi
 
 # Test for ln.  We need use it to install the versioned binaries.

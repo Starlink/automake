@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002, 2007  Free Software Foundation, Inc.
+# Copyright (C) 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -18,36 +18,22 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure dependency tracking works for Java.
+# PR 511: Make sure we warn about AC_CONFIG_FILES([./makefile]).
 
-required=gcj
 . ./defs || exit 1
 
-cat >> configure.in << 'END'
-AM_PROG_GCJ
+cat > configure.in << 'END'
+AC_INIT([canon-name], [1.0])
+AM_INIT_AUTOMAKE
+AC_CONFIG_FILES([./gmakefile ./sub/gmakefile])
 AC_OUTPUT
 END
 
-cat > Makefile.am << 'END'
-bin_PROGRAMS = convert
-convert_SOURCES = convert.java
-END
-
-set -e
+mkdir sub
+echo 'SUBDIRS = sub' >gmakefile.am
+: >sub/gmakefile.am
 
 $ACLOCAL
-$AUTOCONF
-$AUTOMAKE
-./configure >stdout
-cat stdout
-
-# Configure must be checking the dependency style of gcj ...
-grep 'dependency style of gcj' stdout >filt
-cat filt
-
-# ... only once.
-test `wc -l < filt` = 1
-
-# Accept any outcome but `none'
-# (at the time of writing it should be gcc or gcc3).
-grep -v none filt
+AUTOMAKE_fails
+grep 'leading.*\./.*\./gmakefile' stderr
+grep 'leading.*\./.*\./sub/gmakefile' stderr

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002, 2007  Free Software Foundation, Inc.
+# Copyright (C) 2003, 2007  Free Software Foundation, Inc.
 #
 # This file is part of GNU Automake.
 #
@@ -18,36 +18,28 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
-# Make sure dependency tracking works for Java.
+# Check support for no-dist-gzip with lzma
 
-required=gcj
+required=lzma
 . ./defs || exit 1
 
-cat >> configure.in << 'END'
-AM_PROG_GCJ
+set -e
+
+cat > configure.in << 'END'
+AC_INIT([lzma], [1.0])
+AM_INIT_AUTOMAKE([no-dist-gzip dist-lzma])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
-bin_PROGRAMS = convert
-convert_SOURCES = convert.java
+test: distcheck
+	test $(DIST_ARCHIVES) = lzma-1.0.tar.lzma
+	test -f $(DIST_ARCHIVES)
 END
-
-set -e
 
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure >stdout
-cat stdout
-
-# Configure must be checking the dependency style of gcj ...
-grep 'dependency style of gcj' stdout >filt
-cat filt
-
-# ... only once.
-test `wc -l < filt` = 1
-
-# Accept any outcome but `none'
-# (at the time of writing it should be gcc or gcc3).
-grep -v none filt
+./configure
+$MAKE test

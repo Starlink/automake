@@ -3,7 +3,7 @@
 ## Makefile for Automake.
 
 ## Copyright (C) 1995, 1996, 1997, 1998, 1999, 2001, 2002, 2003, 2004,
-## 2005, 2006  Free Software Foundation, Inc.
+## 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -100,6 +100,10 @@ INSTALL: lib/INSTALL
 ## Everything past here is useful to the maintainer, but probably not
 ## to anybody else
 ##
+
+# Ensure tests are world-executable
+dist-hook:
+	cd $(distdir)/tests && chmod a+rx *.test
 
 # Some simple checks, and then ordinary check.  These are only really
 # guaranteed to work on my machine.
@@ -298,8 +302,8 @@ maintainer-check: automake aclocal
 	fi
 
 
-cvs-dist: maintainer-check
-## Make sure clcommit exists (we use it at the end of cvs-dist).
+git-dist: maintainer-check
+## Make sure clcommit exists (we use it at the end of git-dist).
 	@if (clcommit --version)>/dev/null 2>/dev/null; then :; else \
 	  echo "Get clcommit from module cvs-utils on Savannah."; \
 	  exit 1; \
@@ -315,9 +319,9 @@ cvs-dist: maintainer-check
 ## the release in the repository.  We don't use RCS keywords so it's OK
 ## to distribute the files before they were committed.
 	cd $(srcdir) && clcommit && \
-	  cvs -q tag -c `echo "Release-$(VERSION)" | sed 's/\./-/g'`
+	  git tag -s `echo "Release-$(VERSION)" | sed 's/\./-/g'`
 
-cvs-release: cvs-dist
+git-release: git-dist
 	case $(VERSION) in \
 	  *[a-z]) dest=alpha;; \
 	  *)      dest=ftp;; \
@@ -335,6 +339,15 @@ cvs-diff:
 	cvs -f rdiff -c -r $$prevver -r $$thisver $(PACKAGE) \
 	    > $(PACKAGE)-$$prevno-$(VERSION).diff
 
+git-diff:
+	thisver=`echo "Release-$(VERSION)" | sed 's/\./-/g'`; \
+	if test -z "$$OLDVERSION"; then \
+	  prevno=`echo "$(VERSION)" - 0.01 | bc | sed 's/^\./0./'`; \
+	else prevno="$$OLDVERSION"; fi; \
+	prevver=Release-`echo $$prevno | sed 's/\./-/g'`; \
+	git diff $$prevver..$$thisver $(PACKAGE) \
+	    > $(PACKAGE)-$$prevno-$(VERSION).diff
+
 ## Check our path lengths.
 path-check: distdir
 	(cd $(distdir) && \
@@ -347,7 +360,10 @@ path-check: distdir
 
 ## Program to use to fetch files.
 WGET = wget
-WGETSGO = $(WGET) http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~
+WGET_SV_CVS = $(WGET) http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~/
+WGET_SV_GIT_AC = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=blob_plain;hb=HEAD;f='
+WGET_SV_GIT_GL = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f='
+WGET_GCC = $(WGET) 'http://gcc.gnu.org/viewcvs/*checkout*/trunk/'
 
 ## Files that we fetch and which we compare against.
 ## FIXME should be a lot more here
@@ -365,12 +381,12 @@ fetch:
 	mkdir Fetchdir
 ## If a get fails then that is a problem.
 	(cd Fetchdir && \
-	$(WGETSGO)/config/config/config.guess; \
-	$(WGETSGO)/config/config/config.sub; \
-	$(WGETSGO)/texinfo/texinfo/doc/texinfo.tex; \
-	$(WGETSGO)/autoconf/autoconf/INSTALL; \
-	$(WGETSGO)/gcc/gcc/config-ml.in; \
-	$(WGETSGO)/gcc/gcc/symlink-tree)
+	$(WGET_SV_CVS)config/config/config.guess -O config.guess && \
+	$(WGET_SV_CVS)config/config/config.sub -O config.sub && \
+	$(WGET_SV_CVS)texinfo/texinfo/doc/texinfo.tex -O texinfo.tex && \
+	$(WGET_SV_GIT_GL)doc/INSTALL -O INSTALL && \
+	$(WGET_GCC)config-ml.in -O config-ml.in && \
+	$(WGET_GCC)symlink-tree -O symlink-tree)
 ## Don't exit after test because we want to give as many errors as
 ## possible.
 	@stat=0; for file in $(FETCHFILES); do \

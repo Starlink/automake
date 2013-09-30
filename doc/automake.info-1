@@ -1,9 +1,9 @@
 This is automake.info, produced by makeinfo version 4.8 from
 automake.texi.
 
-   This manual is for GNU Automake (version 1.10-starlink, 30 September
-2013), a program that creates GNU standards-compliant Makefiles from
-template files.
+   This manual is for GNU Automake (version 1.10, 15 October 2006), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
 2004, 2005, 2006 Free Software Foundation, Inc.
@@ -37,8 +37,8 @@ File: automake.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU Automake
 ************
 
-This manual is for GNU Automake (version 1.10-starlink, 30 September 2013),
-a program that creates GNU standards-compliant Makefiles from template
+This manual is for GNU Automake (version 1.10, 15 October 2006), a
+program that creates GNU standards-compliant Makefiles from template
 files.
 
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
@@ -206,9 +206,9 @@ Building a Shared Library
 
 Fortran 77 Support
 
-* Preprocessing Fortran::       Preprocessing Fortran sources
-* Compiling Fortran Files::     Compiling Fortran sources
-* Mixing Fortran With C and C++::  Mixing Fortran With C and C++
+* Preprocessing Fortran 77::    Preprocessing Fortran 77 sources
+* Compiling Fortran 77 Files::  Compiling Fortran 77 sources
+* Mixing Fortran 77 With C and C++::  Mixing Fortran 77 With C and C++
 
 Mixing Fortran 77 With C and C++
 
@@ -1697,18 +1697,6 @@ references.
 variable name would be `sniff_glue_SOURCES', not `sniff-glue_SOURCES'.
 Similarly the sources for a library named `libmumble++.a' should be
 listed in the `libmumble___a_SOURCES' variable.
-
-`AC_PROG_FC'
-     This is the newer interface to Fortran source, replacing the older
-     F77 interfaces.  This macro is distributed with Autoconf version
-     2.50 and later.  *Note Particular Program Checks:
-     (autoconf)Particular Programs.  
-
-`AC_F77_LIBRARY_LDFLAGS'
-     This is required for programs and shared libraries that are a
-     mixture of languages that include Fortran 77 (*note Mixing Fortran
-     With C and C++::).  *Note Autoconf macros supplied with Automake:
-     Macros.
 
    The strudel is an addition, to make the use of Autoconf
 substitutions in variable names less obfuscating.
@@ -4309,10 +4297,6 @@ compilation).
    Here is a sample setup merging libtool convenience libraries from
 subdirectories into one main `libtop.la' library.
 
-7.11 Fortran Support
-====================
-
-Automake includes full support for Fortran.
      # -- Top-level Makefile.am --
      SUBDIRS = sub1 sub2 ...
      lib_LTLIBRARIES = libtop.la
@@ -4335,18 +4319,6 @@ Automake includes full support for Fortran.
        sub21/libsub21.la \
        sub22/libsub22.la \
        ...
-
-   A few additional variables are defined when a Fortran source file is
-seen:
-
-`FC'
-     The name of the Fortran compiler.
-
-`FCFLAGS'
-     Any flags to pass to the Fortran compiler.
-
-`AM_FCFLAGS'
-     The maintainer's variant of `FCFLAGS'.
 
    When using such setup, beware that `automake' will assume
 `libtop.la' is to be linked with the C linker.  This is because
@@ -4386,24 +4358,6 @@ File: automake.info,  Node: Libtool Modules,  Next: Libtool Flags,  Prev: Libtoo
 8.3.6 Libtool Modules
 ---------------------
 
-`FCCOMPILE'
-     The command used to actually compile a Fortran source file.  The
-     file name is appended to form the complete command line.
-
-`FCLINK'
-     The command used to actually link a pure Fortran program or shared
-     library.
-
-
-   Automake still provides the older Fortran 77 support, using the
-variables `F77', `FFLAGS', `AM_FFLAGS', `F77COMPILE' and `FLINK',
-instead of the analogous variables described above.
-
-   Automake can handle preprocessing Fortran and Ratfor source files in
-addition to compiling them(1).  Automake also contains some support for
-creating programs and shared libraries that are a mixture of Fortran
-and other languages (*note Mixing Fortran With C and C++::).
-
 These are libtool libraries meant to be dlopened.  They are indicated
 to libtool by passing `-module' at link-time.
 
@@ -4431,47 +4385,12 @@ single file `mymodule.c' (*note Default _SOURCES::).
 
 File: automake.info,  Node: Libtool Flags,  Next: LTLIBOBJS,  Prev: Libtool Modules,  Up: A Shared Library
 
-* Preprocessing Fortran::       Preprocessing Fortran sources
-* Compiling Fortran Files::     Compiling Fortran sources
-* Mixing Fortran With C and C++::  Mixing Fortran With C and C++
-
 8.3.7 `_LIBADD', `_LDFLAGS', and `_LIBTOOLFLAGS'
 ------------------------------------------------
 
 As shown in previous sections, the `LIBRARY_LIBADD' variable should be
 used to list extra libtool objects (`.lo' files) or libtool libraries
 (`.la') to add to LIBRARY.
-
-   (1) See also the information on rules in *Note Catalogue of Rules:
-(make)Catalogue of Rules.
-
-
-File: automake.info,  Node: Preprocessing Fortran,  Next: Compiling Fortran Files,  Up: Fortran 77 Support
-
-7.11.1 Preprocessing Fortran
-----------------------------
-
-It is possible to use Fortran which has cpp-style directives within it.
-Some Fortran compilers, such as `g77', can process these directives
-internally, and so need no separate preprocessing stage; in other
-cases, the code must be compiled indirectly, with a preprocessor
-producing pure Fortran code which is only then passed to the compiler.
-
-   Because of the syntactical differences in the underlying languages,
-however, it is not always possible to do this using the `cpp' program,
-and you may need help from a separate Fortran-specific preprocessor.
-
-   Automake's support for preprocessed Fortran is tightly bound to the
-Autoconf `AC_PROG_FPP' macro (introduced in version XXX), which
-determines if the Fortran compiler can cope with preprocessor
-directives, and if not finds a preprocessor which can.  It looks for
-files with a `.fpp' or `.F' extension (the former is the default, but
-this can be changed in the call of the `AC_PROG_FPP' macro).
-
-   Preprocessing Ratfor is straightforward.  The file `N.f' is made
-automatically from `N.r' by a rule which runs just the preprocessor to
-convert a Ratfor source file into a strict Fortran 77 source file.  The
-precise command used is as follows:
 
    The `LIBRARY_LDFLAGS' variable is the place to list additional
 libtool linking flags, such as `-version-info', `-static', and a lot
@@ -7401,3 +7320,4 @@ source.  This is only supported on a directory-by-directory basis.
 program (http://www.gnu.org/software/global/).  The `GTAGS' rule runs
 Global Tags and puts the result in the top build directory.  The
 variable `GTAGS_ARGS' holds arguments that are passed to `gtags'.  
+

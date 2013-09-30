@@ -1,9 +1,9 @@
 This is automake.info, produced by makeinfo version 4.8 from
 automake.texi.
 
-   This manual is for GNU Automake (version 1.10-starlink, 30 September
-2013), a program that creates GNU standards-compliant Makefiles from
-template files.
+   This manual is for GNU Automake (version 1.10, 15 October 2006), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
 2004, 2005, 2006 Free Software Foundation, Inc.
@@ -3479,7 +3479,6 @@ B.2 Variable Index
 * _SOURCES <1>:                          Default _SOURCES.    (line   6)
 * _SOURCES:                              Program Sources.     (line  32)
 * _TEXINFOS:                             Texinfo.             (line   6)
-* AC_PROG_FC:                            Optional.            (line  84)
 * ACLOCAL_AMFLAGS <1>:                   Rebuilding.          (line  12)
 * ACLOCAL_AMFLAGS:                       Local Macros.        (line  19)
 * ALLOCA <1>:                            LIBOBJS.             (line   6)
@@ -3490,8 +3489,8 @@ B.2 Variable Index
 * AM_CPPFLAGS:                           Program variables.   (line  15)
 * AM_CXXFLAGS:                           C++ Support.         (line  22)
 * AM_ETAGSFLAGS:                         Tags.                (line  25)
-* AM_FCFLAGS <1>:                        Fortran 9x Support.  (line  22)
-* AM_FCFLAGS:                            Fortran 77 Support.  (line  22)
+* AM_FCFLAGS:                            Fortran 9x Support.  (line  22)
+* AM_FFLAGS:                             Fortran 77 Support.  (line  22)
 * AM_GCJFLAGS:                           Java Support.        (line  24)
 * AM_INSTALLCHECK_STD_OPTIONS_EXEMPT:    Options.             (line 120)
 * AM_JAVACFLAGS:                         Java.                (line  36)
@@ -3577,19 +3576,18 @@ B.2 Variable Index
                                                               (line  53)
 * EXTRA_PROGRAMS:                        Conditional Programs.
                                                               (line  15)
+* F77:                                   Fortran 77 Support.  (line  16)
+* F77COMPILE:                            Fortran 77 Support.  (line  31)
 * F77LINK:                               How the Linker is Chosen.
                                                               (line  14)
-* FC <1>:                                Fortran 9x Support.  (line  16)
-* FC:                                    Fortran 77 Support.  (line  16)
-* FCCOMPILE <1>:                         Fortran 9x Support.  (line  25)
-* FCCOMPILE:                             Fortran 77 Support.  (line  31)
-* FCFLAGS <1>:                           Fortran 9x Support.  (line  19)
-* FCFLAGS:                               Fortran 77 Support.  (line  19)
+* FC:                                    Fortran 9x Support.  (line  16)
+* FCCOMPILE:                             Fortran 9x Support.  (line  25)
+* FCFLAGS:                               Fortran 9x Support.  (line  19)
 * FCLINK <1>:                            Fortran 9x Support.  (line  29)
-* FCLINK <2>:                            How the Linker is Chosen.
+* FCLINK:                                How the Linker is Chosen.
                                                               (line  16)
-* FCLINK:                                Fortran 77 Support.  (line  35)
-* FLIBS:                                 Mixing Fortran With C and C++.
+* FFLAGS:                                Fortran 77 Support.  (line  19)
+* FLIBS:                                 Mixing Fortran 77 With C and C++.
                                                               (line  21)
 * FLINK:                                 Fortran 77 Support.  (line  35)
 * GCJ:                                   Public macros.       (line  91)
@@ -3957,7 +3955,7 @@ B.3 General Index
                                                               (line  20)
 * CFLAGS and AM_CFLAGS:                  Flag Variables Ordering.
                                                               (line  20)
-* cfortran:                              Mixing Fortran With C and C++.
+* cfortran:                              Mixing Fortran 77 With C and C++.
                                                               (line   6)
 * check <1>:                             Extending.           (line  40)
 * check <2>:                             Tests.               (line   6)
@@ -4109,17 +4107,17 @@ B.3 General Index
                                                               (line  20)
 * Flag variables, ordering:              Flag Variables Ordering.
                                                               (line   6)
-* FLIBS, defined:                        Mixing Fortran With C and C++.
+* FLIBS, defined:                        Mixing Fortran 77 With C and C++.
                                                               (line  21)
 * foreign <1>:                           Options.             (line  17)
 * foreign:                               amhello Explained.   (line  38)
 * foreign strictness:                    Strictness.          (line  10)
 * Fortran 77 support:                    Fortran 77 Support.  (line   6)
+* Fortran 77, mixing with C and C++:     Mixing Fortran 77 With C and C++.
+                                                              (line   6)
+* Fortran 77, Preprocessing:             Preprocessing Fortran 77.
+                                                              (line   6)
 * Fortran 9x support:                    Fortran 9x Support.  (line   6)
-* Fortran, mixing with C and C++:        Mixing Fortran With C and C++.
-                                                              (line   6)
-* Fortran, Preprocessing:                Preprocessing Fortran.
-                                                              (line   6)
 * GCJFLAGS and AM_GCJFLAGS:              Flag Variables Ordering.
                                                               (line  20)
 * generated files and CVS:               CVS.                 (line  49)
@@ -4241,7 +4239,7 @@ B.3 General Index
                                                               (line  20)
 * libtoolize and autoreconf:             Libtool Issues.      (line   9)
 * libtoolize, no longer run by automake: Libtool Issues.      (line   9)
-* Linking Fortran with C and C++:        Mixing Fortran With C and C++.
+* Linking Fortran 77 with C and C++:     Mixing Fortran 77 With C and C++.
                                                               (line   6)
 * LISP primary, defined:                 Emacs Lisp.          (line   6)
 * LN_S example:                          Extending.           (line  80)
@@ -4275,11 +4273,11 @@ B.3 General Index
 * mdate-sh:                              Texinfo.             (line  29)
 * MinGW cross-compilation example:       Cross-Compilation.   (line  26)
 * missing, purpose:                      maintainer-mode.     (line   9)
-* Mixed language example:                Mixing Fortran With C and C++.
+* Mixed language example:                Mixing Fortran 77 With C and C++.
                                                               (line  36)
-* Mixing Fortran with C and C++:         Mixing Fortran With C and C++.
+* Mixing Fortran 77 with C and C++:      Mixing Fortran 77 With C and C++.
                                                               (line   6)
-* Mixing Fortran with C and/or C++:      Mixing Fortran With C and C++.
+* Mixing Fortran 77 with C and/or C++:   Mixing Fortran 77 With C and C++.
                                                               (line   6)
 * mkdir -p, macro check:                 Obsolete macros.     (line  31)
 * modules, libtool:                      Libtool Modules.     (line   6)
@@ -4414,7 +4412,7 @@ B.3 General Index
 * PS output using Texinfo:               Texinfo.             (line   6)
 * ps-local:                              Extending.           (line  40)
 * PYTHON primary, defined:               Python.              (line   6)
-* Ratfor programs:                       Preprocessing Fortran.
+* Ratfor programs:                       Preprocessing Fortran 77.
                                                               (line   6)
 * read-only source tree:                 VPATH Builds.        (line  90)
 * README-alpha:                          Gnits.               (line  34)
@@ -4480,7 +4478,7 @@ B.3 General Index
 * suffix .lo, defined:                   Libtool Concept.     (line  15)
 * SUFFIXES, adding:                      Suffixes.            (line   6)
 * Support for C++:                       C++ Support.         (line   6)
-* Support for Fortran:                   Fortran 77 Support.  (line   6)
+* Support for Fortran 77:                Fortran 77 Support.  (line   6)
 * Support for Fortran 9x:                Fortran 9x Support.  (line   6)
 * Support for GNU Gettext:               gettext.             (line   6)
 * Support for Java:                      Java Support.        (line   6)

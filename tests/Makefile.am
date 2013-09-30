@@ -56,6 +56,7 @@ ar.test \
 ar2.test \
 asm.test \
 asm2.test \
+asm3.test \
 autohdr.test \
 autohdr2.test \
 autohdr3.test \
@@ -78,6 +79,7 @@ canon2.test \
 canon3.test \
 canon4.test \
 canon5.test \
+canon-name.test \
 ccnoco.test \
 ccnoco2.test \
 check.test \
@@ -86,6 +88,7 @@ check3.test \
 check4.test \
 check5.test \
 check6.test \
+check7.test \
 checkall.test \
 clean.test \
 clean2.test \
@@ -227,6 +230,7 @@ empty3.test \
 empty4.test \
 exdir.test \
 exdir2.test \
+exdir3.test \
 exeext.test \
 exeext2.test \
 exeext3.test \
@@ -324,6 +328,7 @@ libtool6.test \
 libtool7.test \
 libtool8.test \
 libtool9.test \
+libtoo10.test \
 license.test \
 link_c_cxx.test	\
 link_dist.test \
@@ -349,6 +354,7 @@ ltconv.test \
 ltdeps.test \
 ltlibobjs.test \
 ltlibsrc.test \
+lzma.test \
 maintclean.test \
 make.test \
 makej.test \
@@ -360,6 +366,7 @@ mdate.test \
 mdate2.test \
 mdate3.test \
 mdate4.test \
+mdate5.test \
 missing.test \
 missing2.test \
 missing3.test \
@@ -403,6 +410,8 @@ output9.test \
 output10.test \
 output11.test \
 output12.test \
+output13.test \
+output-order.test \
 overrid.test \
 parse.test \
 percent.test \
@@ -488,6 +497,7 @@ spell2.test \
 spell3.test \
 spelling.test \
 spy.test \
+stdinc.test \
 stamph2.test \
 stdlib.test \
 stdlib2.test \
