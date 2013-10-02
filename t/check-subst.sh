@@ -16,10 +16,11 @@
 
 # Check @substituted@ TESTS.
 # Note that in this test, we rely on the .test extension for the
-# substituted names: this is necessary for parallel-tests.
-# See also sister test 'check-subst-prog.test'.
+# substituted names: this is necessary for the parallel harness.
+# See also sister test 'check-subst-prog.sh'.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_SUBST([script_tests], ['subst-pass-script.sh subst-xfail-script.sh'])
@@ -32,7 +33,7 @@ TESTS = pass-script.test xfail-script.test @script_tests@
 XFAIL_TESTS = @xfail_tests@
 END
 
-if test "$am_parallel_tests" = yes; then
+if test x"$am_serial_tests" != x"yes"; then
   unindent >> Makefile.am <<'END'
     TEST_EXTENSIONS = .sh .test
     SH_LOG_COMPILER = $(SHELL)
@@ -51,7 +52,7 @@ cp pass-script.test subst-pass-script.sh
 cp xfail-script.test subst-xfail-script.sh
 chmod a+x pass-script.test xfail-script.test
 
-if test "$am_parallel_tests" != yes; then
+if test x"$am_serial_tests" = x"yes"; then
   chmod a+x subst-pass-script.sh subst-xfail-script.sh
 fi
 
@@ -72,7 +73,7 @@ for vpath in false : ; do
   $srcdir/configure
   $MAKE all
   $MAKE check
-  if test "$am_parallel_tests" = yes; then
+  if test x"$am_serial_tests" != x"yes"; then
     ls -l
     test -f pass-script.log
     test -f xfail-script.log

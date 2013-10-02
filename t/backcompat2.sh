@@ -19,13 +19,13 @@
 # third argument is empty or non-existent.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 # A trick to make the test run muuuch faster, by avoiding repeated
 # runs of aclocal (one order of magnitude improvement in speed!).
-echo 'AC_INIT(x,0) AM_INIT_AUTOMAKE' > configure.in
+echo 'AC_INIT(x,0) AM_INIT_AUTOMAKE' > configure.ac
 $ACLOCAL
-rm -rf configure.in autom4te.*
+rm -rf configure.ac autom4te.*
 
 touch install-sh missing
 
@@ -35,19 +35,19 @@ cat > config.h.in <<'END'
 END
 
 for am_arg3 in ':' 'false' '#' ' '; do
-  unindent > configure.in <<END
+  unindent > configure.ac <<END
     AC_INIT
     AC_CONFIG_HEADERS([config.h])
     AM_INIT_AUTOMAKE([pkgname], [pkgversion], [$am_arg3])
     AC_OUTPUT
 END
-  cat configure.in # For debugging.
+  cat configure.ac # For debugging.
   $AUTOCONF
   ./configure
   cat config.h # For debugging.
   # The non-empty third argument should prevent PACKAGE and VERSION
   # from being AC_DEFINE'd.
-  $EGREP 'pkg(name|version)' config.h && Exit 1
+  $EGREP 'pkg(name|version)' config.h && exit 1
   # This is required because even relatively-recent versions of the
   # BSD shell wrongly exit when the 'errexit' shell flag is active if
   # the last command of a compound statement fails, even if it should
@@ -56,13 +56,13 @@ END
 done
 
 for am_extra_args in '' ',' ', []'; do
-  unindent > configure.in <<END
+  unindent > configure.ac <<END
     AC_INIT
     AC_CONFIG_HEADERS([config.h])
     AM_INIT_AUTOMAKE([pkgname], [pkgversion]$am_extra_args)
     AC_OUTPUT
 END
-  cat configure.in # For debugging.
+  cat configure.ac # For debugging.
   $AUTOCONF
   ./configure
   cat config.h # For debugging.

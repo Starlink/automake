@@ -18,7 +18,7 @@
 # of the "deleted header problem".  This test checks that we can rename
 # an included .am file without confusing the remake rules.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -44,7 +44,7 @@ rm -f has-run-1
 mv -f foo.am bar.am
 echo include bar.am > Makefile.am
 $MAKE Makefile
-$FGREP 'foo.am' Makefile Makefile.in && Exit 1
+$FGREP 'foo.am' Makefile Makefile.in && exit 1
 
 $sleep
 rm -f has-run-1 bar.am
@@ -52,7 +52,7 @@ echo 'all-local:; echo ok > has-run-2' > zardoz.am
 echo 'include $(srcdir)/zardoz.am' > Makefile.am
 using_gmake || $MAKE Makefile
 $MAKE
-test ! -f has-run-1
+test ! -e has-run-1
 test -f has-run-2
 
 :

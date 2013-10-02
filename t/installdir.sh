@@ -22,7 +22,7 @@
 # installdirs is missing this.  Ideally this would be an automatic
 # feature of any exported target.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -36,9 +36,9 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-test `grep installdirs-local Makefile.in | wc -l` -eq 4
+test $(grep -c installdirs-local Makefile.in) -eq 4
 
-cwd=`pwd` || fatal_ "getting current working directory"
+cwd=$(pwd) || fatal_ "getting current working directory"
 
 $AUTOCONF
 ./configure --prefix="$cwd/inst"

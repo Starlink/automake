@@ -16,7 +16,7 @@
 
 # Unsafe absolute directory names should be diagnosed.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir 'unsafe$'
 cd 'unsafe$'
@@ -29,14 +29,14 @@ mv ../install-sh ../missing .
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure 2>stderr && { cat stderr >&2; Exit 1; }
+./configure 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'unsafe absolute working directory' stderr
 
 cd ..
 mkdir build
 cd build
-../unsafe$/configure 2>stderr && { cat stderr >&2; Exit 1; }
+../unsafe$/configure 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'unsafe srcdir' stderr
 

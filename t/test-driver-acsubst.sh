@@ -17,12 +17,11 @@
 # parallel-tests:
 #  - LOG_DRIVER variables can be AC_SUBST'd
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir test-drivers
 
-cp "$am_testauxdir"/trivial-test-driver test-drivers/triv \
+cp "$am_testaux_srcdir"/trivial-test-driver test-drivers/triv \
   || fatal_ "failed to fetch auxiliary script trivial-test-driver"
 cp "$am_scriptdir"/test-driver test-drivers/dflt \
   || fatal_ "failed to fetch auxiliary script test-driver"
@@ -60,7 +59,7 @@ $AUTOCONF
 cat > foo <<'END'
 #!/bin/sh
 echo "PASS: from $0"
-exit 1 # Exit status should be ignored by the trivial-test-driver.
+exit 1 # exit status should be ignored by the trivial-test-driver.
 END
 
 cat > bar.test <<'END'
@@ -82,7 +81,7 @@ cat test-suite.log
 cat foo.log
 cat bar.log
 cat baz.log
-test $st -eq 0 || Exit 1
+test $st -eq 0 || exit 1
 count_test_results total=3 pass=1 fail=0 skip=1 xfail=1 xpass=0 error=0
 
 :

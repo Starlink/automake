@@ -17,8 +17,8 @@
 # Check that many different Yacc parsers (both C and C++) can co-exists
 # in the same directory.
 
-required=yacc
-. ./defs || Exit 1
+required='cc c++ yacc'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -166,7 +166,7 @@ for try in 0 1; do
     esac
   else
     echo "$me: invalid value of \$try '$try'" >&2
-    Exit 99
+    exit 99
   fi
 
   $srcdir/configure
@@ -177,7 +177,7 @@ for try in 0 1; do
   test -f p.c
   test -f p.h
   test -f c2-p.c
-  test ! -r c2-p.h
+  test ! -e c2-p.h
 
   test -f parse.cc
   test -f parse.hh
@@ -185,8 +185,8 @@ for try in 0 1; do
   test -f parse3.hxx
 
   test -f cxx2-parse2.c++
-  test ! -r parse2.h++
-  test ! -r cxx2-parse2.h++
+  test ! -e parse2.h++
+  test ! -e cxx2-parse2.h++
 
   # Minimal checks about recovering from header removal.
   rm -f p.h parse.hh parse3.hxx
@@ -194,7 +194,7 @@ for try in 0 1; do
   $debug_info
   test -f p.h
   test -f parse.hh
-  test ! -r parse3.hxx
+  test ! -e parse3.hxx
   $run_make
   $debug_info
   test -f parse3.hxx

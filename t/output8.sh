@@ -17,7 +17,7 @@
 # Check AC_CONFIG_FILES support for files starting with '../'.
 # Report from Bruno Haible.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir testdir
 cd testdir
@@ -42,11 +42,13 @@ $AUTOMAKE --add-missing
 
 ./configure
 $MAKE
-test "`cat a/foo.sh`" = foo
+test "$(cat a/foo.sh)" = foo
 
 $sleep
 echo 'bar' >a/foo.sh.in
 
 cd a
 $MAKE foo.sh
-test "`cat foo.sh`" = bar
+test "$(cat foo.sh)" = bar
+
+:

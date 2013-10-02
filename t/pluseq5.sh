@@ -16,7 +16,7 @@
 
 # Test for another '+=' problem.  Report from Brian Jones.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([CHECK], [true])
@@ -43,7 +43,7 @@ AUTOMAKE_fails
 # Is !CHECK mentioned?
 grep ':.*!CHECK$' stderr
 # Is there only one missing condition?
-test `grep ':  ' stderr | wc -l` = 1
+test $(grep -c ':  ' stderr) -eq 1
 
 # By the way, Automake should suggest using AM_CPPFLAGS,
 # because INCLUDES is an obsolete name.
@@ -53,7 +53,7 @@ grep AM_CPPFLAGS stderr
 # -Wno-obsolete:
 echo 'AUTOMAKE_OPTIONS = -Wno-obsolete' >> Makefile.am
 AUTOMAKE_fails
-grep AM_CPPFLAGS stderr && Exit 1
+grep AM_CPPFLAGS stderr && exit 1
 # !CHECK should still be mentioned.
 grep ':.*!CHECK$' stderr
 

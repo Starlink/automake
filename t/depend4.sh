@@ -16,7 +16,7 @@
 
 # Check that dependencies are included when there are many header files.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_PROG_CC >> configure.ac
 
@@ -30,7 +30,7 @@ for header in one.h two.h three.h four.h five.h six.h; do
     fred_SOURCES = fred1.c $headers
 END
   $AUTOMAKE
-  test 1 = `grep '^@AMDEP_TRUE@@am__include@' Makefile.in | wc -l`
+  test 1 -eq $(grep -c '^@AMDEP_TRUE@@am__include@' Makefile.in)
 done
 
 :

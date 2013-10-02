@@ -17,7 +17,7 @@
 # Test to make sure compiling Vala code really works with recursive make.
 
 required="pkg-config valac gcc GNUmake"
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -62,8 +62,6 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 
-grep PKG_CHECK_MODULES configure && skip_ "pkg-config m4 macros not found"
-
 ./configure
 $MAKE
 
@@ -82,6 +80,6 @@ for h in $headers; do test -f $h; done
 $MAKE distcheck
 
 $MAKE maintainer-clean
-for h in $headers; do test ! -f $h; done
+for h in $headers; do test ! -e $h; done
 
 :

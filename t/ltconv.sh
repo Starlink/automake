@@ -18,7 +18,7 @@
 # This example is taken from the manual.
 
 required='cc native libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_PROG_CC
@@ -110,10 +110,12 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
+cwd=$(pwd) || fatal_ "getting current working directory"
+
 # Install libraries in lib/, programs in bin/, and the rest in empty/.
 # (in fact there is no "rest", so as the name imply empty/ is
 # expected to remain empty).
-./configure "--prefix=`pwd`/empty" "--libdir=`pwd`/lib" "--bindir=`pwd`/bin"
+./configure --prefix="$cwd/empty" --libdir="$cwd/lib" --bindir="$cwd/bin"
 
 $MAKE
 test -f libtop.la
@@ -132,25 +134,25 @@ test -f installcheck-ok
 rm -f installcheck-ok
 
 find empty -type f -print > empty.lst
-cat empty.lst
-test 0 = `wc -l < empty.lst`
+test -s empty.lst && { cat empty.lst; exit 1; }
 
 $MAKE clean
-test ! -f libtop.la
-test ! -f sub1/libsub1.la
-test ! -f sub2/libsub2.la
-test ! -f sub2/sub21/libsub21.la
-test ! -f sub2/sub22/libsub22.la
-test ! -f ltconvtest
+test ! -e libtop.la
+test ! -e sub1/libsub1.la
+test ! -e sub2/libsub2.la
+test ! -e sub2/sub21/libsub21.la
+test ! -e sub2/sub22/libsub22.la
+test ! -e ltconvtest
 
 $MAKE installcheck
 test -f installcheck-ok
 rm -f installcheck-ok
 
 $MAKE uninstall
-find lib -type f -print > lib.lst
-test 0 = `wc -l < lib.lst`
-find bin -type f -print > bin.lst
-test 0 = `wc -l < bin.lst`
+for d in lib bin; do
+  find $d -type f -print > $d.lst
+  test -s $d.lst && { cat $d.lst; exit 1; }
+  : For shells with busted 'set -e'.
+done
 
 :

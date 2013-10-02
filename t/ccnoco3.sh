@@ -17,7 +17,7 @@
 # Test to make sure 'compile' doesn't call 'mv SRC SRC'.
 
 required=gcc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -52,11 +52,16 @@ case " \$* " in
     ;;
 esac
 
-# Use '$CC', not 'gcc', to honour the compiler chosen by 't/defs'.
+# Use '$CC', not 'gcc', to honour the compiler chosen
+# by the testsuite setup.
 exec $CC "\$@"
 END
 
 chmod +x Mycomp
+
+# Make sure the compiler doesn't understand '-c -o'
+CC=$(pwd)/Mycomp
+export CC
 
 $ACLOCAL
 $AUTOCONF
@@ -65,13 +70,9 @@ $AUTOMAKE --copy --add-missing
 mkdir build
 cd build
 
-# Make sure the compiler doesn't understand '-c -o'
-CC=`pwd`/../Mycomp
-export CC
-
 ../configure
-$MAKE 2>stderr || { cat stderr >&2; Exit 1; }
+$MAKE 2>stderr || { cat stderr >&2; exit 1; }
 cat stderr >&2
-grep 'mv.*the same file' stderr && Exit 1
+grep 'mv.*the same file' stderr && exit 1
 
 :

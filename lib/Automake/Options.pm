@@ -269,7 +269,6 @@ sub _is_valid_easy_option ($)
   return scalar grep { $opt eq $_ } qw(
     check-news
     color-tests
-    cygnus
     dejagnu
     dist-bzip2
     dist-lzip
@@ -287,6 +286,9 @@ sub _is_valid_easy_option ($)
     no-texinfo.tex
     nostdinc
     readme-alpha
+    serial-tests
+    parallel-tests
+    silent-rules
     std-options
     subdir-objects
   );
@@ -319,28 +321,19 @@ sub _process_option_list (\%@)
           error ($where,
                  "automatic de-ANSI-fication support has been removed");
         }
+      elsif ($_ eq 'cygnus')
+        {
+          error $where, "support for Cygnus-style trees has been removed";
+        }
       elsif ($_ eq 'dist-lzma')
         {
           error ($where, "support for lzma-compressed distribution " .
                          "archives has been removed");
         }
-      elsif ($_ eq 'parallel-tests')
-        {
-          # Just recognize it explicitly.
-        }
-      elsif ($_ eq 'serial-tests')
-        {
-          # This is a little of an hack, but good enough for the moment.
-          delete $options->{'parallel-tests'};
-        }
       elsif (/^filename-length-max=(\d+)$/)
         {
           delete $options->{$_};
           $options->{'filename-length-max'} = [$_, $1];
-        }
-      elsif ($_ eq 'silent-rules')
-        {
-          _option_must_be_from_configure ($_, $where);
         }
       elsif ($_ eq 'tar-v7' || $_ eq 'tar-ustar' || $_ eq 'tar-pax')
         {

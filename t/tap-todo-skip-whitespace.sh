@@ -18,10 +18,9 @@
 #  - normalization of whitespace in console testsuite progress associated
 #    with TODO and SKIP directives
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > stub.tap <<END
 1 # TODO

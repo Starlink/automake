@@ -17,7 +17,7 @@
 # Stress test on canonicalization.
 
 required='cc libtool libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

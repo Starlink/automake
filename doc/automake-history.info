@@ -511,7 +511,7 @@ File: automake-history.info,  Node: Timeline,  Next: Dependency Tracking Evoluti
 
      It's only the beginning: in two months he will send 192 patches.
      Then he would slow down so Tom can catch up and review all this.
-     Initially Tom actually read all these patches, then he probably
+     Initially Tom actually read all of these patches, then he probably
      trustingly answered OK to most of them, and finally gave up and
      let Akim apply whatever he wanted.  There was no way to keep up
      with that patch rate.
@@ -520,7 +520,7 @@ File: automake-history.info,  Node: Timeline,  Next: Dependency Tracking Evoluti
           sourcequake; I have yet to figure where the relevant passage
           has been moved :) - Alexandre Duret-Lutz
 
-     All these patches were sent to and discussed on
+     All of these patches were sent to and discussed on
      <automake@gnu.org>, so subscribed users were literally drowning in
      technical mails.  Eventually, the <automake-patches@gnu.org>
      mailing list was created in May.
@@ -531,7 +531,7 @@ File: automake-history.info,  Node: Timeline,  Next: Dependency Tracking Evoluti
      various places in the `automake' script itself; this does not help
      ensuring a consistent treatment of these rules (for instance
      making sure that user-defined rules override Automake's own rules).
-     One of Akim's goal was moving all these hard-coded rules to
+     One of Akim's goal was moving all of these hard-coded rules to
      separate `Makefile' fragments, so the logic could be centralized
      in a `Makefile' fragment processor.
 
@@ -1319,7 +1319,7 @@ A.1 GNU Free Documentation License
      have printed covers) of the Document, numbering more than 100, and
      the Document's license notice requires Cover Texts, you must
      enclose the copies in covers that carry, clearly and legibly, all
-     these Cover Texts: Front-Cover Texts on the front cover, and
+     of these Cover Texts: Front-Cover Texts on the front cover, and
      Back-Cover Texts on the back cover.  Both covers must also clearly
      and legibly identify you as the publisher of these copies.  The
      front cover must present the full title with all words of the
@@ -1658,15 +1658,15 @@ permit their use in free software.
 Tag Table:
 Node: Top714
 Node: Timeline2250
-Node: Dependency Tracking Evolution33686
-Node: First Take on Dependencies34528
-Node: Dependencies As Side Effects37191
-Node: Dependencies for the User39253
-Node: Techniques for Dependencies44287
-Node: Recommendations for Tool Writers45989
-Node: Future Directions for Dependencies46708
-Node: Releases47178
-Node: Copying This Manual52658
-Node: GNU Free Documentation License52885
+Node: Dependency Tracking Evolution33695
+Node: First Take on Dependencies34537
+Node: Dependencies As Side Effects37200
+Node: Dependencies for the User39262
+Node: Techniques for Dependencies44296
+Node: Recommendations for Tool Writers45998
+Node: Future Directions for Dependencies46717
+Node: Releases47187
+Node: Copying This Manual52667
+Node: GNU Free Documentation License52894
 
 End Tag Table

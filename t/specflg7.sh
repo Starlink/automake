@@ -17,7 +17,7 @@
 # The true/false example from the manual, plus a check for _SHORTNAME.
 
 required='cc native'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -58,7 +58,7 @@ $MAKE
 ./true | grep true
 ./false | grep false
 
-objext=`sed -n -e 's/^OBJEXT = //p' < Makefile`
+objext=$(sed -n -e 's/^OBJEXT = //p' < Makefile)
 test -f ./t-false.$objext
 test -f ./f-false.$objext
 

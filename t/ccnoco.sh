@@ -18,7 +18,7 @@
 # understand '-c -o'.
 
 required=gcc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -53,14 +53,15 @@ case " \$* " in
     ;;
 esac
 
-# Use '$CC', not 'gcc', to honour the compiler chosen by 't/defs'.
+# Use '$CC', not 'gcc', to honour the compiler chosen
+# by the testsuite setup.
 exec $CC "\$@"
 END
 
 chmod +x Mycomp
 
 # Make sure the compiler doesn't understand '-c -o'
-CC=`pwd`/Mycomp
+CC=$(pwd)/Mycomp
 export CC
 
 $ACLOCAL

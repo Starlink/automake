@@ -18,10 +18,9 @@
 #  - diagnostic messages (TAP lines with leading "#")
 #  - flags '--comments' and '--no-comments' of the TAP test driver
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 metacharacters=\''"\$!&()[]<>#;^?*'
 
@@ -53,13 +52,13 @@ PASS: all.test 4 - zardoz
 # all.test: Shell metacharacters here: $metacharacters
 END
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
-$EGREP -i "#.*all\\.test|a comment|(Tests|Shell) " stdout && Exit 1
+$EGREP -i "#.*all\\.test|a comment|(Tests|Shell) " stdout && exit 1
 count_test_results total=4 pass=2 fail=0 xpass=0 xfail=1 skip=1 error=0
 
 echo 'AM_TEST_LOG_DRIVER_FLAGS = --comments' >> Makefile
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 $FGREP ' all.test' stdout > got
 cat exp
@@ -68,9 +67,9 @@ diff exp got
 count_test_results total=4 pass=2 fail=0 xpass=0 xfail=1 skip=1 error=0
 
 TEST_LOG_DRIVER_FLAGS="--no-comments" $MAKE -e check >stdout \
-  || { cat stdout; Exit 1; }
+  || { cat stdout; exit 1; }
 cat stdout
-$EGREP -i "#.*all\\.test|a comment|(Tests|Shell) " stdout && Exit 1
+$EGREP -i "#.*all\\.test|a comment|(Tests|Shell) " stdout && exit 1
 count_test_results total=4 pass=2 fail=0 xpass=0 xfail=1 skip=1 error=0
 
 # The "#"-prepended lines here shouldn't be parsed as test results.
@@ -89,7 +88,7 @@ ok
 #TODO
 END
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 count_test_results total=1 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=0
 
@@ -110,7 +109,7 @@ ok 1
 #  ${tab} ${tab}${tab}foo  bar${tab}baz  ${tab}
 END
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 count_test_results total=1 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=0
 
@@ -119,6 +118,6 @@ grep "^# all.test:${ws0p}bar${ws0p}$" stdout
 grep "^# all.test:${ws1p}zardoz${ws0p}$" stdout
 grep "^# all.test:${ws1p}foo  bar${tab}baz${ws0p}$" stdout
 
-test `grep -c '^# all\.test:' stdout` -eq 4
+test $(grep -c '^# all\.test:' stdout) -eq 4
 
 :

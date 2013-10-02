@@ -14,23 +14,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check the testsuite summary with the parallel-tests harness.  This
+# Check the testsuite summary with the parallel test harness.  This
 # script is meant to be sourced by other test script, so that it can
 # be used to check different scenarios (colorized and non-colorized
 # testsuite output, packages with and without bug-report addresses,
 # testsuites in subdirectories, ...)
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 case $use_colors in
   yes)
     AM_COLOR_TESTS=always; export AM_COLOR_TESTS
-    TERM=ansi; export TERM
-    am_opts='parallel-tests color-tests'
+    # Forced colorization should take place also with non-ANSI
+    # terminals; hence this setting.
+    TERM=dumb; export TERM
     ;;
   no)
-    am_opts='parallel-tests'
     ;;
   *)
     fatal_ "invalid use_colors='$use_colors'";;
@@ -38,7 +37,7 @@ esac
 
 cat > configure.ac <<END
 AC_INIT([GNU AutoFoo], [7.1], [bug-automake@gnu.org])
-AM_INIT_AUTOMAKE([$am_opts])
+AM_INIT_AUTOMAKE
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
@@ -80,11 +79,11 @@ do_check ()
   eval "env $tests $xfail_tests \$MAKE -e check > stdout || st=\$?"
   cat stdout
   if $expect_failure; then
-    test $st -gt 0 || Exit 1
+    test $st -gt 0 || exit 1
   else
-    test $st -eq 0 || Exit 1
+    test $st -eq 0 || exit 1
   fi
-  $PERL "$am_testauxdir"/extract-testsuite-summary.pl stdout >summary.got \
+  $PERL "$am_testaux_srcdir"/extract-testsuite-summary.pl stdout >summary.got \
    || fatal_ "cannot extract testsuite summary"
   cat summary.exp
   cat summary.got
@@ -94,7 +93,7 @@ do_check ()
   else
     compare=diff
   fi
-  $compare summary.exp summary.got || Exit 1
+  $compare summary.exp summary.got || exit 1
 }
 
 br='============================================================================'

@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # The install rule should honor failures of the install program.
-# Some of these are already caught by instmany.test.
+# Some of these are already caught by 'instmany.sh'.
 
-# This is the libtool sister test of instfail.test
+# This is the libtool sister test of 'instfail.sh'.
 
 required='cc libtool libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<END
 AM_PROG_AR
@@ -55,7 +55,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
+instdir=$(pwd)/inst || fatal_ "getting current working directory"
 ./configure --prefix="$instdir"
 $MAKE
 
@@ -66,16 +66,16 @@ for file in liblt1.la libltn1.la
 do
   chmod a-r $file
   test ! -r $file || skip_ "cannot drop file read permissions"
-  $MAKE install-exec && Exit 1
+  $MAKE install-exec && exit 1
   chmod u+r $file
 done
 
 $MAKE unreadable-prog
-$MAKE install-exec && Exit 1
+$MAKE install-exec && exit 1
 $MAKE readable-prog
 
 $MAKE unreadable-progn
-$MAKE install-exec && Exit 1
+$MAKE install-exec && exit 1
 $MAKE readable-progn
 
 :

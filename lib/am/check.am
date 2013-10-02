@@ -17,32 +17,33 @@
 am__tty_colors_dummy = \
   mgn= red= grn= lgn= blu= brg= std=; \
   am__color_tests=no
-if %?COLOR%
-# If stdout is a non-dumb tty, use colors.  If test -t is not supported,
-# then this fails; a conservative approach.  Of course do not redirect
-# stdout here, just stderr.
-am__tty_colors = \
-$(am__tty_colors_dummy); \
-test "X$(AM_COLOR_TESTS)" != Xno \
-&& test "X$$TERM" != Xdumb \
-&& { test "X$(AM_COLOR_TESTS)" = Xalways || test -t 1 2>/dev/null; } \
-&& { \
-  am__color_tests=yes; \
-  red='[0;31m'; \
-  grn='[0;32m'; \
-  lgn='[1;32m'; \
-  blu='[1;34m'; \
-  mgn='[0;35m'; \
-  brg='[1m'; \
-  std='[m'; \
+
+am__tty_colors = { \
+  $(am__tty_colors_dummy); \
+  if test "X$(AM_COLOR_TESTS)" = Xno; then \
+    am__color_tests=no; \
+  elif test "X$(AM_COLOR_TESTS)" = Xalways; then \
+    am__color_tests=yes; \
+## If stdout is a non-dumb tty, use colors.  If test -t is not supported,
+## then this check fails; a conservative approach.  Of course do not
+## redirect stdout here, just stderr.
+  elif test "X$$TERM" != Xdumb && { test -t 1; } 2>/dev/null; then \
+    am__color_tests=yes; \
+  fi; \
+  if test $$am__color_tests = yes; then \
+    red='[0;31m'; \
+    grn='[0;32m'; \
+    lgn='[1;32m'; \
+    blu='[1;34m'; \
+    mgn='[0;35m'; \
+    brg='[1m'; \
+    std='[m'; \
+  fi; \
 }
-else !%?COLOR%
-am__tty_colors = $(am__tty_colors_dummy)
-endif !%?COLOR%
 
 .PHONY: check-TESTS
 
-if %?PARALLEL_TESTS%
+if !%?SERIAL_TESTS%
 
 include inst-vars.am
 
@@ -52,12 +53,116 @@ include inst-vars.am
 ## originally written at EPITA/LRDE, further developed at Gostai, then made
 ## its way from GNU coreutils to end up, largely rewritten, in Automake.
 ## The current version is an heavy rewrite of that, to allow for support
-## of more test metadata, and the use of custom test derivers and protocols
+## of more test metadata, and the use of custom test drivers and protocols
 ## (among them, TAP).
 
-# Restructured Text title and section.
+am__recheck_rx = ^[ 	]*:recheck:[ 	]*
+am__global_test_result_rx = ^[ 	]*:global-test-result:[ 	]*
+am__copy_in_global_log_rx = ^[ 	]*:copy-in-global-log:[ 	]*
+
+# A command that, given a newline-separated list of test names on the
+# standard input, print the name of the tests that are to be re-run
+# upon "make recheck".
+am__list_recheck_tests = $(AWK) '{ \
+## By default, we assume the test is to be re-run.
+  recheck = 1; \
+  while ((rc = (getline line < ($$0 ".trs"))) != 0) \
+    { \
+      if (rc < 0) \
+        { \
+## If we've encountered an I/O error here, there are three possibilities:
+##
+##  [1] The '.log' file exists, but the '.trs' does not; in this case,
+##      we "gracefully" recover by assuming the corresponding test is
+##      to be re-run (which will re-create the missing '.trs' file).
+##
+##  [2] Both the '.log' and '.trs' files are missing; this means that
+##      the corresponding test has not been run, and is thus *not* to
+##      be re-run.
+##
+##  [3] We have encountered some corner-case problem (e.g., a '.log' or
+##      '.trs' files somehow made unreadable, or issues with a bad NFS
+##      connection, or whatever); we don't handle such corner cases.
+##
+          if ((getline line2 < ($$0 ".log")) < 0) \
+	    recheck = 0; \
+          break; \
+        } \
+      else if (line ~ /$(am__recheck_rx)[nN][Oo]/) \
+## A directive explicitly specifying the test is *not* to be re-run.
+        { \
+          recheck = 0; \
+          break; \
+        } \
+      else if (line ~ /$(am__recheck_rx)[yY][eE][sS]/) \
+        { \
+## A directive explicitly specifying the test *is* to be re-run.
+          break; \
+        } \
+## else continue with the next iteration.
+    }; \
+  if (recheck) \
+    print $$0; \
+## Don't leak open file descriptors, as this could cause serious
+## problems when there are many tests (yes, even on Linux).
+  close ($$0 ".trs"); \
+  close ($$0 ".log"); \
+}'
+
+# A command that, given a newline-separated list of test names on the
+# standard input, create the global log from their .trs and .log files.
+am__create_global_log = $(AWK) ' \
+function fatal(msg) \
+{ \
+  print "fatal: making $@: " msg | "cat >&2"; \
+  exit 1; \
+} \
+function rst_section(header) \
+{ \
+  print header; \
+  len = length(header); \
+  for (i = 1; i <= len; i = i + 1) \
+    printf "="; \
+  printf "\n\n"; \
+} \
+{ \
+## By default, we assume the test log is to be copied in the global log,
+## and that its result is simply "RUN" (i.e., we still don't know what
+## it outcome was, but we know that at least it has run).
+  copy_in_global_log = 1; \
+  global_test_result = "RUN"; \
+  while ((rc = (getline line < ($$0 ".trs"))) != 0) \
+    { \
+      if (rc < 0) \
+         fatal("failed to read from " $$0 ".trs"); \
+      if (line ~ /$(am__global_test_result_rx)/) \
+        { \
+          sub("$(am__global_test_result_rx)", "", line); \
+          sub("[ 	]*$$", "", line); \
+          global_test_result = line; \
+        } \
+      else if (line ~ /$(am__copy_in_global_log_rx)[nN][oO]/) \
+        copy_in_global_log = 0; \
+    }; \
+  if (copy_in_global_log) \
+    { \
+      rst_section(global_test_result ": " $$0); \
+      while ((rc = (getline line < ($$0 ".log"))) != 0) \
+      { \
+        if (rc < 0) \
+          fatal("failed to read from " $$0 ".log"); \
+        print line; \
+      }; \
+      printf "\n"; \
+    }; \
+## Don't leak open file descriptors, as this could cause serious
+## problems when there are many tests (yes, even on Linux).
+  close ($$0 ".trs"); \
+  close ($$0 ".log"); \
+}'
+
+# Restructured Text title.
 am__rst_title = { sed 's/.*/   &   /;h;s/./=/g;p;x;s/ *$$//;p;g' && echo; }
-am__rst_section = { sed 'p;s/./=/g;' && echo; }
 
 # Solaris 10 'make', and several other traditional 'make' implementations,
 # pass "-e" to $(SHELL), and POSIX 2008 even requires this.  Work around it
@@ -82,8 +187,12 @@ $(am__sh_e_setup);					\
 $(am__vpath_adj_setup) $(am__vpath_adj)			\
 $(am__tty_colors);					\
 srcdir=$(srcdir); export srcdir;			\
-am__odir=`echo "./$@" | sed 's|/[^/]*$$||'`;		\
-test "x$$am__odir" = x. || $(MKDIR_P) "$$am__odir" || exit $$?;	\
+case "$@" in						\
+  */*) am__odir=`echo "./$@" | sed 's|/[^/]*$$||'`;;	\
+    *) am__odir=.;; 					\
+esac;							\
+test "x$$am__odir" = x"." || test -d "$$am__odir" 	\
+  || $(MKDIR_P) "$$am__odir" || exit $$?;		\
 if test -f "./$$f"; then dir=./;			\
 elif test -f "$$f"; then dir=;				\
 else dir="$(srcdir)/"; fi;				\
@@ -109,7 +218,7 @@ $(AM_TESTS_ENVIRONMENT) $(TESTS_ENVIRONMENT)
 # '$bases'.  This honors runtime overriding of TESTS and TEST_LOGS.  Sadly,
 # we cannot use something simpler, involving e.g., "$(TEST_LOGS:.log=)",
 # since that might cause problem with VPATH rewrites for suffix-less tests.
-# See also 'test-harness-vpath-rewrite.test' and 'test-trs-basic.test'.
+# See also 'test-harness-vpath-rewrite.sh' and 'test-trs-basic.sh'.
 am__set_TESTS_bases = \
   bases='$(TEST_LOGS)'; \
   bases=`for i in $$bases; do echo $$i; done | sed 's/\.log$$//'`; \
@@ -127,6 +236,12 @@ am__set_TESTS_bases = \
 .log.trs:
 	rm -f $< $@
 	$(MAKE) $(AM_MAKEFLAGS) $<
+
+# Leading 'am--fnord' is there to ensure the list of targets does not
+# exand to empty, as could happen e.g. with make check TESTS=''.
+am--fnord $(TEST_LOGS) $(TEST_LOGS:.log=.trs): $(am__force_recheck)
+am--force-recheck:
+	@:
 
 $(TEST_SUITE_LOG): $(TEST_LOGS)
 	@$(am__set_TESTS_bases); \
@@ -244,29 +359,9 @@ $(TEST_SUITE_LOG): $(TEST_LOGS)
 	  echo;								\
 	  echo ".. contents:: :depth: 2";				\
 	  echo;								\
-	  for i in $$bases; do						\
-## FIXME: one fork per test -- this is horrendously inefficient!
-	    if grep "^$$ws*:copy-in-global-log:$$ws*no$$ws*$$" $$i.trs \
-	         >/dev/null; then continue; \
-	    fi; \
-## Get the declared "global result" of the test.
-## FIXME: yet another one fork per test here!
-	    glob_res=`sed -n -e "s/$$ws*$$//" \
-	                     -e "s/^$$ws*:global-test-result:$$ws*//p" \
-		        $$i.trs`; \
-## If no global result is explicitly declared, we'll merely mark the
-## test as "RUN" in the global test log.
-	    test -n "$$glob_res" || glob_res=RUN; \
-## Write the name and result of the test as an RST section title.
-	    echo "$$glob_res: $$i" | $(am__rst_section); \
-## If we should have remade any unreadable '.log', above.
-	    if test ! -r $$i.log; then \
-	      echo "fatal: making $@: $$i.log is unreadable" >&2; \
-	      exit 1; \
-	    fi; \
-	    cat $$i.log; echo; \
-	  done;	\
-	} >$(TEST_SUITE_LOG).tmp;					\
+	  for b in $$bases; do echo $$b; done				\
+	    | $(am__create_global_log);					\
+	} >$(TEST_SUITE_LOG).tmp || exit 1;				\
 	mv $(TEST_SUITE_LOG).tmp $(TEST_SUITE_LOG);			\
 ## Emit the test summary on the console.
 	if $$success; then						\
@@ -304,21 +399,10 @@ RECHECK_LOGS = $(TEST_LOGS)
 ## Running all tests, or rechecking failures. ##
 ## ------------------------------------------ ##
 
-check-TESTS recheck:
-## If we are running "make recheck", it's not the user which can decide
-## which tests to consider for re-execution, so we must ignore the value
-## of $(RECHECK_LOGS).
-## Here and below, we expand $(RECHECK_LOGS) only once, to avoid exceeding
-## line length limits.
-	@if test $@ != recheck; then \
-	   list='$(RECHECK_LOGS)'; \
-	   test -z "$$list" || rm -f $$list; \
-	 fi
-	@if test $@ != recheck; then \
-	   list='$(RECHECK_LOGS:.log=.trs)'; \
-	   test -z "$$list" || rm -f $$list; \
-	 fi
-## We always have to remove TEST_SUITE_LOG, to ensure its rule is run
+check-TESTS:
+	@list='$(RECHECK_LOGS)';           test -z "$$list" || rm -f $$list
+	@list='$(RECHECK_LOGS:.log=.trs)'; test -z "$$list" || rm -f $$list
+## We always have to remove $(TEST_SUITE_LOG), to ensure its rule is run
 ## in any case even in lazy mode: otherwise, if no test needs rerunning,
 ## or a prior run plus reruns all happen within the same timestamp (can
 ## happen with a prior "make TESTS=<subset>"), then we get no log output.
@@ -326,55 +410,59 @@ check-TESTS recheck:
 ## cannot use '$?' to compute the set of lazily rerun tests, lest
 ## we rely on .PHONY to work portably.
 	@test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
-	@ws='[ 	]'; \
-	log_list='' trs_list=''; $(am__set_TESTS_bases); \
-	for i in $$bases; do \
-## If running a "make recheck", we must only consider tests that had an
-## unexpected outcome (FAIL or XPASS) in the earlier run.  In particular,
-## skip tests that haven't been run.  But recover gracefully from deleted
-## '.trs' files.
-	  if test $@ = recheck; then \
-	    test -f $$i.trs || test -f $$i.log || continue; \
-## FIXME: one fork per test -- this is horrendously inefficient!
-	    grep "^$$ws*:recheck:$$ws*no$$ws*$$" $$i.trs \
-	      >/dev/null 2>&1 && continue; \
-	  else :; fi; \
-## Be careful to avoid extra whitespace in the definition of $list, since
-## its value will be passed to the recursive make invocation below through
-## the TEST_LOGS macro, and leading/trailing white space in a make macro
-## definition can be problematic.  In this particular case, trailing white
-## space was known to cause a segmentation fault on Solaris 10 XPG4 make:
-## <http://lists.gnu.org/archive/html/bug-automake/2010-08/msg00004.html>
-	  if test -z "$$log_list"; then \
-	    log_list="$$i.log"; \
-	  else \
-	    log_list="$$log_list $$i.log"; \
-	  fi; \
-	  if test -z "$$trs_list"; then \
-	    trs_list="$$i.trs"; \
-	  else \
-	    trs_list="$$trs_list $$i.trs"; \
-	  fi; \
-	done; \
-## Under "make recheck", remove the .log and .trs files associated
-## with the files to recheck, so that those will be rerun by the
-## "make test-suite.log" recursive invocation below.  But use a proper
-## hack to avoid extra files removal when running under "make -n".
-	if test $@ != recheck || $(am__make_dryrun); then :; else \
-	  test -z "$$log_list" || rm -f $$log_list; \
-	  test -z "$$trs_list" || rm -f $$trs_list; \
-	fi; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"
+	@set +e; $(am__set_TESTS_bases); \
+	log_list=`for i in $$bases; do echo $$i.log; done`; \
+	trs_list=`for i in $$bases; do echo $$i.trs; done`; \
+## Remove newlines and normalize whitespace.  Trailing (and possibly
+## leading) whitespace is known to cause segmentation faults on
+## Solaris 10 XPG4 make.
+	log_list=`echo $$log_list`; trs_list=`echo $$trs_list`; \
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
+## Be sure to exit with the proper exit status (automake bug#9245).  See
+## comments in the recipe of $(TEST_SUITE_LOG) above for more information.
+	exit $$?;
 
 ## Recheck must depend on $(check_SCRIPTS), $(check_PROGRAMS), etc.
 ## It must also depend on the 'all' target.  See automake bug#11252.
 recheck: all %CHECK_DEPS%
+## See comments above in the check-TESTS recipe for why remove
+## $(TEST_SUITE_LOG) here.
+	@test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
+	@set +e; $(am__set_TESTS_bases); \
+## We must only consider tests that had an unexpected outcome (FAIL
+## or XPASS) in the earlier run.
+	bases=`for i in $$bases; do echo $$i; done \
+	         | $(am__list_recheck_tests)` || exit 1; \
+	log_list=`for i in $$bases; do echo $$i.log; done`; \
+## Remove newlines and normalize whitespace.  Trailing (and possibly
+## leading) whitespace is known to cause segmentation faults on
+## Solaris 10 XPG4 make.
+	log_list=`echo $$log_list`; \
+## Move the '.log' and '.trs' files associated with the tests to be
+## re-run out of the way, so that those tests will be re-run by the
+## "make test-suite.log" recursive invocation below.
+## Two tricky requirements:
+##   - we must avoid extra files removal when running under "make -n";
+##   - in case the test is a compiled program whose compilation fails,
+##     we must ensure that any '.log' and '.trs' file referring to such
+##     test are preserved, so that future "make recheck" invocations
+##     will still try to re-compile and re-run it (automake bug#11791).
+## The tricky recursive make invocation below should cater to such
+## requirements.
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
+	        am__force_recheck=am--force-recheck \
+	        TEST_LOGS="$$log_list"; \
+## Be sure to exit with the proper exit status (automake bug#9245).  See
+## comments in the recipe of $(TEST_SUITE_LOG) above for more information.
+	exit $$?
 
 AM_RECURSIVE_TARGETS += check recheck
 
 .PHONY: recheck
 
-else !%?PARALLEL_TESTS%
+else %?SERIAL_TESTS%
+
+## Obsolescent serial testsuite driver.
 
 check-TESTS: $(TESTS)
 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
@@ -480,4 +568,4 @@ check-TESTS: $(TESTS)
 	  test "$$failed" -eq 0; \
 	else :; fi
 
-endif !%?PARALLEL_TESTS%
+endif %?SERIAL_TESTS%

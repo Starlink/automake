@@ -67,9 +67,9 @@
 
 # -------------------------------------------------------------------------
 
-# This expects ./defs has already been included has already been included..
+# This code expects test-init.sh has already been included in advance.
 
-ocwd=`pwd` || fatal_ "cannot get current working directory"
+ocwd=$(pwd) || fatal_ "getting current working directory"
 longpath=this-is/a-path/which-has/quite-a/definitely/truly/long_long_name
 cachevar=am_cv_CC_dependencies_compiler_type
 
@@ -134,11 +134,11 @@ AM_INIT_AUTOMAKE
 AC_PROG_CC
 AM_PROG_CC_C_O
 AM_PROG_AR
-`if test $depcomp_with_libtool = yes; then
-  echo AC_PROG_LIBTOOL
-else
-  echo AC_PROG_RANLIB
-fi`
+$(if test $depcomp_with_libtool = yes; then
+    echo AC_PROG_LIBTOOL
+  else
+    echo AC_PROG_RANLIB
+  fi)
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
 END
@@ -343,7 +343,7 @@ do_test ()
     absolute)
       mkdir -p vpath-abs/build
       cd vpath-abs/build
-      absdir="`(cd .. && pwd)`" || fatal_ "getting absolute directory"
+      absdir=$(cd .. && pwd) || fatal_ "getting absolute directory"
       setup_srcdir "$absdir/vpath-abs"
       unset absdir
       ;;

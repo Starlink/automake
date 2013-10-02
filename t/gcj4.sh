@@ -17,7 +17,7 @@
 # Make sure dependency tracking works for Java.
 
 required=gcj
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_PROG_GCJ
@@ -32,7 +32,7 @@ END
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure >stdout
+./configure >stdout || { cat stdout; exit 1; }
 cat stdout
 
 # Configure must be checking the dependency style of gcj ...
@@ -40,7 +40,7 @@ grep 'dependency style of gcj' stdout >filt
 cat filt
 
 # ... only once.
-test `wc -l < filt` = 1
+test $(wc -l < filt) = 1
 
 # Accept any outcome but 'none'
 # (at the time of writing it should be gcc or gcc3).

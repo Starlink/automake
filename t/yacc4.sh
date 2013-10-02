@@ -17,7 +17,7 @@
 # Some simple tests of ylwrap functionality.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -70,8 +70,8 @@ cd sub
 ../configure
 $MAKE
 
-grep '^#.*/sub/\.\./' bar.c && Exit 1
-grep '^#.*/sub/\.\./' parse.c && Exit 1
+grep '^#.*/sub/\.\./' bar.c && exit 1
+grep '^#.*/sub/\.\./' parse.c && exit 1
 
 # Make distclean must not erase bar.c nor parse.c (by GNU standards) ...
 $MAKE distclean
@@ -80,7 +80,7 @@ test -f parse.c
 # ... but maintainer-clean should.
 ../configure
 $MAKE maintainer-clean
-test ! -f bar.c
-test ! -f parse.c
+test ! -e bar.c
+test ! -e parse.c
 
 :

@@ -17,10 +17,9 @@
 # parallel-tests:
 #  - non-existent scripts listed in TESTS get diagnosed, even when
 #    all the $(TEST_LOGS) have a dummy dependency.
-# See also related test 'test-missing.test'.
+# See also related test 'test-missing.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -37,18 +36,18 @@ $AUTOMAKE -a
 
 ./configure
 
-$MAKE foobar1.log foobar2.log || Exit 99
-test ! -f foobar1.log || Exit 99
-test ! -f foobar1.trs || Exit 99
-test ! -f foobar2.log || Exit 99
-test ! -f foobar2.trs || Exit 99
+$MAKE foobar1.log foobar2.log || exit 99
+test ! -e foobar1.log || exit 99
+test ! -e foobar1.trs || exit 99
+test ! -e foobar2.log || exit 99
+test ! -e foobar2.trs || exit 99
 
-$MAKE check >output 2>&1 && { cat output; Exit 1; }
+$MAKE check >output 2>&1 && { cat output; exit 1; }
 cat output
 grep 'test-suite\.log.*foobar1\.log' output
 grep 'test-suite\.log.*foobar1\.trs' output
 grep 'test-suite\.log.*foobar2\.log' output
 grep 'test-suite\.log.*foobar2\.trs' output
-test ! -f test-suite.log
+test ! -e test-suite.log
 
 :

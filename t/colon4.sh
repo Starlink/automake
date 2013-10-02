@@ -18,7 +18,7 @@
 # rebuild rules.
 # Test from Maciej W. Rozycki.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_CONFIG_FILES([zardoz:one:two:three])
@@ -35,5 +35,5 @@ $AUTOMAKE
 
 # The rule should regenerate the file "zardoz", not a meaningless
 # file "'zardoz:one:two".
-$FGREP 'zardoz:one:two' Makefile.in && Exit 1
-Exit 0
+$FGREP 'zardoz:one:two' Makefile.in && exit 1
+exit 0

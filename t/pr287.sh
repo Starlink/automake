@@ -16,7 +16,7 @@
 
 # Test for PR 287: empty SUBDIRS.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -31,7 +31,6 @@ cat > foo << 'END'
 #! /bin/sh
 echo Maude
 END
-
 chmod +x foo
 
 mkdir install
@@ -40,7 +39,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 
-./configure "--prefix=`cd install && pwd`"
+./configure "--prefix=$(cd install && pwd)"
 
 $MAKE
 $MAKE distdir

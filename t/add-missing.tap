@@ -20,12 +20,12 @@
 # default, but copied if the '--copy' option is used.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 plan_ "later"
 
 build_aux=build-aux
-ocwd=`pwd` || fatal_ "cannot get current working directory"
+ocwd=$(pwd) || fatal_ "cannot get current working directory"
 
 # Try to improve readability of displayed diffs.
 if diff -u /dev/null /dev/null; then
@@ -79,7 +79,7 @@ check_count=0
 check_ ()
 {
   set +x # Temporary disable shell traces to remove noise from log files.
-  incr_ check_count
+  check_count=$(($check_count + 1))
   echo check count: $check_count
   override=no
   run_aclocal=no
@@ -99,11 +99,9 @@ check_ ()
   # shared by its "subtests").
   mkdir generic
   cd generic
-  # Use 'echo > ...', not ': > ...', here and below, as Solaris 10 /bin/sh
-  # might not execute the latter (the Autoconf manual gives more details).
-  echo > Makefile.am
+  : > Makefile.am
   if test $override = yes; then
-    echo > configure.ac
+    : > configure.ac
   else
     cp "$ocwd"/configure.stub configure.ac
   fi
@@ -169,11 +167,11 @@ check_ ()
     for f in $files; do
       command_ok_ \
         "$pfx warn about missing file $f" \
-        grep "required file ['\`]$build_aux/$f' not found" stderr
+        $FGREP "required file '$build_aux/$f' not found" stderr
       # Suggest the user to use '--add-missing'.
       command_ok_ \
         "$pfx suggest --add-missing for $f" \
-        grep ".*--add-missing.* install .*$f" stderr
+        grep ".*--add-missing.* install .*'$f'" stderr
     done
     # No files should be automatically installed by automake if it
     # is not told to.
@@ -192,7 +190,7 @@ check_ ()
     for f in $files; do
       command_ok_ \
         "$pfx report installation of $f" \
-        grep ": installing ['\`]$build_aux/$f'$" stderr
+        $FGREP ": installing '$build_aux/$f'" stderr
     done
     # Only the expected files should be installed.  But automake always
     # require 'missing' and 'install-sh', so account for them.
@@ -280,7 +278,7 @@ END
 
 # For config.guess and config.sub.
 for mach in build host target system; do
-  MACH=`echo "$mach" | LC_ALL=C tr '[a-z]' '[A-Z]'`
+  MACH=$(echo "$mach" | LC_ALL=C tr '[a-z]' '[A-Z]')
   check_ <<END
 == Name ==
 cfg-$mach
@@ -342,17 +340,6 @@ info_TEXINFOS = foo.texi
 END
 
 rm -f foo.texi
-
-check_ <<'END'
-== Name ==
-elisp-comp
-== Files ==
-elisp-comp
-== configure.ac ==
-AM_PATH_LISPDIR
-== Makefile.am ==
-lisp_LISP = foo.el
-END
 
 check_ <<'END'
 == Name ==

@@ -18,9 +18,9 @@
 # defined get inlined into the caller.  Try with both an indirect
 # call and a direct one.  This can be seen as testing the "deleted
 # header file" issue w.r.t. aclocal.m4 dependencies.  See also related
-# test 'acloca22.test'.
+# test 'acloca22.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 FOO_MACRO

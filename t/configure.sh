@@ -14,10 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Diagnose if the autoconf input is named configure.in.
 # Diagnose if both configure.in and configure.ac are present, prefer
 # configure.ac.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >configure.ac <<EOF
 AC_INIT([$me], [1.0])
@@ -33,11 +34,11 @@ EOF
 
 : >Makefile.am
 
-$ACLOCAL 2>stderr && { cat stderr >&2; Exit 1; }
+$ACLOCAL 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'configure\.ac.*configure\.in.*both present' stderr
 
-$ACLOCAL -Wno-error 2>stderr || { cat stderr >&2; Exit 1; }
+$ACLOCAL -Wno-error 2>stderr || { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'configure\.ac.*configure\.in.*both present' stderr
 grep 'proceeding.*configure\.ac' stderr
@@ -50,5 +51,9 @@ grep 'proceeding.*configure\.ac' stderr
 AUTOMAKE_run -Wno-error
 grep 'configure\.ac.*configure\.in.*both present' stderr
 grep 'proceeding.*configure\.ac' stderr
+
+mv -f configure.ac configure.in
+AUTOMAKE_fails
+grep "autoconf input.*'configure.ac', not 'configure.in'" stderr
 
 :

@@ -17,7 +17,7 @@
 # Test _PYTHON with conditionals.
 
 required=python
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'EOF'
 AM_PATH_PYTHON
@@ -50,35 +50,37 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-mkdir inst
-inst=`pwd`/inst
-mkdir build
-cd build
-../configure --prefix="$inst"
-$MAKE install
-test -f "$inst/your/two.py"
-test -f "$inst/your/two.pyc"
-test -f "$inst/your/two.pyo"
-test ! -f "$inst/my/one.py"
-test ! -f "$inst/my/one.pyc"
-test ! -f "$inst/my/one.pyo"
-$MAKE uninstall
-test ! -f "$inst/your/two.py"
-test ! -f "$inst/your/two.pyc"
-test ! -f "$inst/your/two.pyo"
+inst=inst_
+mkdir inst_ build_
+cd build_
 
-../configure --prefix="$inst" one=1
+cwd=$(pwd) || fatal_ "getting current working directory"
+
+../configure --prefix="$cwd/$inst" one=0
 $MAKE install
-test ! -f "$inst/your/two.py"
-test ! -f "$inst/your/two.pyc"
-test ! -f "$inst/your/two.pyo"
-test -f "$inst/my/one.py"
-test -f "$inst/my/one.pyc"
-test -f "$inst/my/one.pyo"
+test -f            "$inst/your/two.py"
+py_installed       "$inst/your/two.pyc"
+py_installed       "$inst/your/two.pyo"
+py_installed --not "$inst/my/one.py"
+py_installed --not "$inst/my/one.pyc"
+py_installed --not "$inst/my/one.pyo"
 $MAKE uninstall
-test ! -f "$inst/my/one.py"
-test ! -f "$inst/my/one.pyc"
-test ! -f "$inst/my/one.pyo"
+py_installed --not "$inst/your/two.py"
+py_installed --not "$inst/your/two.pyc"
+py_installed --not "$inst/your/two.pyo"
+
+../configure --prefix=$cwd/"$inst" one=1
+$MAKE install
+py_installed --not "$inst/your/two.py"
+py_installed --not "$inst/your/two.pyc"
+py_installed --not "$inst/your/two.pyo"
+test -f            "$inst/my/one.py"
+py_installed       "$inst/my/one.pyc"
+py_installed       "$inst/my/one.pyo"
+$MAKE uninstall
+py_installed --not "$inst/my/one.py"
+py_installed --not "$inst/my/one.pyc"
+py_installed --not "$inst/my/one.pyo"
 
 $MAKE disttest
 

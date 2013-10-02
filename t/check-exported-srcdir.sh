@@ -15,14 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that the testsuite driver (either with or without the
-# parallel-tests option enabled) exports the 'srcdir' value in the
+# serial-tests option enabled) exports the 'srcdir' value in the
 # environment of the tests.  This is documented in the manual.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 show_info ()
 {
-  if test x"$am_parallel_tests" = x"yes"; then
+  if test x"$am_serial_tests" != x"yes"; then
      cat foo.log
      cat test-suite.log
   else
@@ -57,7 +58,7 @@ $AUTOMAKE -a
 cd ../BuildDir
 ../SrcDir/configure
 
-$MAKE check || { show_info; Exit 1; }
+$MAKE check || { show_info; exit 1; }
 show_info
 
 :

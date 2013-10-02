@@ -67,18 +67,19 @@ TAGS_FILES = $(AUTOMAKESOURCES)
 
 EXTRA_DIST += \
   $(AUTOMAKESOURCES) \
-  bootstrap \
+  bootstrap.sh \
   GNUmakefile \
+  maint.mk \
   syntax-checks.mk \
   HACKING
 
-## Make versioned links.  We only run the transform on the root name;
-## then we make a versioned link with the transformed base name.  This
-## seemed like the most reasonable approach.
+# Make versioned links.  We only run the transform on the root name;
+# then we make a versioned link with the transformed base name.  This
+# seemed like the most reasonable approach.
 install-exec-hook:
 	@$(POST_INSTALL)
 	@for p in $(bin_SCRIPTS); do \
-	  f="`echo $$p|sed '$(transform)'`"; \
+	  f=`echo $$p | sed '$(transform)'`; \
 	  fv="$$f-$(APIVERSION)"; \
 	  rm -f "$(DESTDIR)$(bindir)/$$fv"; \
 	  echo " $(LN) '$(DESTDIR)$(bindir)/$$f' '$(DESTDIR)$(bindir)/$$fv'"; \
@@ -87,13 +88,13 @@ install-exec-hook:
 
 uninstall-hook:
 	@for p in $(bin_SCRIPTS); do \
-	  f="`echo $$p|sed '$(transform)'`"; \
+	  f=`echo $$p | sed '$(transform)'`; \
 	  fv="$$f-$(APIVERSION)"; \
 	  rm -f "$(DESTDIR)$(bindir)/$$fv"; \
 	done
 
-## These files depend on Makefile so they are rebuilt if $(VERSION),
-## $(datadir) or other do_subst'ituted variables change.
+# These files depend on Makefile so they are rebuilt if $(VERSION),
+# $(datadir) or other do_subst'ituted variables change.
 automake: automake.in
 aclocal: aclocal.in
 automake aclocal: Makefile
@@ -104,9 +105,9 @@ automake aclocal: Makefile
 ## comments, and that is perfectly legit.
 	$(AM_V_at)chmod a+x,a-w $@-t && mv -f $@-t $@
 
-## The master location for INSTALL is lib/INSTALL.
-## This is where "make fetch" will install new versions.
-## Make sure we also update this copy.
+# The master location for INSTALL is lib/INSTALL.
+# This is where "make fetch" will install new versions.
+# Make sure we also update this copy.
 INSTALL: lib/INSTALL
 	$(AM_V_GEN)cp $(srcdir)/lib/INSTALL $@
 
@@ -114,6 +115,11 @@ INSTALL: lib/INSTALL
 # so we need this.
 maintainer-clean-local:
 	rm -rf .autom4te.cache
+
+# So that automake won't complain about the missing ChangeLog.
+# The real rule for ChangeLog generation is now in maint.mk (as
+# it is maintainer-specific).
+ChangeLog:
 
 
 ## -------------------------------------------------------------------- ##
@@ -125,9 +131,9 @@ dist_pkgvdata_DATA = \
   lib/INSTALL \
   lib/texinfo.tex
 
-## These must all be executable when installed.  However, if we use
-## _SCRIPTS, then the program transform will be applied, which is not
-## what we want.  So we make them executable by hand.
+# These must all be executable when installed.  However, if we use
+# _SCRIPTS, then the program transform will be applied, which is not
+# what we want.  So we make them executable by hand.
 dist_script_DATA = \
   lib/config.guess \
   lib/config.sub \
@@ -135,7 +141,6 @@ dist_script_DATA = \
   lib/mdate-sh \
   lib/missing \
   lib/mkinstalldirs \
-  lib/elisp-comp \
   lib/ylwrap \
   lib/depcomp \
   lib/compile \
@@ -261,14 +266,13 @@ dist_automake_ac_DATA = \
   m4/ar-lib.m4 \
   m4/as.m4 \
   m4/auxdir.m4 \
-  m4/ccstdc.m4 \
   m4/cond.m4 \
   m4/cond-if.m4 \
   m4/depend.m4 \
   m4/depout.m4 \
   m4/dmalloc.m4 \
+  m4/extra-recurs.m4 \
   m4/gcj.m4 \
-  m4/header.m4 \
   m4/init.m4 \
   m4/install-sh.m4 \
   m4/lead-dot.m4 \
@@ -279,9 +283,6 @@ dist_automake_ac_DATA = \
   m4/minuso.m4 \
   m4/missing.m4 \
   m4/mkdirp.m4 \
-  m4/obsol-gt.m4 \
-  m4/obsol-lt.m4 \
-  m4/obsolete.m4 \
   m4/options.m4 \
   m4/protos.m4 \
   m4/python.m4 \
@@ -293,6 +294,9 @@ dist_automake_ac_DATA = \
   m4/tar.m4 \
   m4/upc.m4 \
   m4/vala.m4
+
+automake_internal_acdir = $(automake_acdir)/internal
+dist_automake_internal_ac_DATA = m4/internal/ac-config-macro-dirs.m4
 
 dist_system_ac_DATA = m4/acdir/README
 
@@ -315,8 +319,8 @@ EXTRA_DIST += m4/amversion.in
 ##  Testsuite.  ##
 ## ------------ ##
 
-# Run the tests with the shell detected at configure time.
-LOG_COMPILER = $(SHELL)
+# Run the tests with a proper shell detected at configure time.
+LOG_COMPILER = $(AM_TEST_RUNNER_SHELL)
 
 TEST_EXTENSIONS = .pl .sh .tap
 SH_LOG_COMPILER = $(LOG_COMPILER)
@@ -328,33 +332,41 @@ TAP_LOG_DRIVER = AM_TAP_AWK='$(AWK)' $(SHELL) $(srcdir)/lib/tap-driver.sh
 
 AM_TAP_LOG_DRIVER_FLAGS = --merge
 
-EXTRA_DIST += t/ax/is
+EXTRA_DIST += t/README t/ax/is t/ax/is_newest
 
-TESTS = ## Will be updated later.
+## Will be updated later.
+TESTS =
 
 # Some testsuite-influential variables should be overridable from the
 # test scripts, but not from the environment.
+# Keep this in sync with the similar list in 'runtest.in'.
 AM_TESTS_ENVIRONMENT = \
   for v in \
-    me \
     required \
-    am_using_tap \
-    am_parallel_tests \
+    am_test_protocol \
+    am_serial_tests \
     am_test_prefer_config_shell \
     am_original_AUTOMAKE \
     am_original_ACLOCAL \
+    am_test_lib_sourced \
+    test_lib_sourced \
   ; do \
     eval test x"\$${$$v}" = x || unset $$v; \
   done;
-# The 'AM_TESTS_REEXEC=no' setting tells the tests not to needlessly
-# re-execute themselves with the shell detected at configure time, since
-# we are already running them under it explicitly in our setup (see e.g.
-# the definition of TEST_LOG_COMPILER above).
-AM_TESTS_ENVIRONMENT += AM_TESTS_REEXEC=no; export AM_TESTS_REEXEC;
 # We want warning messages and explanations for skipped tests to go to
 # the console if possible, so set up 'stderr_fileno_' properly.
 AM_TESTS_FD_REDIRECT = 9>&2
 AM_TESTS_ENVIRONMENT += stderr_fileno_=9; export stderr_fileno_;
+
+# For sourcing of extra "shell libraries" by our test scripts.  As per
+# POSIX, sourcing a file with '.' will cause it to be looked up in $PATH
+# in case it is given with a relative name containing no slashes.
+AM_TESTS_ENVIRONMENT += \
+  if test $(srcdir) != .; then \
+    PATH='$(abs_srcdir)/t/ax'$(PATH_SEPARATOR)$$PATH; \
+  fi; \
+  PATH='$(abs_builddir)/t/ax'$(PATH_SEPARATOR)$$PATH; \
+  export PATH;
 
 # Hand-written tests.
 
@@ -379,29 +391,72 @@ $(srcdir)/t/testsuite-part.am:
 	$(AM_V_at)mv -f t/testsuite-part.tmp $@
 EXTRA_DIST += gen-testsuite-part
 
-$(generated_TESTS) $(srcdir)/t/testsuite-part.am: \
-  $(srcdir)/gen-testsuite-part \
-  t/list-of-tests.mk \
-  Makefile.am \
-  $(handwritten_TESTS)
+# The dependecies declared here are not truly complete, but such
+# completeness would cause more issues than it would solve.  See
+# automake bug#11347.
+$(generated_TESTS): $(srcdir)/gen-testsuite-part
+$(srcdir)/t/testsuite-part.am: $(srcdir)/gen-testsuite-part Makefile.am
 
-# Static dependencies valid for each test case.
-check_SCRIPTS = t/wrap/aclocal-$(APIVERSION) t/wrap/automake-$(APIVERSION)
-dist_check_DATA = t/ax/plain-functions.sh t/ax/tap-functions.sh
-check_DATA = defs defs-static
+# Hand-written tests for stuff in 'contrib/'.
+include $(srcdir)/contrib/t/local.am
+TESTS += $(contrib_TESTS)
+EXTRA_DIST += $(contrib_TESTS)
+
+# Static dependencies valid for each test case (also further
+# extended later).  Note that use 'noinst_' rather than 'check_'
+# as the prefix, because we really want them to be built by
+# "make all".  This makes it easier to run the test cases by
+# hand after having simply configured and built the package.
+
+nodist_noinst_SCRIPTS = \
+  t/wrap/aclocal-$(APIVERSION) \
+  t/wrap/automake-$(APIVERSION)
+
+dist_noinst_DATA = \
+  t/ax/test-init.sh \
+  t/ax/test-lib.sh \
+  t/ax/am-test-lib.sh \
+  t/ax/tap-functions.sh
 
 # Few more static dependencies.
 t/distcheck-missing-m4.log: t/ax/distcheck-hook-m4.am
 t/distcheck-outdated-m4.log: t/ax/distcheck-hook-m4.am
 EXTRA_DIST += t/ax/distcheck-hook-m4.am
 
-defs-static: defs-static.in Makefile
+t/ax/test-defs.sh: t/ax/test-defs.in Makefile
 	$(AM_V_at)rm -f $@ $@-t
-	$(AM_V_GEN)in=defs-static.in\
-	  && $(do_subst) <$(srcdir)/defs-static.in >$@-t
+	$(AM_V_at)$(MKDIR_P) t/ax
+	$(AM_V_GEN)in=t/ax/test-defs.in \
+	  && $(do_subst) <$(srcdir)/$$in >$@-t
 	$(generated_file_finalize)
-EXTRA_DIST += defs-static.in
-CLEANFILES += defs-static
+EXTRA_DIST += t/ax/test-defs.in
+CLEANFILES += t/ax/test-defs.sh
+nodist_noinst_DATA = t/ax/test-defs.sh
+
+## Will be updated soon.
+noinst_SCRIPTS =
+
+t/ax/shell-no-trail-bslash: t/ax/shell-no-trail-bslash.in Makefile
+	$(AM_V_at)rm -f $@ $@-t
+	$(AM_V_GEN)in=t/ax/shell-no-trail-bslash.in \
+	  && $(MKDIR_P) t/ax \
+	  && $(do_subst) <$(srcdir)/$$in >$@-t \
+	  && chmod a+x $@-t
+	$(generated_file_finalize)
+EXTRA_DIST += t/ax/shell-no-trail-bslash.in
+CLEANFILES += t/ax/shell-no-trail-bslash
+noinst_SCRIPTS += t/ax/shell-no-trail-bslash
+
+runtest: runtest.in Makefile
+	$(AM_V_at)rm -f $@ $@-t
+	$(AM_V_GEN)in=runtest.in \
+	  && $(MKDIR_P) t/ax \
+	  && $(do_subst) <$(srcdir)/runtest.in >$@-t \
+	  && chmod a+x $@-t
+	$(generated_file_finalize)
+EXTRA_DIST += runtest.in
+CLEANFILES += runtest
+noinst_SCRIPTS += runtest
 
 # If two test scripts have the same basename, they will end up sharing
 # the same log file, leading to all sort of undefined and undesired
@@ -418,8 +473,54 @@ check-no-repeated-test-name:
 check-local: check-no-repeated-test-name
 .PHONY: check-no-repeated-test-name
 
+# Check that our test cases are syntactically correct.
+# See automake bug#11898.
+check-tests-syntax:
+	@st=0; \
+	err () { echo "$@: $$*" >&2; st=1; }; \
+## The user might do something like "make check TESTS=t/foo" or
+## "make check TESTS_LOGS=t/foo.log" and expect (say) the test
+## 't/foo.sh' to be run; this has worked well until today, and
+## we want to continue supporting this use case.
+	bases=`for log in : $(TEST_LOGS); do echo $$log; done \
+	  | sed -e '/^:$$/d' -e 's/\.log$$//'`; \
+	for bas in $$bases; do \
+	  for suf in sh tap pl; do \
+	    tst=$$bas.$$suf; \
+## Emulate VPATH search.
+	    if test -f $$tst; then \
+	      break; \
+	    elif test -f $(srcdir)/$$tst; then \
+	      tst=$(srcdir)/$$tst; \
+	      break; \
+	    else \
+	      tst=''; \
+	    fi; \
+	  done; \
+	  test -n "$$tst" || err "couldn't find test '$$bas'"; \
+## Don't check that perl tests are valid shell scripts!
+	  test $$suf = pl && continue; \
+	  $(AM_V_P) && echo " $(AM_TEST_RUNNER_SHELL) -n $$tst"; \
+	  $(AM_TEST_RUNNER_SHELL) -n "$$tst" \
+	    || err "test '$$tst' syntactically invalid"; \
+	done; \
+	exit $$st
+check-local: check-tests-syntax
+.PHONY: check-tests-syntax
+
+# Recipes with a trailing backslash character (possibly followed by
+# blank characters only) can cause spurious syntax errors with at
+# least older bash versions (e.g., bash 2.05b), and can be potentially
+# be unportable to other weaker shells.  Run the testsuite in a way
+# that helps catching such problems in Automake-generated recipes.
+# See automake bug#10436.
+check-no-trailing-backslash-in-recipes:
+	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) check \
+	  CONFIG_SHELL='$(abs_top_builddir)/t/ax/shell-no-trail-bslash'
+.PHONY: check-no-trailing-backslash-in-recipes
+
 ## Checking the list of tests.
-test_subdirs = t t/pm
+test_subdirs = t t/pm contrib/t
 include $(srcdir)/t/CheckListOfTests.am
 
 # Run the testsuite with the installed aclocal and automake.
@@ -427,16 +528,28 @@ installcheck-local: installcheck-testsuite
 installcheck-testsuite:
 	am_running_installcheck=yes $(MAKE) $(AM_MAKEFLAGS) check
 
+# Performance tests.
+.PHONY: perf
+perf: all
+	$(MAKE) $(AM_MAKEFLAGS) TEST_SUITE_LOG='$(PERF_TEST_SUITE_LOG)'	\
+	                        TESTS='$(perf_TESTS)' check
+PERF_TEST_SUITE_LOG = t/perf/test-suite.log
+CLEANFILES += $(PERF_TEST_SUITE_LOG)
+EXTRA_DIST += $(perf_TESTS)
+
 clean-local: clean-local-check
 .PHONY: clean-local-check
 clean-local-check:
-	-set x t/*.dir; shift; \
-	 if test "$$#,$$1" = "1,*.dir"; then \
-	   : there is no test directory to clean; \
-	 else \
-	   find "$$@" -type d ! -perm -700 -exec chmod u+rwx {} ';'; \
-	   rm -rf "$$@"; \
-	 fi;
+## Directories candidate to be test directories match this wildcard.
+	@globs='t/*.dir t/*/*.dir */t/*.dir */t/*/*.dir'; \
+## The 'nullglob' bash option is not portable, so use perl.
+	dirs=`$(PERL) -e "print join(' ', glob('$$globs'));"` || exit 1; \
+	if test -n "$$dirs"; then \
+## Errors in find are acceptable, errors in rm are not.
+	    find $$dirs -type d ! -perm -700 -exec chmod u+rwx {} ';'; \
+	    echo " rm -rf $$dirs"; \
+	    rm -rf $$dirs || exit 1; \
+	fi
 
 
 ## ---------------- ##
@@ -499,7 +612,7 @@ amhello_configury = \
   missing \
   src/Makefile.in
 
-dist_noinst_DATA = $(amhello_sources)
+dist_noinst_DATA += $(amhello_sources)
 dist_doc_DATA = $(srcdir)/doc/amhello-1.0.tar.gz
 
 # We depend on configure.ac so that we regenerate the tarball
@@ -556,313 +669,3 @@ EXTRA_DIST += \
   old/ChangeLog.09 \
   old/ChangeLog.11 \
   old/TODO
-
-
-##########################################################################
-
-## Everything past here is useful to the maintainer, but probably not
-## to anybody else.
-
-##########################################################################
-
-
-## --------------------------------------------------------- ##
-##  Automatic generation of the ChangeLog from git history.  ##
-## --------------------------------------------------------- ##
-
-gitlog_to_changelog_command = $(PERL) $(srcdir)/lib/gitlog-to-changelog
-gitlog_to_changelog_fixes = $(srcdir)/.git-log-fix
-gitlog_to_changelog_options = --amend=$(gitlog_to_changelog_fixes) \
-                              --since='2011-12-28 00:00:00' \
-                              --no-cluster --format '%s%n%n%b'
-
-EXTRA_DIST += lib/gitlog-to-changelog
-EXTRA_DIST += $(gitlog_to_changelog_fixes)
-
-# When executed from a git checkout, generate the ChangeLog from the git
-# history.  When executed from an extracted distribution tarball, just
-# copy the distributed ChangeLog in the build directory (and if this
-# fails, or if no distributed ChangeLog file is present, complain and
-# give an error).
-#
-# We need the apparently useless dependency from another .PHONY target
-# 'am--changelog-regen-hook' to work around a bug of Solaris make, which
-# doesn't execute the recipe of a target named as an existing file, even
-# if such target is declared '.PHONY' (yikes!)
-#
-.PHONY: am--changelog-regen-hook
-am--changelog-regen-hook:
-ChangeLog: am--changelog-regen-hook
-	$(AM_V_GEN)set -e; set -u; \
-## The ChangeLog should be regenerated unconditionally when working from
-## checked-out sources; otherwise, if we're working from a distribution
-## tarball, we expect the ChangeLog to be distributed, so check that it
-## is indeed present in the source directory.
-	if test -d $(srcdir)/.git; then \
-	  rm -f $@-t \
-	    && $(gitlog_to_changelog_command) \
-	       $(gitlog_to_changelog_options) >$@-t \
-	    && chmod a-w $@-t \
-	    && mv -f $@-t $@ \
-	    || exit 1; \
-	elif test ! -f $(srcdir)/$@; then \
-	  echo "Source tree is not a git checkout, and no pre-existent" \
-	       "$@ file has been found there" >&2; \
-	  exit 1; \
-	fi
-
-# Ensure tests are world-executable.
-# FIXME: this should be turned into a maintainer check...
-dist-hook:
-	$(am__cd) $(distdir)/t && chmod a+rx *.sh *.tap
-
-
-## --------------------------- ##
-##  Perl coverage statistics.  ##
-## --------------------------- ##
-
-PERL_COVERAGE_DB = $(abs_top_builddir)/cover_db
-PERL_COVERAGE_FLAGS = -MDevel::Cover=-db,$(PERL_COVERAGE_DB),-silent,on,-summary,off
-PERL_COVER = cover
-
-check-coverage-run recheck-coverage-run: all
-	$(mkinstalldirs) $(PERL_COVERAGE_DB)
-	PERL5OPT="$$PERL5OPT $(PERL_COVERAGE_FLAGS)"; export PERL5OPT; \
-	WANT_NO_THREADS=yes; export WANT_NO_THREADS; unset AUTOMAKE_JOBS; \
-	$(MAKE) $(AM_MAKEFLAGS) `echo $@ | sed 's/-coverage-run//'`
-
-check-coverage-report:
-	@if test ! -d "$(PERL_COVERAGE_DB)"; then \
-	  echo "No coverage database found in '$(PERL_COVERAGE_DB)'." >&2; \
-	  echo "Please run \"make check-coverage\" first" >&2; \
-	  exit 1; \
-	fi
-	$(PERL_COVER) $(PERL_COVER_FLAGS) "$(PERL_COVERAGE_DB)"
-
-# We don't use direct dependencies here because we'd like to be able
-# to invoke the report even after interrupted check-coverage.
-check-coverage: check-coverage-run
-	$(MAKE) $(AM_MAKEFLAGS) check-coverage-report
-
-recheck-coverage: recheck-coverage-run
-	$(MAKE) $(AM_MAKEFLAGS) check-coverage-report
-
-clean-coverage:
-	rm -rf "$(PERL_COVERAGE_DB)"
-clean-local: clean-coverage
-
-.PHONY: check-coverage recheck-coverage check-coverage-run \
-	recheck-coverage-run check-coverage-report clean-coverage
-
-
-## ---------------------------------------------------- ##
-##  Tagging and/or uploading stable and beta releases.  ##
-## ---------------------------------------------------- ##
-
-GIT = git
-
-EXTRA_DIST += lib/gnupload
-
-version_rx = ^[1-9][0-9]*\.[0-9][0-9]*(\.[0-9][0-9]*)?
-stable_version_rx = $(version_rx)$$
-beta_version_rx = $(version_rx)[bdfhjlnprtvxz]$$
-match_version = echo "$(VERSION)" | $(EGREP) >/dev/null
-
-## Check that we don't have uncommitted or unstaged changes.
-## TODO: Maybe the git suite already offers a shortcut to verify if the
-## TODO: working directory is "clean" or not?  If yes, use that instead
-## TODO: of duplicating the logic here.
-git_must_have_clean_workdir = \
-  $(GIT) rev-parse --verify HEAD >/dev/null \
-    && $(GIT) update-index -q --refresh \
-    && $(GIT) diff-files --quiet \
-    && $(GIT) diff-index --quiet --cached HEAD \
-    || fatal "you have uncommitted or unstaged changes"
-
-determine_release_type = \
-  if $(match_version) '$(stable_version_rx)'; then \
-    release_type='Release' dest=ftp; \
-  elif $(match_version) '$(beta_version_rx)'; then \
-    release_type='Beta release' dest=alpha; \
-  else \
-    fatal "invalid version '$(VERSION)' for a release"; \
-  fi
-
-git-tag-release: maintainer-check
-	@set -e; set -u; \
-	fatal () { echo "$@: $$*; not tagging" >&2; exit 1; }; \
-	case '$(AM_TAG_DRYRUN)' in \
-	  ""|[nN]|[nN]o|NO) run="";; \
-	  *) run="echo Running:";; \
-	esac; \
-	$(determine_release_type); \
-	$(git_must_have_clean_workdir); \
-## Make sure the NEWS file is up-to-date.
-	sed 1q $(srcdir)/NEWS | grep '$(VERSION)' >/dev/null \
-	  || fatal "NEWS not updated"; \
-## If all was successful, tag the release in the local repository.
-	$$run $(GIT) tag -s "v$(VERSION)" -m "$$release_type $(VERSION)"
-
-git-upload-release:
-	@set -e; set -u; \
-	fatal () { echo "$@: $$*; not releasing" >&2; exit 1; }; \
-	$(determine_release_type); \
-	dest=$$dest.gnu.org:automake; \
-	$(git_must_have_clean_workdir); \
-## Check that we are releasing from a valid tag.
-	tag=`$(GIT) describe` \
-	  && case $$tag in "v$(VERSION)") true;; *) false;; esac \
-	  || fatal "you can only create a release from a tagged version"; \
-## Build and upload the distribution tarball(s).
-	$(MAKE) $(AM_MAKEFLAGS) dist || exit 1; \
-	echo Will upload to $$dest: $(DIST_ARCHIVES); \
-	$(srcdir)/lib/gnupload $(GNUPLOADFLAGS) --to $$dest $(DIST_ARCHIVES)
-
-.PHONY: git-upload-release git-tag-release
-
-
-## ------------------------------------------------------------------ ##
-##  Explore differences of autogenerated files in different commits.  ##
-## ------------------------------------------------------------------ ##
-
-## Visually comparing differences between the Makefile.in files in
-## automake's own build system as generated in two different branches
-## might help to catch bugs and blunders.  This has already happened a
-## few times in the past, when we used to version-control Makefile.in.
-autodiffs:
-	@set -u; \
-	 NEW_COMMIT=$${NEW_COMMIT-"HEAD"}; \
-	 OLD_COMMIT=$${OLD_COMMIT-"HEAD~1"}; \
-	 am_gitdir='$(abs_top_srcdir)/.git'; \
-	 get_autofiles_from_rev () \
-	 { \
-	     rev=$$1 dir=$$2 \
-	       && echo "$@: will get files from revision $$rev" \
-	       && $(GIT) clone -q --depth 1 "$$am_gitdir" tmp \
-	       && $(am__cd) tmp \
-	       && $(GIT) checkout -q "$$rev" \
-	       && echo "$@: bootstrapping $$rev" \
-	       && $(SHELL) ./bootstrap \
-	       && echo "$@: copying files from $$rev" \
-	       && makefile_ins=`find . -name Makefile.in` \
-	       && (tar cf - configure aclocal.m4 $$makefile_ins) | \
-	          (cd .. && $(am__cd) "$$dir" && tar xf -) \
-	       && cd .. \
-	       && rm -rf tmp; \
-	 }; \
-	 outdir=$@.dir \
-## Before proceeding, ensure the specified revisions truly exist.
-	   && $(GIT) --git-dir="$$am_gitdir" describe $$OLD_COMMIT >/dev/null \
-	   && $(GIT) --git-dir="$$am_gitdir" describe $$NEW_COMMIT >/dev/null \
-	   && rm -rf $$outdir \
-	   && mkdir $$outdir \
-	   && $(am__cd) $$outdir \
-	   && mkdir new old \
-	   && get_autofiles_from_rev $$OLD_COMMIT old \
-	   && get_autofiles_from_rev $$NEW_COMMIT new \
-	   && exit 0
-
-## With lots of eye candy; we like our developers pampered and spoiled :-)
-compare-autodiffs: autodiffs
-	@set -u; \
-	: $${COLORDIFF=colordiff} $${DIFF=diff}; \
-	dir=autodiffs.dir; \
-	if test ! -d "$$dir"; then \
-	  echo "$@: $$dir: Not a directory" >&2; \
-	  exit 1; \
-	fi; \
-	mydiff=false mypager=false; \
-	if test -t 1; then \
-	  if ($$COLORDIFF -r . .) </dev/null >/dev/null 2>&1; then \
-	    mydiff=$$COLORDIFF; \
-	    mypager="less -R"; \
-	  else \
-	    mypager=less; \
-	  fi; \
-	else \
-	  mypager=cat; \
-	fi; \
-	if test "$$mydiff" = false; then \
-	  if ($$DIFF -r -u . .); then \
-	    mydiff=$$DIFF; \
-	  else \
-	    echo "$@: no good-enough diff program specified" >&2; \
-	    exit 1; \
-	  fi; \
-	fi; \
-	st=0; $$mydiff -r -u $$dir/old $$dir/new | $$mypager || st=$$?; \
-	rm -rf $$dir; \
-	exit $$st
-.PHONY: autodiffs compare-autodiffs
-
-
-## --------------------------------------------------------------------- ##
-##  Synchronize third-party files that are committed in our repository.  ##
-## --------------------------------------------------------------------- ##
-
-## Program to use to fetch files.
-WGET = wget
-WGET_SV_CVS = $(WGET) http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~/
-WGET_SV_GIT_CF = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;hb=HEAD;f='
-WGET_SV_GIT_AC = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=autoconf.git;a=blob_plain;hb=HEAD;f='
-WGET_SV_GIT_GL = $(WGET) 'http://git.savannah.gnu.org/gitweb/?p=gnulib.git;a=blob_plain;hb=HEAD;f='
-
-## Files that we fetch and which we compare against.
-## The 'lib/COPYING' file must still be synced by hand.
-FETCHFILES = \
-INSTALL \
-config.guess \
-config.sub \
-gnupload \
-gitlog-to-changelog \
-texinfo.tex \
-update-copyright
-
-## Fetch the latest versions of files we care about.
-fetch:
-	rm -rf Fetchdir > /dev/null 2>&1
-	mkdir Fetchdir
-## If a get fails then that is a problem.
-	($(am__cd) Fetchdir && \
-	$(WGET_SV_GIT_CF)config.guess -O config.guess && \
-	$(WGET_SV_GIT_CF)config.sub -O config.sub && \
-	$(WGET_SV_CVS)texinfo/texinfo/doc/texinfo.tex -O texinfo.tex && \
-	$(WGET_SV_GIT_GL)doc/INSTALL -O INSTALL && \
-	$(WGET_SV_GIT_GL)build-aux/gnupload -O gnupload && \
-	$(WGET_SV_GIT_GL)build-aux/update-copyright -O update-copyright && \
-	$(WGET_SV_GIT_GL)build-aux/gitlog-to-changelog -O gitlog-to-changelog)
-## Don't exit after test because we want to give as many errors as
-## possible.
-	@stat=0; for file in $(FETCHFILES); do \
-	  if diff -u $(srcdir)/lib/$$file Fetchdir/$$file \
-	          >>Fetchdir/update.patch 2>/dev/null; then :; \
-	  else \
-	    stat=1; \
-	    echo "Updating $(srcdir)/lib/$$file ..."; \
-	    cp Fetchdir/$$file $(srcdir)/lib/$$file; \
-	  fi; \
-	done; \
-	test $$stat = 0 || \
-	  echo "See Fetchdir/update.patch for a log of the changes."; \
-	exit $$stat
-.PHONY: fetch
-
-
-## ------------------------------------------------ ##
-##  Update copyright years of all committed files.  ##
-## ------------------------------------------------ ##
-
-EXTRA_DIST += lib/update-copyright
-
-update_copyright_env = \
-  UPDATE_COPYRIGHT_FORCE=1 \
-  UPDATE_COPYRIGHT_USE_INTERVALS=2
-
-.PHONY: update-copyright
-update-copyright:
-	$(AM_V_GEN)excluded_re=`echo $(FETCHFILES) \
-	  | sed -e 's|^|lib/|' -e 's| | lib/|g' -e 's, ,|,g'`; \
-	$(GIT) ls-files \
-	  | grep -Ev '^(lib/)?(COPYING|INSTALL)$$' \
-	  | grep -Ev "^($$excluded_re)$$" \
-	  | $(update_copyright_env) xargs $(srcdir)/lib/$@

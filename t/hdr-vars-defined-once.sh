@@ -17,7 +17,7 @@
 # Test to make sure header vars defined only once when including.
 # Report from Marcus G. Daniels.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_OUTPUT
@@ -31,8 +31,7 @@ END
 
 $ACLOCAL
 $AUTOMAKE
-len=`grep '^srcdir' Makefile.in | wc -l`
-test $len -eq 1
+test $(grep -c '^srcdir' Makefile.in) -eq 1
 
 # Also make sure include file is distributed.
 sed -n -e '/^DIST_COMMON =.*\\$/ {

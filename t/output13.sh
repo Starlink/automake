@@ -17,7 +17,7 @@
 # Make sure an AC_CONFIG_FILES, AC_CONFIG_LINKS, and AC_CONFIG_COMMANDS
 # are not prerequisites of 'all'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << \END
 AC_SUBST([FOO], [foo])
@@ -40,9 +40,9 @@ $AUTOMAKE
 
 ./configure create=false
 $MAKE
-test ! -f file
-test ! -f link
-test ! -f stamp
+test ! -e file
+test ! -e link
+test ! -e stamp
 
 ./configure create=:
 test -f file

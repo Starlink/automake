@@ -17,22 +17,22 @@
 # Check that there are no duplicates in the list of files automatically
 # distributed by automake.
 
-. ./defs || Exit 1
+. test-init.sh
 
 re='Files .*automatically distributed.*if found'
 
 # The automake manual states that the list of automatically-distributed
 # files should be given by 'automake --help'.
 
-list1=`$AUTOMAKE --help \
-        | sed -n "/^$re.*always/,/^ *$/p" \
-        | sed 1d`
-list1=`echo $list1`
+list1=$($AUTOMAKE --help \
+         | sed -n "/^$re.*always/,/^ *$/p" \
+         | sed 1d)
+list1=$(echo $list1)
 
-list2=`$AUTOMAKE --help \
-        | sed -n "/^$re.*under certain conditions/,/^ *$/p" \
-        | sed 1d`
-list2=`echo $list2`
+list2=$($AUTOMAKE --help \
+         | sed -n "/^$re.*under certain conditions/,/^ *$/p" \
+         | sed 1d)
+list2=$(echo $list2)
 
 test -n "$list1"
 test -n "$list2"
@@ -47,4 +47,4 @@ for i in 1 2; do
   diff files$i.lst files$i.uniq || st=1
 done
 
-Exit $st
+exit $st

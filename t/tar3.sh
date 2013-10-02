@@ -16,7 +16,7 @@
 
 # Check the tar options diagnostics.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT([tar2], [1.0])
@@ -31,7 +31,7 @@ $ACLOCAL
 AUTOMAKE_fails
 grep "^configure\.ac:2:.*mutually exclusive" stderr > tar-err
 cat tar-err
-test 1 = `wc -l < tar-err`
+test 1 -eq $(wc -l < tar-err)
 grep "'tar-pax'" tar-err
 grep "'tar-v7'"  tar-err
 

@@ -16,7 +16,7 @@
 
 # Test for conditionally-defined overrides.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([COND], [test x"$cond" = x"yes"])
@@ -36,7 +36,7 @@ $ACLOCAL
 $AUTOMAKE -Wno-override
 
 # "ps:" should be output in two conditions
-test `grep '[^-]ps:' Makefile.in | wc -l` = 2
+test $(grep -c '[^-]ps:' Makefile.in) -eq 2
 grep '@COND_TRUE@ps: *foobar' Makefile.in
 grep '@COND_FALSE@ps: *ps-am' Makefile.in
 
@@ -44,7 +44,7 @@ $AUTOCONF
 
 ./configure cond=no
 $MAKE ps
-test ! -r foobar
+test ! -e foobar
 
 ./configure cond=yes
 $MAKE ps

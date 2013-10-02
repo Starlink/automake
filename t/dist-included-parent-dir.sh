@@ -16,7 +16,7 @@
 
 # Make sure included files in parent directory are distributed.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([sub/Makefile])
@@ -45,5 +45,7 @@ $AUTOCONF
 $AUTOMAKE
 # Use --srcdir with an absolute path because it's harder
 # to support in 'distdir'.
-./configure --srcdir "`pwd`"
+./configure --srcdir "$(pwd)"
 $MAKE test
+
+:

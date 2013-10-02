@@ -18,8 +18,7 @@
 # "global test result" in '*.trs' files, as documented in the automake
 # manual.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -61,7 +60,7 @@ get_escaped_line()
 have_result ()
 {
    cat > exp; echo >> exp; echo logloglog >> exp
-   eline=`get_escaped_line exp`
+   eline=$(get_escaped_line exp)
    sed -n -e "/^$eline$/,/^logloglog$/p" test-suite.log > got
    cat exp; cat got
    diff exp got
@@ -123,7 +122,7 @@ cat > zar-doz.x << 'END'
 :test-result: XFAIL
 END
 
-$MAKE check && Exit 1
+$MAKE check && exit 1
 cat test-suite.log
 
 have_result <<END
@@ -144,7 +143,7 @@ cat > foo.test << 'END'
 END
 : > zar-doz.x
 
-$MAKE check && Exit 1
+$MAKE check && exit 1
 cat test-suite.log
 
 have_result <<END

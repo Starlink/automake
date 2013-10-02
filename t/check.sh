@@ -16,27 +16,26 @@
 
 # Test Automake style tests.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat > Makefile.am << 'END'
 TESTS = frob.test
 END
 
-test x"$am_parallel_tests" != x"yes" || : > test-driver
-
-: > frob.test
+test x"$am_serial_tests" = x"yes" || : > test-driver
 
 $ACLOCAL
 $AUTOMAKE
 
 grep 'check-TESTS.*:' Makefile.in
-grep 'check-DEJAGNU' Makefile.in && Exit 1
+grep 'check-DEJAGNU' Makefile.in && exit 1
 
 # 'check-TESTS' is phony.
 sed -n '/^\.PHONY:/,/^$/p' Makefile.in | $EGREP '(^| )check-TESTS($| )'
 
 # 'check' should depend directly on 'check-am' (similar tests are
-# in check2.test and check3.test).
+# in check2.sh and check3.sh).
 $EGREP '^check:.* check-am( |$)' Makefile.in
 
 :

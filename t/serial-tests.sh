@@ -16,15 +16,13 @@
 
 # Option 'serial-tests'.
 
-# To avoid useless generation of a sibling test.
-am_parallel_tests=yes
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 hasnt_parallel_tests ()
 {
-  $EGREP 'TEST_SUITE_LOG|TEST_LOGS|\.log.*:' $1 && Exit 1
-  grep 'recheck.*:' $1 && Exit 1
+  $EGREP 'TEST_SUITE_LOG|TEST_LOGS|\.log.*:' $1 && exit 1
+  grep 'recheck.*:' $1 && exit 1
   grep '^check-TESTS: \$(TESTS)$' $1
 }
 
@@ -38,7 +36,7 @@ has_parallel_tests ()
 
 mkdir one two
 
-cat >> one/configure.ac <<END
+cat > one/configure.ac <<END
 AC_INIT([$me], [1.0])
 AM_INIT_AUTOMAKE([serial-tests])
 AC_CONFIG_FILES([Makefile])
@@ -46,7 +44,7 @@ END
 
 echo 'TESTS = foo.test bar.test' > one/Makefile.am
 
-cat >> two/configure.ac <<END
+cat > two/configure.ac <<END
 AC_INIT([$me], [2.0])
 AC_CONFIG_AUX_DIR([config])
 AM_INIT_AUTOMAKE([parallel-tests])
@@ -64,7 +62,7 @@ $ACLOCAL
 $AUTOMAKE
 grep TEST Makefile.in # For debugging.
 hasnt_parallel_tests Makefile.in
-test ! -r test-driver
+test ! -e test-driver
 cd ..
 
 cd two
@@ -76,7 +74,7 @@ has_parallel_tests aMakefile.in
 hasnt_parallel_tests bMakefile.in
 mv aMakefile.in aMakefile.sav
 mv bMakefile.in bMakefile.sav
-test ! -r test-driver
+test ! -e test-driver
 test -f config/test-driver
 $AUTOMAKE
 diff aMakefile.sav aMakefile.in

@@ -16,10 +16,10 @@
 
 # Test to make sure config files are distributed, and only once.
 # This tries to distribute a file from a subdirectory, with
-# a Makefile in that directory.  distcom4.test performs the same
+# a Makefile in that directory.  'distcom4.sh' performs the same
 # test without Makefile in the directory.
 
-. ./defs || Exit 1
+. test-init.sh
 
 extract_distcommon ()
 {
@@ -78,7 +78,7 @@ extract_distcommon tests/Makefile.in > inner.txt
 cat top.txt
 cat inner.txt
 
-test 0 = `grep tests top.txt | wc -l`
-test 1 = `grep wrapper inner.txt | wc -l`
+test 0 -eq $(grep -c tests top.txt)
+test 1 -eq $(grep -c wrapper inner.txt)
 
 :

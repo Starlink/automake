@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure several config headers are allowed.
-# See also sister "semantic" test 'confh8.test'.
+# See also sister "semantic" test 'confh8.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
-AM_CONFIG_HEADER([config.h two.h])
+AC_CONFIG_HEADERS([config.h two.h])
 END
 
 : > Makefile.am

@@ -16,9 +16,9 @@
 
 # Test remake rules when an m4 file gets renamed and *simultaneously*
 # an m4 macro in it gets renamed.  Kudos to Bruno Haible for thinking
-# about this situation.  See also related test 'acloca22.test'.
+# about this situation.  See also related test 'acloca22.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 MY_MACRO
@@ -62,7 +62,7 @@ $MAKE distdir
 ls -l $distdir $distdir/*
 test -f $distdir/m4/bar.m4
 test -f $distdir/m4/macros.m4
-test ! -f $distdir/m4/foo.m4
+test ! -e $distdir/m4/foo.m4
 
 # Rename both at once.
 
@@ -80,7 +80,7 @@ $MAKE distdir
 ls -l $distdir $distdir/*
 test -f $distdir/m4/quux.m4
 test -f $distdir/m4/defs.m4
-test ! -f $distdir/m4/bar.m4
-test ! -f $distdir/m4/macros.m4
+test ! -e $distdir/m4/bar.m4
+test ! -e $distdir/m4/macros.m4
 
 :

@@ -22,7 +22,7 @@
 # need sister tests for other primaries too?  E.g., PROGRAMS, LISP,
 # PYTHON, etc...
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -40,28 +40,28 @@ $ACLOCAL
 $AUTOMAKE
 $AUTOCONF
 
-./configure --prefix="`pwd`/inst"
+./configure --prefix="$(pwd)/inst"
 
 $MAKE uninstall
-test ! -d inst
+test ! -e inst
 
 rm -rf inst
 
 $MAKE install-exec
-test -f inst/bin/foo || Exit 99 # Sanity check.
+test -f inst/bin/foo || exit 99 # Sanity check.
 $MAKE uninstall
-test ! -f inst/bin/foo
+test ! -e inst/bin/foo
 
 $MAKE install-data
-test -f inst/share/bar || Exit 99 # Sanity check.
+test -f inst/share/bar || exit 99 # Sanity check.
 $MAKE uninstall
-test ! -f inst/share/bar
+test ! -e inst/share/bar
 
 rm -rf inst
 
 $MAKE install-exec
-test -f inst/bin/foo || Exit 99 # Sanity check.
+test -f inst/bin/foo || exit 99 # Sanity check.
 $MAKE uninstall
-test ! -f inst/bin/foo
+test ! -e inst/bin/foo
 
 :

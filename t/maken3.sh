@@ -22,9 +22,10 @@
 #     special target, the output from make is sufficiently complete.
 #
 # This test exercises the GCS-mandated targets (except for dist)
-# as well as tags, TAGS.
+# as well as tags.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 # Does $MAKE support the '.MAKE' special target?
 have_dotmake=false
@@ -110,8 +111,6 @@ installcheck-local:
 	@: > stamp-installcheck-sub
 tags:
 	@: > stamp-tags-sub
-TAGS:
-	@: > stamp-TAGS-sub
 mostlyclean-local:
 	@: > stamp-mostlyclean-sub
 maintainer-clean-local:
@@ -126,7 +125,7 @@ html:
 	@: > sub2-$@-should-not-be-executed
 install-info install-html install-dvi install-pdf install-ps:
 	@: > sub2-$@-should-not-be-executed
-installcheck installdirs tags TAGS mostlyclean:
+installcheck installdirs tags mostlyclean:
 	@: > sub2-$@-should-not-be-executed
 ## These targets cannot be overridden like this:
 ## install-strip distclean maintainer-clean
@@ -141,35 +140,35 @@ check_targets ()
     all install install-strip uninstall clean distclean check \
     info html dvi pdf ps \
     install-info install-html install-dvi install-pdf install-ps \
-    installcheck installdirs tags TAGS mostlyclean maintainer-clean
+    installcheck installdirs tags mostlyclean maintainer-clean
   do
-    $MAKE -n $target >stdout || { cat stdout; Exit 1; }
+    $MAKE -n $target >stdout || { cat stdout; exit 1; }
     cat stdout
     case $target in
-    install-* | installdirs | tags | TAGS ) ;;
+    install-* | installdirs | tags ) ;;
     *)
       if $have_dotmake; then
-        grep "stamp-$target$" stdout || Exit 1
+        grep "stamp-$target$" stdout || exit 1
       fi
-      test ! -f "stamp-$target$" || Exit 1
+      test ! -e "stamp-$target" || exit 1
       ;;
     esac
     case $target in
     install-* | installdirs ) ;;
     *)
       if $have_dotmake; then
-        grep "stamp-$target-sub" stdout || Exit 1
+        grep "stamp-$target-sub" stdout || exit 1
       fi
-      test ! -f "sub/stamp-$target-sub" || Exit 1
+      test ! -e "sub/stamp-$target-sub" || exit 1
       ;;
     esac
     case $target in
     distclean | maintainer-clean ) ;;
     *)
       if $have_dotmake; then
-        grep "should-not-be-executed" stdout || Exit 1
+        grep "should-not-be-executed" stdout || exit 1
       fi
-      test ! -f "sub2/sub2-$target-should-not-be-executed" || Exit 1
+      test ! -e "sub2/sub2-$target-should-not-be-executed" || exit 1
       ;;
     esac
   done
@@ -177,7 +176,7 @@ check_targets ()
 
 $AUTOMAKE -a -Wno-override
 ./configure
-check_targets || Exit 1
+check_targets || exit 1
 
 # Now, introduce BUILT_SOURCES into the toplevel Makefile
 # TODO: add BUILT_SOURCES to sub2, fix fallout.
@@ -185,6 +184,6 @@ sed 's/##//' < Makefile.am > t
 mv -f t Makefile.am
 $AUTOMAKE -Wno-override --force Makefile
 ./configure
-check_targets || Exit 1
+check_targets || exit 1
 
-Exit 0
+exit 0

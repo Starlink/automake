@@ -16,17 +16,15 @@
 
 # Test for _DEPENDENCIES with libraries.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_RANLIB
-AM_MAINTAINER_MODE
 AC_PROG_CC
 AM_PROG_AR
 END
 
 cat > Makefile.am << 'END'
-AUTOMAKE_OPTIONS = dejagnu cygnus
 lib_LIBRARIES = libfoo.a
 libfoo_a_DEPENDENCIES = libzot.a
 END

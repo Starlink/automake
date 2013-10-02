@@ -18,7 +18,7 @@
 # using DESTDIR to build simple, no-frills binary packages.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cp "$am_docdir"/amhello-1.0.tar.gz . \
   || fatal_ "cannot get amhello tarball"
@@ -28,12 +28,12 @@ cd amhello-1.0
 
 ./configure --prefix /usr
 $MAKE
-$MAKE DESTDIR="`pwd`/inst" install
+$MAKE DESTDIR="$(pwd)/inst" install
 cd inst
 find . -type f -print > ../files.lst
-tar cvf amhello-1.0-i686.tar.gz `cat ../files.lst` > tar.got 2>&1
+tar cvf amhello-1.0-i686.tar.gz $(cat ../files.lst) > tar.got 2>&1
 
-EXEEXT=`sed -n -e 's/^EXEEXT *= *//p' < ../Makefile`
+EXEEXT=$(sed -n -e 's/^EXEEXT *= *//p' < ../Makefile)
 
 if tar --version </dev/null | grep GNU; then
   LC_ALL=C sort tar.got > t
@@ -44,8 +44,8 @@ if tar --version </dev/null | grep GNU; then
 END
 else
   : Be laxer with other tar implementations, to avoid spurious failures.
-  $EGREP '(^| )\./usr/bin/hello'$EXEEXT'( |$)' tar.got
-  $EGREP '(^| )\./usr/share/doc/amhello/README( |$)' tar.got
+  $EGREP '(^| )(\./)?usr/bin/hello'$EXEEXT'( |$)' tar.got
+  $EGREP '(^| )(\./)?usr/share/doc/amhello/README( |$)' tar.got
 fi
 
 :

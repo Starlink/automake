@@ -1,7 +1,7 @@
-This is automake.info, produced by makeinfo version 4.13 from
-/home/stefano/src/am/branches/trunks/doc/automake.texi.
+This is doc/automake.info, produced by makeinfo version 4.13 from
+./doc/automake.texi.
 
-This manual is for GNU Automake (version 1.12, 21 April 2012), a
+This manual is for GNU Automake (version 1.13, 28 December 2012), a
 program that creates GNU standards-compliant Makefiles from template
 files.
 
@@ -32,7 +32,7 @@ File: automake.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU Automake
 ************
 
-This manual is for GNU Automake (version 1.12, 21 April 2012), a
+This manual is for GNU Automake (version 1.13, 28 December 2012), a
 program that creates GNU standards-compliant Makefiles from template
 files.
 
@@ -70,7 +70,6 @@ files.
 * Conditionals::                Conditionals
 * Silencing Make::              Obtain less verbose output from `make'
 * Gnits::                       The effect of `--gnu' and `--gnits'
-* Cygnus::                      The effect of `--cygnus' (deprecated, soon to be removed)
 * Not Enough::                  When Automake is not Enough
 * Distributing::                Distributing the Makefile.in
 * API Versioning::              About compatibility between Automake versions
@@ -144,7 +143,6 @@ Auto-generating aclocal.m4
 Autoconf macros supplied with Automake
 
 * Public Macros::               Macros that you can use.
-* Obsolete Macros::             Macros that will soon be removed.
 * Private Macros::              Macros that you should not use.
 
 Directories
@@ -174,6 +172,7 @@ Building Programs and Libraries
 * Yacc and Lex::                Yacc and Lex support
 * C++ Support::                 Compiling C++ sources
 * Objective C Support::         Compiling Objective C sources
+* Objective C++ Support::       Compiling Objective C++ sources
 * Unified Parallel C Support::  Compiling Unified Parallel C sources
 * Assembly Support::            Compiling assembly sources
 * Fortran 77 Support::          Compiling Fortran 77 sources
@@ -313,9 +312,9 @@ Conditionals
 
 Silencing Make
 
-* Make verbosity::               Make is verbose by default
-* Tricks For Silencing Make::    Standard and generic ways to silence make
-* Automake silent-rules Option:: How Automake can help in silencing make
+* Make verbosity::              Make is verbose by default
+* Tricks For Silencing Make::   Standard and generic ways to silence make
+* Automake Silent Rules::       How Automake can help in silencing make
 
 When Automake Isn't Enough
 
@@ -367,7 +366,6 @@ on the back of the Automake maintainers).
 
    The typical Automake input file is simply a series of variable
 definitions.  Each such file is processed to create a `Makefile.in'.
-There should generally be one `Makefile.am' per directory of a project.
 
    Automake does constrain a project in certain ways; for instance, it
 assumes that the project uses Autoconf (*note Introduction:
@@ -472,9 +470,9 @@ File: automake.info,  Node: Use Cases,  Next: Why Autotools,  Prev: GNU Build Sy
 ======================================
 
 In this section we explore several use cases for the GNU Build System.
-You can replay all these examples on the `amhello-1.0.tar.gz' package
-distributed with Automake.  If Automake is installed on your system,
-you should find a copy of this file in
+You can replay all of these examples on the `amhello-1.0.tar.gz'
+package distributed with Automake.  If Automake is installed on your
+system, you should find a copy of this file in
 `PREFIX/share/doc/automake/amhello-1.0.tar.gz', where PREFIX is the
 installation prefix specified during configuration (PREFIX defaults to
 `/usr/local', however if Automake was installed by some GNU/Linux
@@ -1279,7 +1277,7 @@ distributed with Automake if you do not want to write them.)
      package.
           ~/amhello % cat README
           This is a demonstration package for GNU Automake.
-          Type `info Automake' to read the Automake manual.
+          Type 'info Automake' to read the Automake manual.
 
    * `Makefile.am' and `src/Makefile.am' contain Automake instructions
      for these two directories.
@@ -1310,9 +1308,9 @@ instantiate the build system.  Do this using the `autoreconf' command
 as follows:
 
      ~/amhello % autoreconf --install
-     configure.ac: installing `./install-sh'
-     configure.ac: installing `./missing'
-     src/Makefile.am: installing `./depcomp'
+     configure.ac: installing './install-sh'
+     configure.ac: installing './missing'
+     src/Makefile.am: installing './depcomp'
 
    At this point the build system is complete.
 
@@ -1369,8 +1367,8 @@ system will be regenerated automatically when you execute `make'.
 
    `autoreconf' is a script that calls `autoconf', `automake', and a
 bunch of other commands in the right order.  If you are beginning with
-these tools, it is not important to figure out in which order all these
-tools should be invoked and why.  However, because Autoconf and
+these tools, it is not important to figure out in which order all of
+these tools should be invoked and why.  However, because Autoconf and
 Automake have separate manuals, the important point to understand is
 that `autoconf' is in charge of creating `configure' from
 `configure.ac', while `automake' is in charge of creating
@@ -1609,8 +1607,8 @@ trouble:
      % cat Makefile.am
      $(FOO:=x): bar
      % automake
-     Makefile.am:1: bad characters in variable name `$(FOO'
-     Makefile.am:1: `:='-style assignments are not portable
+     Makefile.am:1: bad characters in variable name '$(FOO'
+     Makefile.am:1: ':='-style assignments are not portable
 
    A rule defined in `Makefile.am' generally overrides any such rule of
 a similar name that would be automatically generated by `automake'.
@@ -1681,15 +1679,6 @@ conformance.
 
    *Note Gnits::, for more information on the precise implications of
 the strictness level.
-
-   Automake also has a special (and _today deprecated_) "cygnus" mode
-that is similar to strictness but handled differently.  This mode is
-useful for packages that are put into a "Cygnus" style tree (e.g., older
-versions of the GCC and gdb trees).  *Note Cygnus::, for more
-information on this mode.  Please note that this mode is deprecated and
-_will be removed in the future automake versions_; you must avoid its
-use in new packages, and should stop using it in existing packages as
-well.
 
 
 File: automake.info,  Node: Uniform,  Next: Length Limitations,  Prev: Strictness,  Up: Generalities
@@ -1951,9 +1940,6 @@ source in case you need more recent versions.
      information that is then used by the automatic dependency tracking
      feature (*note Dependencies::).
 
-`elisp-comp'
-     This program is used to byte-compile Emacs Lisp code.
-
 `install-sh'
      This is a replacement for the `install' program that works on
      platforms where `install' is unavailable or unusable.
@@ -1964,9 +1950,9 @@ source in case you need more recent versions.
 
 `missing'
      This wraps a number of programs that are typically only required by
-     maintainers.  If the program in question doesn't exist, `missing'
-     prints an informative warning and attempts to fix things so that
-     the build can continue.
+     maintainers.  If the program in question doesn't exist, or seems
+     to old, `missing' will print an informative warning before failing
+     out, to provide the user with more context and information.
 
 `mkinstalldirs'
      This script used to be a wrapper around `mkdir -p', which is not
@@ -2210,12 +2196,6 @@ misunderstand this paragraph: `automake' runs `autoconf' to *scan* your
      When used with `--add-missing', causes installed files to be
      copied.  The default is to make a symbolic link.
 
-`--cygnus'
-     Causes the generated `Makefile.in's to follow Cygnus rules, instead
-     of GNU or Gnits rules.  For more information, see *note Cygnus::.
-     Note that _this mode of operation is deprecated, and will be
-     removed_ in a future Automake release.
-
 `-f'
 `--force-missing'
      When used with `--add-missing', causes standard files to be
@@ -2309,11 +2289,9 @@ misunderstand this paragraph: `automake' runs `autoconf' to *scan* your
      instance, `-Wno-syntax' will hide the warnings about unused
      variables.
 
-     The categories output by default are `syntax' and `unsupported'.
-     Additionally, `gnu' and `portability' are enabled in `--gnu' and
-     `--gnits' strictness.  On the other hand, the `silent-rules'
-     options (*note Options::) turns off portability warnings about
-     recursive variable expansions.
+     The categories output by default are `obsolete', `syntax' and
+     `unsupported'.  Additionally, `gnu' and `portability' are enabled
+     in `--gnu' and `--gnits' strictness.
 
      Turning off `portability' will also turn off `extra-portability',
      and similarly turning on `extra-portability' will also turn on
@@ -2439,9 +2417,9 @@ run by `AM_INIT_AUTOMAKE':
      to `$file' as `${file}' (i.e., in a way that is compatible with
      `make''s syntax) and furthermore use `AC_SUBST' to ensure that
      `${file}' is meaningful in a `Makefile', then `automake' will be
-     able to use `${file}' to generate all these rules.  For instance,
-     here is how the Automake package itself generates versioned
-     scripts for its test suite:
+     able to use `${file}' to generate all of these rules.  For
+     instance, here is how the Automake package itself generates
+     versioned scripts for its test suite:
 
           AC_SUBST([APIVERSION], ...)
           ...
@@ -2501,8 +2479,8 @@ their effects are:
      Automake will look for various helper scripts, such as
      `install-sh', in the directory named in this macro invocation.
      (The full list of scripts is: `ar-lib', `config.guess',
-     `config.sub', `depcomp', `elisp-comp', `compile', `install-sh',
-     `ltmain.sh', `mdate-sh', `missing', `mkinstalldirs', `py-compile',
+     `config.sub', `depcomp', `compile', `install-sh', `ltmain.sh',
+     `mdate-sh', `missing', `mkinstalldirs', `py-compile',
      `test-driver', `texinfo.tex', `ylwrap'.)  Not all scripts are
      always searched for; some scripts will only be sought if the
      generated `Makefile.in' requires them.
@@ -2525,9 +2503,11 @@ their effects are:
      macro.
 
 `AC_CONFIG_HEADERS'
-     Automake will generate rules to rebuild these headers.  Older
-     versions of Automake required the use of `AM_CONFIG_HEADER' (*note
-     Macros::); this is no longer the case.
+     Automake will generate rules to rebuild these headers from the
+     corresponding templates (usually, the template for a `foo.h'
+     header being `foo.h.in').  Older versions of Automake required the
+     use of `AM_CONFIG_HEADER'; this is no longer the case, and that
+     macro has indeed been removed.
 
      As with `AC_CONFIG_FILES' (*note Requirements::), parts of the
      specification using shell variables will be ignored as far as
@@ -2569,6 +2549,10 @@ their effects are:
 
 `AC_PROG_OBJC'
      This is required if any Objective C source is included.  *Note
+     Particular Program Checks: (autoconf)Particular Programs.
+
+`AC_PROG_OBJCXX'
+     This is required if any Objective C++ source is included.  *Note
      Particular Program Checks: (autoconf)Particular Programs.
 
 `AC_PROG_F77'
@@ -3036,7 +3020,7 @@ people, because `aclocal' was not so strict in the past and many third
 party macros are underquoted; and we have to apologize for this
 temporary inconvenience.  The reason we have to be stricter is that a
 future implementation of `aclocal' (*note Future of aclocal::) will
-have to temporarily include all these third party `.m4' files, maybe
+have to temporarily include all of these third party `.m4' files, maybe
 several times, including even files that are not actually needed.
 Doing so should alleviate many problems of the current implementation,
 however it requires a stricter style from the macro authors.  Hopefully
@@ -3097,25 +3081,15 @@ macros between packages.
 
    The second possibility, which we do recommend, is to write each macro
 in its own file and gather all these files in a directory.  This
-directory is usually called `m4/'.  To build `aclocal.m4', one should
-therefore instruct `aclocal' to scan `m4/'.  From the command line,
-this is done with `aclocal -I m4'.  The top-level `Makefile.am' should
-also be updated to define
+directory is usually called `m4/'.  Then it's enough to update
+`configure.ac' by adding a proper call to `AC_CONFIG_MACRO_DIRS':
 
-     ACLOCAL_AMFLAGS = -I m4
+     AC_CONFIG_MACRO_DIRS([m4])
 
-   `ACLOCAL_AMFLAGS' contains options to pass to `aclocal' when
-`aclocal.m4' is to be rebuilt by `make'.  This line is also used by
-`autoreconf' (*note Using `autoreconf' to Update `configure' Scripts:
-(autoconf)autoreconf Invocation.) to run `aclocal' with suitable
-options, or by `autopoint' (*note Invoking the `autopoint' Program:
-(gettext)autopoint Invocation.)  and `gettextize' (*note Invoking the
-`gettextize' Program: (gettext)gettextize Invocation.) to locate the
-place where Gettext's macros should be installed.  So even if you do
-not really care about the rebuild rules, you should define
-`ACLOCAL_AMFLAGS'.
+   `aclocal' will then take care of automatically adding `m4/' to its
+search path for m4 files.
 
-   When `aclocal -I m4' is run, it will build an `aclocal.m4' that
+   When `aclocal' is run, it will build an `aclocal.m4' that
 `m4_include's any file from `m4/' that defines a required macro.
 Macros not found locally will still be searched in system-wide
 directories, as explained in *note Macro Search Path::.
@@ -3141,16 +3115,14 @@ run on architectures where Guile cannot be installed, this requirement
 will hinder development.  An easy solution is to copy such third-party
 macros in your local `m4/' directory so they get distributed.
 
-   Since Automake 1.10, `aclocal' offers an option to copy these
-system-wide third-party macros in your local macro directory, solving
-the above problem.  Simply use:
+   Since Automake 1.10, `aclocal' offers the option `--install' to copy
+these system-wide third-party macros in your local macro directory,
+helping to solve the above problem.
 
-     ACLOCAL_AMFLAGS = -I m4 --install
-
-With this setup, system-wide macros will be copied to `m4/' the first
-time you run `autoreconf'.  Then the locally installed macros will have
-precedence over the system-wide installed macros each time `aclocal' is
-run again.
+   With this setup, system-wide macros will be copied to `m4/' the
+first time you run `aclocal'.  Then the locally installed macros will
+have precedence over the system-wide installed macros each time
+`aclocal' is run again.
 
    One reason why you should keep `--install' in the flags even after
 the first run is that when you later edit `configure.ac' and depend on
@@ -3216,14 +3188,12 @@ follows:
    MyPackage uses an `m4/' directory to store local macros as explained
 in *note Local Macros::, and has
 
-     ACLOCAL_AMFLAGS = -I m4 --install
+     AC_CONFIG_MACRO_DIRS([m4])
 
-in its top-level `Makefile.am'.
+in its `configure.ac'.
 
    Initially the `m4/' directory is empty.  The first time we run
-`autoreconf', it will fetch the options to pass to `aclocal' in
-`Makefile.am', and run `aclocal -I m4 --install'.  `aclocal' will
-notice that
+`aclocal --install', it will notice that
 
    * `configure.ac' uses `AX_THIRD_PARTY'
 
@@ -3237,9 +3207,8 @@ Because `/usr/share/aclocal/thirdparty.m4' is a system-wide macro and
 `m4/thirdparty.m4', and output an `aclocal.m4' that contains
 `m4_include([m4/thirdparty.m4])'.
 
-   The next time `aclocal -I m4 --install' is run (either via
-`autoreconf', by hand, or from the `Makefile' rebuild rules) something
-different happens.  `aclocal' notices that
+   The next time `aclocal --install' is run, something different
+happens.  `aclocal' notices that
 
    * `configure.ac' uses `AX_THIRD_PARTY'
 
@@ -3259,8 +3228,8 @@ the system-wide file in case of equal serial numbers.
 
    Now suppose the system-wide third-party macro is changed.  This can
 happen if the package installing this macro is updated.  Let's suppose
-the new macro has serial number 2.  The next time `aclocal -I m4
---install' is run the situation is the following:
+the new macro has serial number 2.  The next time `aclocal --install'
+is run the situation is the following:
 
    * `configure.ac' uses `AX_THIRD_PARTY'
 
@@ -3281,15 +3250,15 @@ old version.  MyPackage just had its macro updated as a side effect of
 running `aclocal'.
 
    If you are leery of letting `aclocal' update your local macro, you
-can run `aclocal -I m4 --diff' to review the changes `aclocal -I m4
---install' would perform on these macros.
+can run `aclocal --diff' to review the changes `aclocal --install'
+would perform on these macros.
 
    Finally, note that the `--force' option of `aclocal' has absolutely
 no effect on the files installed by `--install'.  For instance, if you
 have modified your local macros, do not expect `--install --force' to
 replace the local macros by their system-wide versions.  If you want to
 do so, simply erase the local macros you want to revert, and run
-`aclocal -I m4 --install'.
+`aclocal --install'.
 
 
 File: automake.info,  Node: Future of aclocal,  Prev: Serials,  Up: aclocal Invocation
@@ -3363,25 +3332,24 @@ File: automake.info,  Node: Public Macros,  Next: Obsolete Macros,  Up: Macros
      Runs many macros required for proper operation of the generated
      Makefiles.
 
-     Today, `AM_INIT_AUTOMAKE' is called with a single argument: a
+     `AM_INIT_AUTOMAKE' is called with a single argument: a
      space-separated list of Automake options that should be applied to
      every `Makefile.am' in the tree.  The effect is as if each option
      were listed in `AUTOMAKE_OPTIONS' (*note Options::).
 
-     This macro can also be called in _another, deprecated form_
-     (support for which will be _removed in the next major Automake
-     release_): `AM_INIT_AUTOMAKE(PACKAGE, VERSION, [NO-DEFINE])'.  In
-     this form, there are two required arguments: the package and the
-     version number.  This form is obsolete because the PACKAGE and
-     VERSION can be obtained from Autoconf's `AC_INIT' macro (which
-     itself has an old and a new form).
+     This macro could once (before Automake 1.13) also be called in the
+     _now obsolete and completely unsupported_ form
+     `AM_INIT_AUTOMAKE(PACKAGE, VERSION, [NO-DEFINE])'.  In this form,
+     there were two required arguments: the package and the version
+     number.
 
      If your `configure.ac' has:
 
           AC_INIT([src/foo.c])
           AM_INIT_AUTOMAKE([mumble], [1.5])
 
-     you should modernize it as follows:
+     you must modernize it as follows in order to make it work with
+     Automake 1.13 or later:
 
           AC_INIT([mumble], [1.5])
           AC_CONFIG_SRCDIR([src/foo.c])
@@ -3452,9 +3420,17 @@ File: automake.info,  Node: Public Macros,  Next: Obsolete Macros,  Up: Macros
      macro will abort `configure' if no Unified Parallel C compiler is
      found.
 
+`AM_MISSING_PROG(NAME, PROGRAM)'
+     Find a maintainer tool PROGRAM and define the NAME environment
+     variable with its location.  If PROGRAM is not detected, then NAME
+     will instead invoke the `missing' script, in order to give useful
+     advice to the user about the missing maintainer tool.  *Note
+     maintainer-mode::, for more information on when the `missing'
+     script is appropriate.
+
 `AM_SILENT_RULES'
-     Enable the machinery for less verbose build output (*note
-     Options::).
+     Control the machinery for less verbose build output (*note
+     Automake Silent Rules::).
 
 `AM_WITH_DMALLOC'
      Add support for the Dmalloc package (http://dmalloc.com/).  If the
@@ -3475,17 +3451,6 @@ still using them, running `autoupdate' should adjust your
 `configure.ac' automatically (*note Using `autoupdate' to Modernize
 `configure.ac': (autoconf)autoupdate Invocation.).  _Do it NOW!_
 
-`AM_CONFIG_HEADER'
-     Automake will generate rules to automatically regenerate the config
-     header.  This obsolete macro is a synonym of `AC_CONFIG_HEADERS'
-     today (*note Optional::).
-
-`AM_HEADER_TIOCGWINSZ_NEEDS_SYS_IOCTL'
-     If the use of `TIOCGWINSZ' requires `<sys/ioctl.h>', then define
-     `GWINSZ_IN_SYS_IOCTL'.  Otherwise `TIOCGWINSZ' can be found in
-     `<termios.h>'.  This macro is obsolete, you should use Autoconf's
-     `AC_HEADER_TIOCGWINSZ' instead.
-
 `AM_PROG_MKDIR_P'
      From Automake 1.8 to 1.9.6 this macro used to define the output
      variable `mkdir_p' to one of `mkdir -p', `install-sh -d', or
@@ -3500,13 +3465,6 @@ still using them, running `autoupdate' should adjust your
      switch ASAP to the more modern Autoconf-provided interface
      instead; both the macro and the variable _will be removed_ in the
      next major Automake release.
-
-`AM_SYS_POSIX_TERMIOS'
-     Check to see if POSIX termios headers and functions are available
-     on the system.  If so, set the shell variable
-     `am_cv_sys_posix_termios' to `yes'.  If not, set the variable to
-     `no'.  This macro is obsolete, you should use Autoconf's
-     `AC_SYS_POSIX_TERMIOS' instead.
 
 
 
@@ -3556,13 +3514,25 @@ For simple projects that distribute all files in the same directory it
 is enough to have a single `Makefile.am' that builds everything in
 place.
 
-   In larger projects it is common to organize files in different
-directories, in a tree.  For instance one directory per program, per
-library or per module.  The traditional approach is to build these
-subdirectories recursively: each directory contains its `Makefile'
-(generated from `Makefile.am'), and when `make' is run from the top
-level directory it enters each subdirectory in turn to build its
-contents.
+   In larger projects, it is common to organize files in different
+directories, in a tree.  For example, there could be a directory for
+the program's source, one for the testsuite, and one for the
+documentation; or, for very large projects, there could be one
+directory per program, per library or per module.
+
+   The traditional approach is to build these subdirectories
+recursively, employing _make recursion_: each directory contains its
+own `Makefile', and when `make' is run from the top-level directory, it
+enters each subdirectory in turn, and invokes there a new `make'
+instance to build the directory's contents.
+
+   Because this approach is very widespread, Automake offers built-in
+support for it.  However, it is worth nothing that the use of make
+recursion has its own serious issues and drawbacks, and that it's well
+possible to have packages with a multi directory layout that make
+little or no use of such recursion (examples of such packages are GNU
+Bison and GNU Automake itself); see also the *note Alternative::
+section below.
 
 * Menu:
 
@@ -3577,7 +3547,7 @@ File: automake.info,  Node: Subdirectories,  Next: Conditional Subdirectories,  
 7.1 Recursing subdirectories
 ============================
 
-In packages with subdirectories, the top level `Makefile.am' must tell
+In packages using make recursion, the top level `Makefile.am' must tell
 Automake which subdirectories are to be built.  This is done via the
 `SUBDIRS' variable.  
 
@@ -3622,7 +3592,31 @@ will be built, finally the `test/' directory will be built.  It is
 customary to arrange test directories to be built after everything else
 since they are meant to test what has been constructed.
 
-   All `clean' rules are run in reverse order of build rules.
+   In addition to the built-in recursive targets defined by Automake
+(`all', `check', etc.), the developer can also define his own recursive
+targets.  That is done by passing the names of such targets as
+arguments to the m4 macro `AM_EXTRA_RECURSIVE_TARGETS' in
+`configure.ac'.  Automake generates rules to handle the recursion for
+such targets; and the developer can define real actions for them by
+defining corresponding `-local' targets.
+
+     % cat configure.ac
+     AC_INIT([pkg-name], [1.0]
+     AM_INIT_AUTOMAKE
+     AM_EXTRA_RECURSIVE_TARGETS([foo])
+     AC_CONFIG_FILES([Makefile sub/Makefile sub/src/Makefile])
+     AC_OUTPUT
+     % cat Makefile.am
+     SUBDIRS = sub
+     foo-local:
+             @echo This will be run by "make foo".
+     % cat sub/Makefile.am
+     SUBDIRS = src
+     % cat sub/src/Makefile.am
+     foo-local:
+             @echo This too will be run by a "make foo" issued either in
+             @echo the 'sub/src/' directory, the 'sub/' directory, or the
+             @echo top-level directory.
 
 
 File: automake.info,  Node: Conditional Subdirectories,  Next: Alternative,  Prev: Subdirectories,  Up: Directories
@@ -3832,7 +3826,7 @@ File: automake.info,  Node: Alternative,  Next: Subpackages,  Prev: Conditional 
 
 If you've ever read Peter Miller's excellent paper, Recursive Make
 Considered Harmful (http://miller.emu.id.au/pmiller/books/rmch/), the
-preceding sections on the use of subdirectories will probably come as
+preceding sections on the use of make recursion will probably come as
 unwelcome advice.  For those who haven't read the paper, Miller's main
 thesis is that recursive `make' invocations are both slow and
 error-prone.
@@ -3991,6 +3985,7 @@ to build programs and libraries.
 * Yacc and Lex::                Yacc and Lex support
 * C++ Support::                 Compiling C++ sources
 * Objective C Support::         Compiling Objective C sources
+* Objective C++ Support::       Compiling Objective C++ sources
 * Unified Parallel C Support::  Compiling Unified Parallel C sources
 * Assembly Support::            Compiling assembly sources
 * Fortran 77 Support::          Compiling Fortran 77 sources
@@ -4680,7 +4675,8 @@ computed by Automake (if any), so `LIBRARY_LIBTOOLFLAGS' (or
 be set in `Makefile.am': this is a user variable (*note Flag Variables
 Ordering::.  It allows users to run `make LIBTOOLFLAGS=--silent', for
 instance.  Note that the verbosity of `libtool' can also be influenced
-with the Automake `silent-rules' option (*note Options::).
+by the Automake support for silent rules (*note Automake Silent
+Rules::).
 
 
 File: automake.info,  Node: LTLIBOBJS,  Next: Libtool Issues,  Prev: Libtool Flags,  Up: A Shared Library
@@ -4761,7 +4757,7 @@ course of creating `foo.lo', libtool may erase (or replace)
 
    Therefore, when Automake detects this situation it will complain
 with a message such as
-     object `foo.$(OBJEXT)' created both with libtool and without
+     object 'foo.$(OBJEXT)' created both with libtool and without
 
    A workaround for this issue is to ensure that these two objects get
 different basenames.  As explained in *note Renamed Objects::, this
@@ -4958,6 +4954,7 @@ libraries differ.
 `maude_GCJFLAGS'
 `maude_LFLAGS'
 `maude_OBJCFLAGS'
+`maude_OBJCXXFLAGS'
 `maude_RFLAGS'
 `maude_UPCFLAGS'
 `maude_YFLAGS'
@@ -4967,8 +4964,8 @@ libraries differ.
      different flags for each program.  This works for any language
      directly supported by Automake.  These "per-target compilation
      flags" are `_CCASFLAGS', `_CFLAGS', `_CPPFLAGS', `_CXXFLAGS',
-     `_FFLAGS', `_GCJFLAGS', `_LFLAGS', `_OBJCFLAGS', `_RFLAGS',
-     `_UPCFLAGS', and `_YFLAGS'.
+     `_FFLAGS', `_GCJFLAGS', `_LFLAGS', `_OBJCFLAGS', `_OBJCXXFLAGS',
+     `_RFLAGS', `_UPCFLAGS', and `_YFLAGS'.
 
      When using a per-target compilation flag, Automake will choose a
      different name for the intermediate object files.  Ordinarily a
@@ -5214,9 +5211,8 @@ some special cases.
      separate variable that is also passed to every compilation that
      invokes the C preprocessor.  In particular it generates `-I.',
      `-I$(srcdir)', and a `-I' pointing to the directory holding
-     `config.h' (if you've used `AC_CONFIG_HEADERS' or
-     `AM_CONFIG_HEADER').  You can disable the default `-I' options
-     using the `nostdinc' option.
+     `config.h' (if you've used `AC_CONFIG_HEADERS').  You can disable
+     the default `-I' options using the `nostdinc' option.
 
      When a file to be included is generated during the build and not
      part of a distribution tarball, its location is under
@@ -5241,9 +5237,9 @@ some special cases.
 
 `AM_CFLAGS'
      This is the variable the `Makefile.am' author can use to pass in
-     additional C compiler flags.  It is more fully documented
-     elsewhere.  In some situations, this is not used, in preference to
-     the per-executable (or per-library) `_CFLAGS'.
+     additional C compiler flags.  In some situations, this is not
+     used, in preference to the per-executable (or per-library)
+     `_CFLAGS'.
 
 `COMPILE'
      This is the command used to actually compile a C source file.  The
@@ -5430,7 +5426,7 @@ seen:
      The command used to actually link a C++ program.
 
 
-File: automake.info,  Node: Objective C Support,  Next: Unified Parallel C Support,  Prev: C++ Support,  Up: Programs
+File: automake.info,  Node: Objective C Support,  Next: Objective C++ Support,  Prev: C++ Support,  Up: Programs
 
 8.10 Objective C Support
 ========================
@@ -5462,9 +5458,41 @@ file is seen:
      The command used to actually link an Objective C program.
 
 
-File: automake.info,  Node: Unified Parallel C Support,  Next: Assembly Support,  Prev: Objective C Support,  Up: Programs
+File: automake.info,  Node: Objective C++ Support,  Next: Unified Parallel C Support,  Prev: Objective C Support,  Up: Programs
 
-8.11 Unified Parallel C Support
+8.11 Objective C++ Support
+==========================
+
+Automake includes some support for Objective C++.
+
+   Any package including Objective C++ code must define the output
+variable `OBJCXX' in `configure.ac'; the simplest way to do this is to
+use the `AC_PROG_OBJCXX' macro (*note Particular Program Checks:
+(autoconf)Particular Programs.).
+
+   A few additional variables are defined when an Objective C++ source
+file is seen:
+
+`OBJCXX'
+     The name of the Objective C++ compiler.
+
+`OBJCXXFLAGS'
+     Any flags to pass to the Objective C++ compiler.
+
+`AM_OBJCXXFLAGS'
+     The maintainer's variant of `OBJCXXFLAGS'.
+
+`OBJCXXCOMPILE'
+     The command used to actually compile an Objective C++ source file.
+     The file name is appended to form the complete command line.
+
+`OBJCXXLINK'
+     The command used to actually link an Objective C++ program.
+
+
+File: automake.info,  Node: Unified Parallel C Support,  Next: Assembly Support,  Prev: Objective C++ Support,  Up: Programs
+
+8.12 Unified Parallel C Support
 ===============================
 
 Automake includes some support for Unified Parallel C.
@@ -5495,7 +5523,7 @@ source file is seen:
 
 File: automake.info,  Node: Assembly Support,  Next: Fortran 77 Support,  Prev: Unified Parallel C Support,  Up: Programs
 
-8.12 Assembly Support
+8.13 Assembly Support
 =====================
 
 Automake includes some support for assembly code.  There are two forms
@@ -5520,7 +5548,7 @@ as being files containing assembly code.
 
 File: automake.info,  Node: Fortran 77 Support,  Next: Fortran 9x Support,  Prev: Assembly Support,  Up: Programs
 
-8.13 Fortran 77 Support
+8.14 Fortran 77 Support
 =======================
 
 Automake includes full support for Fortran 77.
@@ -5580,7 +5608,7 @@ verbatim from *note Catalogue of Rules: (make)Catalogue of Rules.
 
 File: automake.info,  Node: Preprocessing Fortran 77,  Next: Compiling Fortran 77 Files,  Up: Fortran 77 Support
 
-8.13.1 Preprocessing Fortran 77
+8.14.1 Preprocessing Fortran 77
 -------------------------------
 
 `N.f' is made automatically from `N.F' or `N.r'.  This rule runs just
@@ -5599,7 +5627,7 @@ used is as follows:
 
 File: automake.info,  Node: Compiling Fortran 77 Files,  Next: Mixing Fortran 77 With C and C++,  Prev: Preprocessing Fortran 77,  Up: Fortran 77 Support
 
-8.13.2 Compiling Fortran 77 Files
+8.14.2 Compiling Fortran 77 Files
 ---------------------------------
 
 `N.o' is made automatically from `N.f', `N.F' or `N.r' by running the
@@ -5619,7 +5647,7 @@ Fortran 77 compiler.  The precise command used is as follows:
 
 File: automake.info,  Node: Mixing Fortran 77 With C and C++,  Prev: Compiling Fortran 77 Files,  Up: Fortran 77 Support
 
-8.13.3 Mixing Fortran 77 With C and C++
+8.14.3 Mixing Fortran 77 With C and C++
 ---------------------------------------
 
 Automake currently provides _limited_ support for creating programs and
@@ -5680,7 +5708,7 @@ Software, but it will be in the next major release.
 
 File: automake.info,  Node: How the Linker is Chosen,  Up: Mixing Fortran 77 With C and C++
 
-8.13.3.1 How the Linker is Chosen
+8.14.3.1 How the Linker is Chosen
 .................................
 
 When a program or library mixes several languages, Automake choose the
@@ -5689,17 +5717,19 @@ parentheses are the variables containing the link command.)
 
   1. Native Java (`GCJLINK')
 
-  2. C++ (`CXXLINK')
+  2. Objective C++ (`OBJCXXLINK')
 
-  3. Fortran 77 (`F77LINK')
+  3. C++ (`CXXLINK')
 
-  4. Fortran (`FCLINK')
+  4. Fortran 77 (`F77LINK')
 
-  5. Objective C (`OBJCLINK')
+  5. Fortran (`FCLINK')
 
-  6. Unified Parallel C (`UPCLINK')
+  6. Objective C (`OBJCLINK')
 
-  7. C (`LINK')
+  7. Unified Parallel C (`UPCLINK')
+
+  8. C (`LINK')
 
    For example, if Fortran 77, C and C++ source code is compiled into a
 program, then the C++ linker will be used.  In this case, if the C or
@@ -5721,7 +5751,7 @@ variable according to the language chosen as above.
 
 File: automake.info,  Node: Fortran 9x Support,  Next: Java Support with gcj,  Prev: Fortran 77 Support,  Up: Programs
 
-8.14 Fortran 9x Support
+8.15 Fortran 9x Support
 =======================
 
 Automake includes support for Fortran 9x.
@@ -5759,7 +5789,7 @@ is seen:
 
 File: automake.info,  Node: Compiling Fortran 9x Files,  Up: Fortran 9x Support
 
-8.14.1 Compiling Fortran 9x Files
+8.15.1 Compiling Fortran 9x Files
 ---------------------------------
 
 `FILE.o' is made automatically from `FILE.f90', `FILE.f95', `FILE.f03',
@@ -5782,7 +5812,7 @@ used is as follows:
 
 File: automake.info,  Node: Java Support with gcj,  Next: Vala Support,  Prev: Fortran 9x Support,  Up: Programs
 
-8.15 Compiling Java sources using gcj
+8.16 Compiling Java sources using gcj
 =====================================
 
 Automake includes support for natively compiled Java, using `gcj', the
@@ -5815,7 +5845,7 @@ the `--main=' option.  The easiest way to do this is to use the
 
 File: automake.info,  Node: Vala Support,  Next: Support for Other Languages,  Prev: Java Support with gcj,  Up: Programs
 
-8.16 Vala Support
+8.17 Vala Support
 =================
 
 Automake provides initial support for Vala
@@ -5832,17 +5862,23 @@ installed.
    Automake ships with an Autoconf macro called `AM_PROG_VALAC' that
 will locate the Vala compiler and optionally check its version number.
 
- -- Macro: AM_PROG_VALAC ([MINIMUM-VERSION])
-     Try to find a Vala compiler in `PATH'. If it is found, the variable
-     `VALAC' is set. Optionally a minimum release number of the compiler
-     can be requested:
-
-          AM_PROG_VALAC([0.7.0])
+ -- Macro: AM_PROG_VALAC ([MINIMUM-VERSION], [ACTION-IF-FOUND],
+     [ACTION-IF-NOT-FOUND]) Search for a Vala compiler in `PATH'.  If
+     it is found, the variable `VALAC' is set to point to it (see below
+     for more details).  This macro takes three optional arguments.
+     The first argument, if present, is the minimum version of the Vala
+     compiler required to compile this package.  If a compiler is found
+     and satisfies MINIMUM-VERSION, then ACTION-IF-FOUND is run (this
+     defaults to do nothing).  Otherwise, ACTION-IF-NOT-FOUND is run.
+     If ACTION-IF-NOT-FOUND is not specified, the default value is to
+     print a warning in case no compiler is found, or if a too-old
+     version of the compiler is found.
 
    There are a few variables that are used when compiling Vala sources:
 
 `VALAC'
-     Path to the Vala compiler.
+     Absolute path to the Vala compiler, or simply `valac' if no
+     suitable compiler Vala could be found at configure runtime.
 
 `VALAFLAGS'
      Additional arguments for the Vala compiler.
@@ -5860,15 +5896,15 @@ file.
 
 File: automake.info,  Node: Support for Other Languages,  Next: Dependencies,  Prev: Vala Support,  Up: Programs
 
-8.17 Support for Other Languages
+8.18 Support for Other Languages
 ================================
 
 Automake currently only includes full support for C, C++ (*note C++
-Support::), Objective C (*note Objective C Support::), Fortran 77
-(*note Fortran 77 Support::), Fortran 9x (*note Fortran 9x Support::),
-and Java (*note Java Support with gcj::).  There is only rudimentary
-support for other languages, support for which will be improved based
-on user demand.
+Support::), Objective C (*note Objective C Support::), Objective C++
+(*note Objective C++ Support::), Fortran 77 (*note Fortran 77
+Support::), Fortran 9x (*note Fortran 9x Support::), and Java (*note
+Java Support with gcj::).  There is only rudimentary support for other
+languages, support for which will be improved based on user demand.
 
    Some limited support for adding your own languages is available via
 the suffix rule handling (*note Suffixes::).
@@ -5876,7 +5912,7 @@ the suffix rule handling (*note Suffixes::).
 
 File: automake.info,  Node: Dependencies,  Next: EXEEXT,  Prev: Support for Other Languages,  Up: Programs
 
-8.18 Automatic dependency tracking
+8.19 Automatic dependency tracking
 ==================================
 
 As a developer it is often painful to continually update the
@@ -5913,7 +5949,7 @@ dependency tracking by configuring with `--disable-dependency-tracking'.
 
 File: automake.info,  Node: EXEEXT,  Prev: Dependencies,  Up: Programs
 
-8.19 Support for executable extensions
+8.20 Support for executable extensions
 ======================================
 
 On some platforms, such as Windows, executables are expected to have an
@@ -6392,7 +6428,10 @@ are `lisp_' and `noinst_'.  Note that if `lisp_LISP' is defined, then
 `dist_noinst_LISP', to indicate that these files should be distributed.
 
    Automake will byte-compile all Emacs Lisp source files using the
-Emacs found by `AM_PATH_LISPDIR', if any was found.
+Emacs found by `AM_PATH_LISPDIR', if any was found.  When performing
+such byte-compilation, the flags specified in the (developer-reserved)
+`AM_ELCFLAGS' and (user-reserved) `ELCFLAGS' make variables will be
+passed to the Emacs invocation.
 
    Byte-compiled Emacs Lisp files are not portable among all versions of
 Emacs, so it makes sense to turn this off if you expect sites to have
@@ -6612,7 +6651,7 @@ below).
      This is a convenience variable that is defined as
      `$(pyexecdir)/$(PACKAGE)'.
 
-   All these directory variables have values that start with either
+   All of these directory variables have values that start with either
 `${prefix}' or `${exec_prefix}' unexpanded.  This works fine in
 `Makefiles', but it makes these variables hard to use in `configure'.
 This is mandated by the GNU coding standards, so that the user can run
@@ -6660,7 +6699,7 @@ install-html' explicitly.  `make uninstall' will remove everything: the
 Texinfo documentation installed by default as well as all the above
 optional formats.
 
-   All these targets can be extended using `-local' rules (*note
+   All of these targets can be extended using `-local' rules (*note
 Extending::).
 
    If the `.texi' file `@include's `version.texi', then that file will
@@ -6720,10 +6759,11 @@ the `no-installinfo' option.  In this case, `.info' files are not
 installed by default, and user must request this explicitly using `make
 install-info'.
 
-   By default, `make install-info' and `make install-info' will try to
-run the `install-info' program (if available) to update (or create) the
-``${infodir}'/dir' index.  If this is undesired, it can be prevented by
-exporting the `AM_UPDATE_INFO_DIR' variable to "`no'".
+   By default, `make install-info' and `make uninstall-info' will try
+to run the `install-info' program (if available) to update (or
+create/remove) the ``${infodir}'/dir' index.  If this is undesired, it
+can be prevented by exporting the `AM_UPDATE_INFO_DIR' variable to
+"`no'".
 
    The following variables are used by the Texinfo build rules.
 

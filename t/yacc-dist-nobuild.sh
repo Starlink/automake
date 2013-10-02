@@ -19,7 +19,7 @@
 # See automake bug#7884.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -65,7 +65,7 @@ exit 1
 END
 cp bin/yacc bin/bison
 chmod a+x bin/yacc bin/bison
-PATH=`pwd`/bin$PATH_SEPARATOR$PATH
+PATH=$(pwd)/bin$PATH_SEPARATOR$PATH
 
 YACC=yacc BISON=bison
 export YACC BISON
@@ -83,7 +83,7 @@ chmod a-w $distdir
 mkdir build2
 cd build2
 ../$distdir/configure
-$MAKE >out 2>&1 && { cat out; Exit 1; }
+$MAKE >out 2>&1 && { cat out; exit 1; }
 cat out
 $FGREP parse.c out
 

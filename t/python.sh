@@ -16,7 +16,7 @@
 
 # Test to make sure py_compile and am__py_compile are correctly defined.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo 'AM_PATH_PYTHON' >> configure.ac
 
@@ -53,8 +53,8 @@ $AUTOMAKE Makefile3
 grep "py" Makefile.in Makefile2.in Makefile3.in # For debugging.
 
 for f in Makefile.in Makefile2.in Makefile3.in; do
-  test `grep -c '^py_compile =' $f` -eq 1
-  test `grep -c '^am__py_compile =' $f` -eq 1
+  test $(grep -c '^py_compile =' $f) -eq 1
+  test $(grep -c '^am__py_compile =' $f) -eq 1
 done
 
 :

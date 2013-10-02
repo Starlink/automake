@@ -24,7 +24,7 @@
 # should work.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_PROG_CC
@@ -54,7 +54,12 @@ test:
 	test -f '$(bindir)/libquux.a'
 	ls -l '$(libexecdir)/bar.h'
 	test -f '$(libexecdir)/bar.h'
-	test ! -x '$(libexecdir)/bar.h'
+## If this test is run as root, "test -x" could succeed also for
+## non-executable files, so we need to protect the next check.
+## See automake bug#12041.
+	if test -x Makefile; then echo SKIP THIS; else \
+	  test ! -x '$(libexecdir)/bar.h'; \
+	fi;
 END
 
 cat > foo.c <<'END'
@@ -77,7 +82,7 @@ $ACLOCAL
 $AUTOMAKE -a
 $AUTOCONF
 
-cwd=`pwd` || fatal_ "cannot get current working directory"
+cwd=$(pwd) || fatal_ "getting current working directory"
 ./configure --prefix="$cwd/_inst"
 
 $MAKE install

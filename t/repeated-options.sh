@@ -18,7 +18,7 @@
 # generate broken or incorrect makefiles.
 
 required='cc bzip2'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -61,8 +61,8 @@ END
 cp "$am_scriptdir"/compile "$am_scriptdir"/test-driver .
 
 $ACLOCAL
-$AUTOMAKE --foreign --foreign -Wall 2>stderr || { cat stderr >&2; Exit 1; }
-test -s stderr && { cat stderr >&2; Exit 1; }
+$AUTOMAKE --foreign --foreign -Wall 2>stderr || { cat stderr >&2; exit 1; }
+test -s stderr && { cat stderr >&2; exit 1; }
 rm -f stderr
 $AUTOCONF
 
@@ -77,6 +77,6 @@ $MAKE clean
 $MAKE distcheck
 ls -l
 test -f $me-1.0.tar.bz2
-test ! -r $me-1.0.tar.gz
+test ! -e $me-1.0.tar.gz
 
 :

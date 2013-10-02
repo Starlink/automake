@@ -19,7 +19,7 @@
 # For now, require the GNU compilers (to avoid some Libtool/Autoconf
 # issues).
 required='libtoolize g77 gfortran'
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir sub
 
@@ -89,7 +89,7 @@ grep " --tag=FC" Makefile.in
 # or if the compiler cannot compile Fortran 90 files).
 ./configure
 $MAKE
-subobjs=`echo sub/*.lo`
+subobjs=$(echo sub/*.lo)
 test "$subobjs" = 'sub/*.lo'
 $MAKE distcheck
 
@@ -99,7 +99,9 @@ echo 'AUTOMAKE_OPTIONS = subdir-objects' >> Makefile.am
 $AUTOMAKE -a
 ./configure
 $MAKE
-test ! -f bar.lo
-test ! -f baz.lo
-test ! -f libgoodbye_la-baz.lo
+test ! -e bar.lo
+test ! -e baz.lo
+test ! -e libgoodbye_la-baz.lo
 $MAKE distcheck
+
+:

@@ -16,10 +16,10 @@
 
 # Check that we can provide a personal 'yywrap' function in a custom
 # library.
-# See also test 'lex-lib-external.test'.
+# See also test 'lex-lib-external.sh'.
 
 required='cc lex'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

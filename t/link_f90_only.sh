@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure the Fortran 90 linker is used when appropriate.
-# (copied from link_f_only.test) Mike Nolta <mrnolta@princeton.edu>
+# (copied from 'link_f_only.sh') Mike Nolta <mrnolta@princeton.edu>
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_FC
@@ -38,7 +38,7 @@ $AUTOMAKE
 grep '.\$(FCLINK)' Makefile.in
 
 # We should not see these patterns:
-grep '.\$(CXXLINK)' Makefile.in && Exit 1
-grep '.\$(LINK)'    Makefile.in && Exit 1
+grep '.\$(CXXLINK)' Makefile.in && exit 1
+grep '.\$(LINK)'    Makefile.in && exit 1
 
-Exit 0
+exit 0

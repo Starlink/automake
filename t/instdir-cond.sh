@@ -17,7 +17,7 @@
 # Check against automake bug#10997: directories holding only
 # conditionally-installed files should not be created unconditionally.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([ENABLE_FOO], [false])
@@ -39,10 +39,10 @@ $ACLOCAL
 $AUTOMAKE
 $AUTOCONF
 
-./configure --prefix="`pwd`/inst"
+./configure --prefix="$(pwd)/inst"
 
 $MAKE install
-test ! -d inst/share/instdir-cond
-test ! -d inst/libexec/instdir-cond
+test ! -e inst/share/instdir-cond
+test ! -e inst/libexec/instdir-cond
 
 :

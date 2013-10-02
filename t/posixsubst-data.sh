@@ -17,7 +17,7 @@
 # Test that POSIX variable expansion '$(var:str=rpl)' works
 # in when used with the DATA primary.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -62,7 +62,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
-cwd=`pwd` || Exit 1
+cwd=$(pwd) || fatal_ "getting current working directory"
 ./configure --prefix="$cwd/_inst"
 $MAKE install
 test -f bar.data

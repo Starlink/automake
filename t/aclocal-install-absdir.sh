@@ -19,14 +19,14 @@
 # ACLOCAL_PATH variable, it is clear that this is the right thing
 # to do.  See also automake bug#8407.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir loc sys
 
 echo 'AM_DUMMY_MACRO' >> configure.ac
 echo 'AC_DEFUN([AM_DUMMY_MACRO], [:])' >> sys/foo.m4
 
-cwd=`pwd` || fatal_ "cannot get current working directory"
+cwd=$(pwd) || fatal_ "cannot get current working directory"
 env ACLOCAL_PATH="$cwd/sys" $ACLOCAL --verbose --install -I "$cwd/loc"
 diff sys/foo.m4 loc/foo.m4
 

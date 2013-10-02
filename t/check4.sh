@@ -16,7 +16,8 @@
 
 # Make sure 'make -k check' processes all directories.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([dir/Makefile])
@@ -48,12 +49,12 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-./configure --prefix "`pwd`/inst"
+./configure --prefix "$(pwd)/inst"
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 grep '^FAIL: fail\.sh *$' stdout
-grep '^PASS: ok\.sh *$' stdout && Exit 1
+grep '^PASS: ok\.sh *$' stdout && exit 1
 
 # The exit status of 'make -k' can be anything
 # (depending on the Make implementation)

@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test install when a conditional install-*-hook is defined.
-# Keep this in sync with sister test condhook.test.
+# Keep this in sync with sister test 'condhook.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([TEST], [true])
@@ -38,7 +38,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
-./configure --prefix "`pwd`/inst"
+./configure --prefix "$(pwd)/inst"
 
 $MAKE install
 test -f inst/etc/mumble

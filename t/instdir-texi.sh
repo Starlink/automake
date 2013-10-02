@@ -17,8 +17,8 @@
 # If $(infodir) is the empty string, then nothing should be installed there.
 # Likewise for the other install-* targets used for texinfo files.
 
-required='makeinfo-html tex texi2dvi'
-. ./defs || Exit 1
+required='makeinfo tex texi2dvi'
+. test-init.sh
 
 dvips --help \
   || skip_ "dvips is missing"
@@ -47,8 +47,9 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
-destdir=`pwd`/dest
+cwd=$(pwd) || fatal_ "getting current working directory"
+instdir=$cwd/inst
+destdir=$cwd/dest
 mkdir build
 cd build
 ../configure --prefix="$instdir"
@@ -59,13 +60,14 @@ infodir= htmldir= dvidir= psdir= pdfdir=
 export infodir htmldir dvidir psdir pdfdir
 
 $MAKE -e install install-html install-dvi install-ps install-pdf
-test ! -d "$instdir"
-$MAKE -e install install-html install-dvi install-ps install-pdf DESTDIR="$destdir"
-test ! -d "$instdir"
-test ! -d "$destdir"
-$MAKE -e uninstall > stdout || { cat stdout; Exit 1; }
+test ! -e "$instdir"
+$MAKE -e install install-html install-dvi install-ps install-pdf \
+         DESTDIR="$destdir"
+test ! -e "$instdir"
+test ! -e "$destdir"
+$MAKE -e uninstall > stdout || { cat stdout; exit 1; }
 cat stdout
-grep 'rm -f' stdout && Exit 1
+grep 'rm -f' stdout && exit 1
 $MAKE -e uninstall DESTDIR="$destdir"
 
 :

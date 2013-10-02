@@ -17,7 +17,7 @@
 # Check that distributed broken symlinks cause 'make dist' to fail, and
 # to do so with (mostly) meaningful diagnostic.
 
-. ./defs || Exit 1
+. test-init.sh
 
 # We need, for our broken symlinks, names that make it hard to get false
 # positives when grepping make output to look for them.
@@ -29,16 +29,16 @@ lnkb=${lnk_base}__bbb
 
 ln -s nonesuch $lnk1 || skip_ "cannot create broken symlinks"
 
-ln -s "`pwd`/nonesuch" $lnk2
+ln -s "$(pwd)/nonesuch" $lnk2
 
 ln -s $lnk1 $lnka
 ln -s $lnka $lnkb
 
-# Sanity checks.  Use 'test -r', since Solaris Sh doesn't grok 'test -e'.
-test ! -r $lnk1
-test ! -r $lnk2
-test ! -r $lnka
-test ! -r $lnkb
+# Sanity checks.
+test ! -e $lnk1
+test ! -e $lnk2
+test ! -e $lnka
+test ! -e $lnkb
 test -h $lnk1
 test -h $lnk2
 test -h $lnka
@@ -60,7 +60,7 @@ for lnk in $lnk1 $lnk2 $lnka $lnkb; do
   $AUTOMAKE
   ./configure
   # Distribution must fail, with a decent error message.
-  $MAKE distdir >out 2>&1 && { cat out; Exit 1; }
+  $MAKE distdir >out 2>&1 && { cat out; exit 1; }
   cat out
   $FGREP $lnk out
 done

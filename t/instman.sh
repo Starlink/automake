@@ -17,7 +17,7 @@
 # Make sure the MKDIR_P invocation is correct in install-man
 # target.  Bug reported by Gordon Irlam <gordoni@cygnus.com>.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -30,5 +30,7 @@ EOF
 $ACLOCAL
 $AUTOMAKE
 
-grep '[^(/]MKDIR_P' Makefile.in > out
-test `wc -l < out` -eq 1
+grep 'MKDIR_P' Makefile.in # For debugging.
+test $(grep -c '[^(/]MKDIR_P' Makefile.in) -eq 1
+
+:

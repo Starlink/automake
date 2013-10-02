@@ -17,7 +17,7 @@
 # Check the recover rule of lisp_LISP with parallel make.
 
 required='GNUmake emacs'
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'EOF'
 dist_lisp_LISP = am-one.el am-two.el am-three.el
@@ -37,27 +37,25 @@ $AUTOCONF
 $AUTOMAKE --add-missing
 ./configure
 
+# Use append mode here to avoid dropping output.  See automake bug#11413.
 : >stdout
-$MAKE -j >>stdout || { cat stdout; Exit 1; }
+$MAKE -j >>stdout || { cat stdout; exit 1; }
 
 cat stdout
-test 1 -eq `grep 'Warnings can be ignored' stdout | wc -l`
 
 test -f am-one.elc
 test -f am-two.elc
 test -f am-three.elc
-test -f elc-stamp
 
 rm -f am-*.elc
 
+# Use append mode here to avoid dropping output.  See automake bug#11413.
 : >stdout
-$MAKE -j >>stdout || { cat stdout; Exit 1; }
+$MAKE -j >>stdout || { cat stdout; exit 1; }
 
 cat stdout
-test 1 -eq `grep 'Warnings can be ignored' stdout | wc -l`
 test -f am-one.elc
 test -f am-two.elc
 test -f am-three.elc
-test -f elc-stamp
 
 :

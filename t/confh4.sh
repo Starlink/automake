@@ -22,11 +22,11 @@
 #  Use AM_CONFIG_HEADER(subdir/config.h) to place configuration
 #  header in subdirectory and observe that it is not included.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([include/Makefile])
-AM_CONFIG_HEADER([include/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 AC_PROG_CC
 END
 

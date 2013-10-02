@@ -14,13 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Test aclocal's '--acdir', '--automake-acdir' and '--system-acdir'
-# options.  Also check that stuff in the automake acdir takes precedence
-# over stuff in the system acdir.
+# Test aclocal's '--automake-acdir' and '--system-acdir' options.  Also
+# check that stuff in the automake acdir takes precedence over stuff in
+# the system acdir.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir am sys
+# FIXME: remove in Automake 1.14.
+mkdir am/internal
+: > am/internal/ac-config-macro-dirs.m4
 
 cat >> configure.ac <<'END'
 MY_MACRO
@@ -70,26 +73,6 @@ $ACLOCAL --automake-acdir am --system-acdir sys
 $AUTOCONF --force
 $FGREP 'fake--init--automake' configure
 $FGREP 'am--macro' configure
-$FGREP 'my--macro' configure && Exit 1 # Just to be sure.
-
-rm -rf autom4te*.cache
-
-# Obsolescent '--acdir' option.
-$ACLOCAL -Wobsolete --acdir am 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep '.*--acdir.*deprecated' stderr
-
-rm -rf autom4te*.cache
-
-$ACLOCAL -Wno-obsolete --acdir am
-$AUTOCONF --force
-$FGREP 'fake--init--automake' configure
-$FGREP 'am--macro' configure
-
-rm -rf autom4te*.cache
-
-$ACLOCAL -Wno-obsolete --acdir sys 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep 'macro .*AM_INIT_AUTOMAKE.* not found' stderr
+$FGREP 'my--macro' configure && exit 1 # Just to be sure.
 
 :

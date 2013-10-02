@@ -15,20 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that auxiliary script 'test-driver' doesn't get needlessly
-# installed or referenced when the 'parallel-tests' option is not
-# used.
+# installed or referenced when the 'serial-tests' option is used.
 
-am_parallel_tests=no
-. ./defs || Exit 1
+am_serial_tests=yes
+. test-init.sh
 
-echo 'TESTS = foo.test' > Makefile.am
+cat > Makefile.am <<'END'
+AUTOMAKE_OPTIONS = serial-tests
+TESTS = foo.test
+END
 
 $ACLOCAL
 
 for opts in '' '-a' '--add-missing --copy'; do
   $AUTOMAKE $opts
-  $FGREP 'test-driver' Makefile.in && Exit 1
-  find . | $FGREP 'test-driver' && Exit 1
+  $FGREP 'test-driver' Makefile.in && exit 1
+  find . | $FGREP 'test-driver' && exit 1
   : For shells with busted 'set -e'.
 done
 

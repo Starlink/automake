@@ -17,7 +17,7 @@
 # Test EXTRA_*_DEPENDENCIES.  See extradep2 for libtool variant.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -48,8 +48,7 @@ EXTRA_DIST = foodep bardep
 
 .PHONY: bar-has-been-updated
 bar-has-been-updated:
-	stat older bar$(EXEEXT) libfoo.a || : For debugging.
-	test `ls -t bar$(EXEEXT) older | sed q` = bar$(EXEEXT)
+	is_newest bar$(EXEEXT) libfoo.a
 END
 
 cat >libfoo.c <<'END'
@@ -79,24 +78,23 @@ $AUTOCONF
 : >foodep
 : >foodep2
 : >bardep
-$MAKE >stdout || { cat stdout; Exit 1; }
+$MAKE >stdout || { cat stdout; exit 1; }
 cat stdout
 grep 'making libfoodep' stdout
 
 rm -f foodep
-$MAKE && Exit 1
+$MAKE && exit 1
 : >foodep
 
 rm -f foodep2
-$MAKE && Exit 1
+$MAKE && exit 1
 : >foodep2
 
 rm -f bardep
-$MAKE && Exit 1
+$MAKE && exit 1
 : >bardep
 
 $MAKE
-: > older
 $sleep
 touch libfoo.a
 $MAKE

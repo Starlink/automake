@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure name canonicalization happens for libtool libraries.
-# Keep this in sync with sister test 'canon4.test'.
+# Keep this in sync with sister test 'canon4.sh'.
 
 required='libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -37,6 +37,6 @@ END
 $ACLOCAL
 $AUTOMAKE -a
 
-grep '^ *libx-y.*=' Makefile.in && Exit 1
+grep '^ *libx-y.*=' Makefile.in && exit 1
 
 :

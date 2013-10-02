@@ -18,7 +18,7 @@
 # Also make sure we do not bloat the Makefile with unneeded rules.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -66,7 +66,7 @@ a (void)
 END
 
 # Use --copy to workaround a bug in Cygwin's 'cp -p' during distcheck.
-# (This bug is already exhibited by subobj9.test.)  In brief: Cygwin's
+# (This bug is already exhibited by subobj9.sh.)  In brief: Cygwin's
 # 'cp -p' tries to preserve group and owner of the source and fails
 # to do so under normal accounts.  With --copy we ensure we own all files.
 
@@ -78,8 +78,8 @@ $AUTOMAKE --add-missing --copy
 # We need explicit rules to build 1.o and a.lo.  Make sure
 # Automake did not output additional rules for 1.lo and and a.lo.
 $FGREP '1.o:' Makefile.in
-$FGREP '1.lo:' Makefile.in && Exit 1
-$FGREP 'a.o:' Makefile.in && Exit 1
+$FGREP '1.lo:' Makefile.in && exit 1
+$FGREP 'a.o:' Makefile.in && exit 1
 $FGREP 'a.lo:' Makefile.in
 
 ./configure

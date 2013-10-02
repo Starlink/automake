@@ -14,21 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check that the parallel-tests driver correctly handle overrides of the
+# Check that the testsuite harness correctly handle overrides of the
 # TERM variable by either TESTS_ENVIRONMENT and AM_TESTS_ENVIRONMENT.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+required='grep-nonprint'
+. test-init.sh
 
-esc='['
-
-# Check that grep can parse nonprinting characters.
-# BSD 'grep' works from a pipe, but not a seekable file.
-# GNU or BSD 'grep -a' works on files, but is not portable.
-case `echo "$esc" | $FGREP "$esc"` in
-  "$esc") ;;
-  *) skip_ "$FGREP can't parse nonprinting characters" ;;
-esac
+TERM=ansi; export TERM
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -43,14 +35,13 @@ END
 cat > foobar << 'END'
 #!/bin/sh
 echo "TERM='$TERM'"
-echo "expected_term='$expected_term'"
-test x"$TERM" = x"$expected_term"
+test x"$TERM" = x"dumb"
 END
 chmod a+x foobar
 
 mkcheck ()
 {
-  if env AM_COLOR_TESTS=always $* $MAKE check > stdout; then
+  if $MAKE "$@" check > stdout; then
     rc=0
   else
     rc=1
@@ -66,24 +57,10 @@ $AUTOCONF
 $AUTOMAKE -a
 ./configure
 
-TERM=ansi; export TERM
-expected_term=dumb; export expected_term
 mkcheck TESTS_ENVIRONMENT='TERM=dumb'
-cat stdout | grep "PASS.*foobar" | $FGREP "$esc"
+cat stdout | grep "PASS.*foobar" | grep "$esc\\["
 
-TERM=dumb; export TERM
-expected_term=ansi; export expected_term
-mkcheck TESTS_ENVIRONMENT='TERM=ansi'
-cat stdout | $FGREP "$esc" && Exit 1
-
-TERM=ansi; export TERM
-expected_term=dumb; export expected_term
 mkcheck AM_TESTS_ENVIRONMENT='TERM=dumb'
-cat stdout | grep "PASS.*foobar" | $FGREP "$esc"
-
-TERM=dumb; export TERM
-expected_term=ansi; export expected_term
-mkcheck AM_TESTS_ENVIRONMENT='TERM=ansi'
-cat stdout | $FGREP "$esc" && Exit 1
+cat stdout | grep "PASS.*foobar" | grep "$esc\\["
 
 :

@@ -17,7 +17,7 @@
 # Test on compilation and installation of Java class files.
 
 required=javac
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'EOF'
 AC_OUTPUT
@@ -87,7 +87,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
-./configure --prefix="`pwd`"/_inst
+./configure --prefix="$(pwd)"/_inst
 $MAKE
 $MAKE test
 $MAKE install

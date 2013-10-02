@@ -17,11 +17,11 @@
 # Check that info files are built in builddir and in srcdir can safely
 # co-exist.  This setup is obtained by having two info files, only one
 # of which being cleaned.
-# (Similar to txinfo16.test, plus CLEANFILES).
-# (See also txinfo23.test and txinfo24.test).
+# (Similar to txinfo16.sh, plus CLEANFILES).
+# (See also txinfo23.sh and txinfo24.sh).
 
-required='makeinfo tex texi2dvi-o'
-. ./defs || Exit 1
+required='makeinfo tex texi2dvi'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -61,8 +61,8 @@ cd build
 ../configure
 $MAKE
 test -f main.info
-test ! -f ../main.info
-test ! -f other.info
+test ! -e ../main.info
+test ! -e other.info
 test -f ../other.info
 
 cd ..
@@ -101,7 +101,7 @@ $MAKE
 # rule is always triggered.  Still that's not a reason for 'make'
 # to think 'version.texi' has been created...
 test -f main.info
-test ! -f other.info
+test ! -e other.info
 $MAKE dvi
 test -f main.dvi
 test -f other.dvi

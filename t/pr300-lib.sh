@@ -18,7 +18,7 @@
 # PR/300
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_RANLIB
@@ -50,7 +50,7 @@ $AUTOMAKE --copy --add-missing
 # or distributions possibly overriding '${libdir}' in their $CONFIG_SITE
 # file (for example, defining it to '${prefix}/lib64' on 64-bit systems,
 # as is the case with openSUSE 12.1).  See automake bug#10426.
-cwd=`pwd` || Exit 99
+cwd=$(pwd) || fatal_ "getting current working directory"
 ./configure --prefix "$cwd/inst" --libdir "$cwd/inst/lib"
 
 $MAKE
@@ -65,8 +65,8 @@ test -f inst/lib/subdir/libb.a
 
 $MAKE uninstall
 
-test -f inst/lib/liba.a && Exit 1
-test -f inst/lib/subdir/libb.a && Exit 1
+test -f inst/lib/liba.a && exit 1
+test -f inst/lib/subdir/libb.a && exit 1
 
 $MAKE install-strip
 

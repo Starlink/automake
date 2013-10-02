@@ -28,7 +28,7 @@
 # rename one of the 'foo.o' files.
 
 required=libtoolize
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

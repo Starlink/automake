@@ -18,14 +18,13 @@
 # that allow multiple testcases in a single test script.  This test not
 # only checks implementation details in Automake's custom test drivers
 # support, but also serves as a "usability test" for our APIs.
-# See also related tests 'test-driver-custom-multitest-recheck2.test'
-# and 'parallel-tests-recheck-override.test'.
-# Keep in sync with 'tap-recheck.test'.
+# See also related tests 'test-driver-custom-multitest-recheck2.sh'
+# and 'parallel-tests-recheck-override.sh'.
+# Keep in sync with 'tap-recheck.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-cp "$am_testauxdir"/trivial-test-driver . \
+cp "$am_testaux_srcdir"/trivial-test-driver . \
   || fatal_ "failed to fetch auxiliary script trivial-test-driver"
 
 cat >> configure.ac << 'END'
@@ -92,7 +91,7 @@ do_recheck ()
          *) fatal_ "invalid usage of function 'do_recheck'";;
   esac
   rm -f *.run
-  eval "\$MAKE recheck >stdout $on_bad_rc { cat stdout; ls -l; Exit 1; }; :"
+  eval "\$MAKE recheck >stdout $on_bad_rc { cat stdout; ls -l; exit 1; }; :"
   cat stdout; ls -l
 }
 
@@ -108,20 +107,21 @@ for vpath in : false; do
   $srcdir/configure
 
   : A "make recheck" in a clean tree should run no tests.
+  using_gmake || $sleep # Required by BSD make.
   do_recheck --pass
   cat test-suite.log
-  test ! -r a.run
-  test ! -r a.log
-  test ! -r b.run
-  test ! -r b.log
-  test ! -r c.run
-  test ! -r c.log
-  test ! -r d.run
-  test ! -r d.log
+  test ! -e a.run
+  test ! -e a.log
+  test ! -e b.run
+  test ! -e b.log
+  test ! -e c.run
+  test ! -e c.log
+  test ! -e d.run
+  test ! -e d.log
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
 
   : Run the tests for the first time.
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
   ls -l
   # All the test scripts should have run.
@@ -132,45 +132,50 @@ for vpath in : false; do
   count_test_results total=9 pass=3 fail=2 xpass=1 xfail=1 skip=1 error=1
 
   : Let us make b.test pass.
+  using_gmake || $sleep # Required by BSD make.
   echo OK > b.ok
   do_recheck --fail
   # a.test has been successful the first time, so no need to re-run it.
   # Similar considerations apply to similar checks, below.
-  test ! -r a.run
+  test ! -e a.run
   test -f b.run
   test -f c.run
   test -f d.run
   count_test_results total=7 pass=2 fail=2 xpass=1 xfail=1 skip=1 error=0
 
   : Let us make the first part of c.test pass.
+  using_gmake || $sleep # Required by BSD make.
   echo OK > c.pass
   do_recheck --fail
-  test ! -r a.run
-  test ! -r b.run
+  test ! -e a.run
+  test ! -e b.run
   test -f c.run
   test -f d.run
   count_test_results total=5 pass=1 fail=1 xpass=1 xfail=1 skip=1 error=0
 
   : Let us make also the second part of c.test pass.
+  using_gmake || $sleep # Required by BSD make.
   echo KO > c.xfail
   do_recheck --fail
-  test ! -r a.run
-  test ! -r b.run
+  test ! -e a.run
+  test ! -e b.run
   test -f c.run
   test -f d.run
   count_test_results total=5 pass=1 fail=1 xpass=0 xfail=2 skip=1 error=0
 
   : Nothing changed, so only d.test should be run.
   for i in 1 2; do
+    using_gmake || $sleep # Required by BSD make.
     do_recheck --fail
-    test ! -r a.run
-    test ! -r b.run
-    test ! -r c.run
+    test ! -e a.run
+    test ! -e b.run
+    test ! -e c.run
     test -f d.run
     count_test_results total=2 pass=0 fail=1 xpass=0 xfail=0 skip=1 error=0
   done
 
   : Let us make d.test run more testcases, and experience _more_ failures.
+  using_gmake || $sleep # Required by BSD make.
   unindent > d.extra <<'END'
     echo SKIP: s
     echo FAIL: f 1
@@ -184,27 +189,29 @@ for vpath in : false; do
     echo ERROR: e 2
 END
   do_recheck --fail
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
   test -f d.run
   count_test_results total=11 pass=2 fail=4 xpass=1 xfail=0 skip=2 error=2
 
   : Let us finally make d.test pass.
+  using_gmake || $sleep # Required by BSD make.
   echo : > d.extra
   do_recheck --pass
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
   test -f d.run
   count_test_results total=1 pass=0 fail=0 xpass=0 xfail=0 skip=1 error=0
 
   : All tests have been successful or skipped, nothing should be re-run.
+  using_gmake || $sleep # Required by BSD make.
   do_recheck --pass
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
-  test ! -r d.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
+  test ! -e d.run
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
 
   cd $srcdir

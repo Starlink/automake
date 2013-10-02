@@ -16,7 +16,8 @@
 
 # Check skip summary.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -39,22 +40,22 @@ $AUTOMAKE -a
 
 ./configure
 
-env TESTS=skip $MAKE -e check >stdout || { cat stdout; Exit 1; }
+env TESTS=skip $MAKE -e check >stdout || { cat stdout; exit 1; }
 cat stdout
-if test x"$am_parallel_tests" = x"yes"; then
-  count_test_results total=1 pass=0 fail=0 skip=1 xfail=0 xpass=0 error=0
-else
-  grep '1.*passed' stdout && Exit 1
+if test x"$am_serial_tests" = x"yes"; then
+  grep '1.*passed' stdout && exit 1
   : For shells with buggy 'set -e'.
+else
+  count_test_results total=1 pass=0 fail=0 skip=1 xfail=0 xpass=0 error=0
 fi
 
-env TESTS="skip skip2" $MAKE -e check >stdout || { cat stdout; Exit 1; }
+env TESTS="skip skip2" $MAKE -e check >stdout || { cat stdout; exit 1; }
 cat stdout
-if test x"$am_parallel_tests" = x"yes"; then
-  count_test_results total=2 pass=0 fail=0 skip=2 xfail=0 xpass=0 error=0
-else
-  grep '2.*passed' stdout && Exit 1
+if test x"$am_serial_tests" = x"yes"; then
+  grep '2.*passed' stdout && exit 1
   : For shells with buggy 'set -e'.
+else
+  count_test_results total=2 pass=0 fail=0 skip=2 xfail=0 xpass=0 error=0
 fi
 
 :

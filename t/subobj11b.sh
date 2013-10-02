@@ -23,10 +23,10 @@
 # (even if the file 'foo.mk' exists). The error disappear by collapsing
 # the repeated slash '/' characters into a single one.
 #
-# See also "semantic" sister test 'subobj11a.test', and related test
-# 'subobj11c.test'.
+# See also "semantic" sister test 'subobj11a.sh', and related test
+# 'subobj11c.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -61,7 +61,7 @@ $AUTOMAKE -a
 
 # Be lax in the regexp, to account for automake conditionals, the
 # use of @am__include@, and similar stuff.
-grep 'include.*//.*foobar' Makefile.in && Exit 1
+grep 'include.*//.*foobar' Makefile.in && exit 1
 
 # These checks depend on automake internals, but presently this is
 # the only way to test the code path we are interested in.
@@ -69,7 +69,7 @@ grep 'include.*//.*foobar' Makefile.in && Exit 1
 # internals are changed.
 for x in zardoz0 zardoz1 path/to/zardoz2 another/path/to/zardoz3; do
   case $x in
-   */*) d=`echo $x | sed 's,[^/]*$,,'`; b=`echo $x | sed 's,^.*/,,'`;;
+   */*) d=$(echo $x | sed 's,[^/]*$,,'); b=$(echo $x | sed 's,^.*/,,');;
      *) d=''; b=$x;;
   esac
   # Be a little lax in the regexp, to account for automake conditionals,

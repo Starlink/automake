@@ -26,7 +26,7 @@
 # For texinfos, we expand names using $(srcdir) in the first place.
 # Let's hope nobody uses many texinfos.
 
-. ./defs || Exit 1
+. test-init.sh
 
 # In order to have a useful test on modern systems (which have a high
 # limit, if any), use a fake install program that errors out for more
@@ -36,7 +36,7 @@
 limit=2500
 subdir=long_subdir_name_with_many_characters
 nfiles=81
-list=`seq_ 1 $nfiles`
+list=$(seq_ 1 $nfiles)
 
 sed "s|@limit@|$limit|g" >myinstall.in <<'END'
 #! /bin/sh
@@ -114,7 +114,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
+instdir=$(pwd)/inst
 mkdir build
 cd build
 ../configure --prefix="$instdir"
@@ -124,11 +124,11 @@ $MAKE install
 # Multiple uninstall should work, too.
 $MAKE uninstall
 $MAKE uninstall
-test `find "$instdir" -type f -print | wc -l` = 0
+test $(find "$instdir" -type f -print | wc -l) -eq 0
 
 # Try whether we don't exceed the low limit.
 INSTALL='$(SHELL) $(top_builddir)/myinstall' $MAKE -e install
-env save_PATH="$PATH" PATH="`pwd`/..$PATH_SEPARATOR$PATH" $MAKE uninstall
+env save_PATH="$PATH" PATH="$(pwd)/..$PATH_SEPARATOR$PATH" $MAKE uninstall
 
 cd $subdir
 srcdir=../../$subdir
@@ -143,42 +143,42 @@ for file in script3 script$nfiles
 do
   chmod a-r $srcdir/$file
   test ! -r $srcdir/$file || skip_ "cannot drop file read permissions"
-  $MAKE install-binSCRIPTS && Exit 1
+  $MAKE install-binSCRIPTS && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in nscript3 nscript$nfiles
 do
   chmod a-r $srcdir/$file
-  $MAKE install-nobase_binSCRIPTS && Exit 1
+  $MAKE install-nobase_binSCRIPTS && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in data3 data$nfiles
 do
   chmod a-r $srcdir/$file
-  $MAKE install-dataDATA && Exit 1
+  $MAKE install-dataDATA && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in ndata3 ndata$nfiles
 do
   chmod a-r $srcdir/$file
-  $MAKE install-nobase_dataDATA && Exit 1
+  $MAKE install-nobase_dataDATA && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in header3.h header$nfiles.h
 do
   chmod a-r $srcdir/$file
-  $MAKE install-includeHEADERS && Exit 1
+  $MAKE install-includeHEADERS && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in nheader3.h nheader$nfiles.h
 do
   chmod a-r $srcdir/$file
-  $MAKE install-nobase_includeHEADERS && Exit 1
+  $MAKE install-nobase_includeHEADERS && exit 1
   chmod u+r $srcdir/$file
 done
 

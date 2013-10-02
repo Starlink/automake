@@ -17,7 +17,7 @@
 # Test to make sure EXTRA_..._SOURCES actually works.
 # Bug report from Henrik Frystyk Nielsen.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_PROG_CC >> configure.ac
 

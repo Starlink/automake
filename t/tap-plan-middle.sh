@@ -17,10 +17,9 @@
 # TAP support:
 #  - test plan preceding and/or following non-result TAP lines
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > top1.test <<END
 non-TAP line, ignored
@@ -71,11 +70,11 @@ ok 4 # SKIP
 
 END
 
-tests=`echo *.test`
+tests=$(echo *.test)
 
 for tap_flags in "" "--comments"; do
   env TEST_LOG_DRIVER_FLAGS="$tap_flags" TESTS="$tests" \
-    $MAKE -e check >stdout || { cat stdout; Exit 1; }
+    $MAKE -e check >stdout || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=12 pass=7 xfail=2 skip=3 fail=0 xpass=0 error=0
 done

@@ -17,13 +17,12 @@
 # Test to make sure config.h can be in subdir.
 # Also, make sure config.h is properly rebuilt.
 
-. ./defs || Exit 1
+. test-init.sh
 
-cat > configure.ac << 'END'
-AC_INIT
-AM_INIT_AUTOMAKE(nonesuch, nonesuch)
-AM_CONFIG_HEADER(subdir/config.h:subdir/config.hin)
-AC_OUTPUT(Makefile subdir/Makefile)
+cat >> configure.ac << 'END'
+AC_CONFIG_FILES([subdir/Makefile])
+AC_CONFIG_HEADERS([subdir/config.h:subdir/config.hin])
+AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
@@ -44,7 +43,7 @@ $AUTOMAKE
 #
 # cd $(top_builddir) && $(SHELL) ./config.status subdir/config.h
 ($FGREP 'subdir/config.h' subdir/Makefile.in |
-   $FGREP -v 'cd $(top_builddir)') && Exit 1
+   $FGREP -v 'cd $(top_builddir)') && exit 1
 
 $AUTOCONF
 ./configure

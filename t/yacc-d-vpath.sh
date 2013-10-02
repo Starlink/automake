@@ -20,10 +20,10 @@
 # 'make' and 'make distdir' and check whether the version of 'parse.c'
 # to be distributed is up to date.
 
-# Please keep this in sync with sister test 'yaccvpath.test'.
+# Please keep this in sync with sister test 'yaccvpath.sh'.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

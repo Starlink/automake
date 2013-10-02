@@ -17,7 +17,7 @@
 # Use of these variables is deprecated:
 # LISP, HEADERS, DATA, SCRIPTS, LTLIBRARIES, LIBRARIES, PROGRAMS, MANS.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >Makefile.am <<\EOF
 DATA =
@@ -32,4 +32,6 @@ EOF
 
 $ACLOCAL
 AUTOMAKE_fails
-test `grep -c anachronism stderr` -eq 8
+test $(grep -c anachronism stderr) -eq 8
+
+:

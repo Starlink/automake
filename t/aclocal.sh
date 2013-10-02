@@ -17,24 +17,29 @@
 # Test on some aclocal options.  Report from Alexandre Oliva.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 echo "AC_INIT([$me], [0]) AM_INIT_AUTOMAKE" > configure.ac
 
 $ACLOCAL --output=fred
 test -f fred
 
-$ACLOCAL --output 2>stderr && { cat stderr >&2; Exit 1; }
+$ACLOCAL --output 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'option.*--output.*requires an argument' stderr
 grep '[Tt]ry.*--help.*for more information' stderr
 
-$ACLOCAL --unknown-option 2>stderr && { cat stderr >&2; Exit 1; }
+$ACLOCAL --unknown-option 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'unrecognized option.*--unknown-option' stderr
 grep '[Tt]ry.*--help.*for more information' stderr
 
-$ACLOCAL --ver 2>stderr && { cat stderr >&2; Exit 1; }
+$ACLOCAL foobar 2>stderr && { cat stderr >&2; exit 1; }
+cat stderr >&2
+grep 'non-option argument.*foobar' stderr
+grep '[Tt]ry.*--help.*for more information' stderr
+
+$ACLOCAL --ver 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'unrecognized option.*--ver' stderr
 grep '[Tt]ry.*--help.*for more information' stderr

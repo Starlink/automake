@@ -17,7 +17,7 @@
 # Test for correct installation order of nobase libtool libraries.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_PROG_CC
@@ -49,14 +49,14 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-./configure "--prefix=`pwd`/inst"
+./configure --prefix="$(pwd)/inst"
 
 $MAKE
-$MAKE install 2>stderr || { cat stderr >&2; Exit 1; }
+$MAKE install 2>stderr || { cat stderr >&2; exit 1; }
 cat stderr >&2
-grep 'has not been installed' stderr && Exit 1
+grep 'has not been installed' stderr && exit 1
 
 $MAKE uninstall
-test `find inst -type f -print | wc -l` -eq 0
+test $(find inst -type f -print | wc -l) -eq 0
 
 :

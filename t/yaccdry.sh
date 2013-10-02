@@ -17,7 +17,7 @@
 # Removal recovery rules for headers should not remove files with 'make -n'.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -53,6 +53,6 @@ $MAKE
 rm -f parse.h
 $MAKE -n parse.h
 test -f parse.c
-test ! -f parse.h
+test ! -e parse.h
 
 :

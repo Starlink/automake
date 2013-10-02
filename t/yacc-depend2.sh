@@ -18,8 +18,8 @@
 # for yacc rules.  This test still fails with FreeBSD make (but passes
 # with NetBSD make).
 
-required=yacc
-. ./defs || Exit 1
+required='cc yacc'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -32,14 +32,11 @@ bin_PROGRAMS = foo
 AM_YFLAGS = -d
 foo_SOURCES = foo.y main.c
 BUILT_SOURCES = foo.h
-.PHONY: debug-info test-time-unchanged test-time-changed
-debug-info:
-	ls -l
-	stat *.[ch] *.$(OBJEXT) my-timestamp || :
-test-time-unchanged: debug-info
-	test `ls -1t main.$(OBJEXT) my-timestamp | sed 1q` = my-timestamp
-test-time-changed: debug-info
-	test `ls -1t main.$(OBJEXT) my-timestamp | sed 1q` = main.$(OBJEXT)
+.PHONY: test-time-unchanged test-time-changed
+test-time-unchanged:
+	is_newest foo.y foo.h main.$(OBJEXT)
+test-time-changed:
+	is_newest main.$(OBJEXT) foo.y foo.h
 END
 
 cat > foo.y << 'END'
@@ -71,8 +68,6 @@ $AUTOMAKE -a
 $MAKE
 ls -l # For debugging.
 
-$sleep
-: > my-timestamp
 $sleep
 touch foo.y
 $MAKE

@@ -18,15 +18,14 @@
 # Also meddle with wrapper scripts, as would be probably seen in a real
 # "UNIX-style" use case.
 # This test uses a typical "nested" source tree setup (i.e., different
-# components/aspects are separated into different subdirectories),
-# and uses the 'parallel-tests' testsuite driver.  The sister test
-# 'java-compile-run-flat.test' do similar checks with a "flat" setup
-# (i.e., everything in the top-level directory), and forcing the use
-# of the older non-parallel 'simple-tests' driver.
+# components/aspects are separated into different subdirectories), and
+# uses the parallel testsuite driver.
+# The sister test 'java-compile-run-flat.sh' do similar checks with
+# a "flat" setup (i.e., everything in the top-level directory), and
+# forcing the use of the older 'serial-tests' driver.
 
 required='java javac'
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 echo "AC_SUBST([PATH_SEPARATOR], ['$PATH_SEPARATOR'])" >> configure.ac
 
@@ -240,7 +239,7 @@ $AUTOMAKE -a
 # To have the parallel testsuite more verbose.
 VERBOSE=yes; export VERBOSE
 
-./configure --prefix="`pwd`/_inst"
+./configure --prefix="$(pwd)/_inst"
 cat jprog/PkgLocation.java # For debugging.
 $MAKE check
 $MAKE install

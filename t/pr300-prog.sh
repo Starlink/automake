@@ -18,7 +18,7 @@
 # PR/300
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -62,7 +62,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --copy --add-missing
 
-./configure --prefix "`pwd`/inst"
+./configure --prefix "$(pwd)/inst"
 
 $MAKE test-all
 $MAKE test-install

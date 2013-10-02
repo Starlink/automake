@@ -18,7 +18,7 @@
 # This shouldn't happen with user input, as _AM_COND_* are not documented,
 # but better to be safe.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AM_CONDITIONAL([COND], [:])
@@ -54,6 +54,6 @@ _AM_COND_ENDIF/'
 AUTOMAKE_fails
 grep '^configure\.ac:7:.* not enough arguments.* _AM_COND_IF' stderr
 grep '^configure\.ac:8:.* not enough arguments.* _AM_COND_ENDIF' stderr
-test 2 = `grep -c 'not enough arguments' stderr`
+test 2 -eq $($FGREP -c 'not enough arguments' stderr)
 
 :

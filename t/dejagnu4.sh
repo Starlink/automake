@@ -17,14 +17,14 @@
 # Check that the DejaGnu rules work for a simple program and test case.
 # Also check PR 488: Failure of the first of several tools tested.
 # From the original bug report:
-# ``If you use dejagnu for testing and have multiple tools (i.e.,
+#   If you use dejagnu for testing and have multiple tools (i.e.,
 #   multiple entries in the DEJATOOL variable) then the success/failure
 #   of "make check" is only dependent on the success/failure of the
 #   tests on the final tool. Thus there may be failures in the tests on
-#   previous tools, but at first glance "make check" has passed.''
+#   previous tools, but at first glance "make check" has passed.
 
 required=runtest
-. ./defs || Exit 1
+. test-init.sh
 
 cat > hammer << 'END'
 #! /bin/sh
@@ -93,7 +93,7 @@ mv -f thammer hammer
 chmod +x hammer
 
 rm -f hammer.log hammer.sum spanner.log spanner.sum
-$MAKE check && Exit 1
+$MAKE check && exit 1
 test -f hammer.log
 test -f hammer.sum
 test -f spanner.log

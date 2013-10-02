@@ -17,9 +17,9 @@
 # Automatic dependency tracking with subdir-objects option active:
 # check for a pathological case of slash-collapsing in the name of
 # included makefile fragments (containing dependency info).
-# See also related tests 'subobj11a.test' and 'subobj11b.test'.
+# See also related tests 'subobj11a.sh' and 'subobj11b.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

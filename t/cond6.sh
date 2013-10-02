@@ -16,7 +16,7 @@
 
 # Test for an odd conditional bug.  Report from Matt Leach.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo 'AM_CONDITIONAL([FOO], [true])' >> configure.ac
 
@@ -57,7 +57,7 @@ touch aclocal.m4 # Avoid unnecessary firing the remake rules.
 $AUTOCONF
 $AUTOMAKE Makefile
 
-./configure --prefix="`pwd`/_inst"
+./configure --prefix="$(pwd)/_inst"
 
 $MAKE test
 

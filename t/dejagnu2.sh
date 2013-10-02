@@ -16,7 +16,7 @@
 
 # Make sure we don't override the user's site.exp rule.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_OUTPUT
@@ -34,7 +34,7 @@ $AUTOCONF
 $AUTOMAKE -Wno-override
 
 grep 'site\.exp' Makefile.in
-test `grep -c '^site\.exp:' Makefile.in` -eq 1
+test $(grep -c '^site\.exp:' Makefile.in) -eq 1
 
 ./configure
 $MAKE site.exp

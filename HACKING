@@ -1,10 +1,10 @@
-================================================================
+============================================================================
 = This file
 
 * This file attempts to describe the rules to use when hacking
   automake.
 
-================================================================
+============================================================================
 = Administrivia
 
 * The correct response to most actual bugs is to write a new test case
@@ -38,7 +38,7 @@
 * Changes other than bug fixes must be mentioned in NEWS.  Important
   bug fixes should be mentioned in NEWS, too.
 
-================================================================
+============================================================================
 = Naming
 
 * We've adopted the convention that internal AC_SUBSTs should be
@@ -52,7 +52,7 @@
   variable begins with the underscore character.  Yay for them.
   I changed the target naming convention just to be safe.
 
-================================================================
+============================================================================
 = Editing '.am' files
 
 * Always use $(...) and not ${...}
@@ -78,7 +78,7 @@
 * Ensure install rules do not create any installation directory where
   nothing is to be actually installed.  See automake bug#11030.
 
-================================================================
+============================================================================
 = Editing automake.in and aclocal.in
 
 * Indent using GNU style.  For historical reasons, the perl code
@@ -92,11 +92,11 @@
   &, just convert the old code as you work on it, and write new
   code without.
 
-================================================================
+============================================================================
 = Working with git
 
 * To regenerate dependent files created by aclocal and automake,
-  use the 'bootstrap' script.  It uses the code from the source
+  use the 'bootstrap.sh' script.  It uses the code from the source
   tree, so the resulting files (aclocal.m4 and Makefile.in) should
   be the same as you would get if you install this version of
   automake and use it to generate those files.  Be sure to have the
@@ -136,7 +136,7 @@
   release.  For next, and for feature branches, the announcement for the
   branch should document rewinding policy.
 
-================================================================
+============================================================================
 = Writing a good commit message
 
 * Here is the general format that Automake's commit messages are expected
@@ -197,7 +197,7 @@
       ... removed in commit 'v1.11-1674-g02e9072' of 01-01-2012,
       "dist: ditch support for lzma"...
 
-================================================================
+============================================================================
 = Test suite
 
 * Use "make check" and "make maintainer-check" liberally.
@@ -212,7 +212,7 @@
 
 * See file 't/README' for more information.
 
-================================================================
+============================================================================
 = Release procedure
 
 * The steps outlined here are meant to be followed for alpha and stable
@@ -223,7 +223,12 @@
   running "make fetch".  In case any file in the automake repository
   has been updated, commit and re-run the testsuite.
 
-* Update NEWS.
+* Ensure that the copyright notices of the distributed files is up to
+  date.  The maintainer-only target "update-copyright" can help with
+  this.
+
+* Check NEWS; in particular, ensure that all the relevant differences
+  with the last release are actually reported.
 
 * Update the version number in configure.ac.
   (The idea is that every other alpha number will be a net release.
@@ -231,13 +236,19 @@
   distinguish net and repo versions.)
 
 * Run this:
-  ./bootstrap && ./configure && make && make check && make distcheck
+
+    make bootstrap && make check && make distcheck
+
+  It is also advised to run "git clean -fdx" before invoking the
+  bootstrap, to ensure a really clean rebuild.  However, it must
+  be done carefully, because that command will remove *all* the
+  files that are not tracked by git!
 
 * Run "make git-tag-release".
-  This will run the maintainer checks, check that the NEWS file is
-  up-to-date, check that the local git repository and working tree
-  are clean and up-to-date, and create a proper signed git tag for
-  the release (based on the contents of $(VERSION)).
+  This will run the maintainer checks, verify that the local git
+  repository and working tree are clean and up-to-date, and create
+  a proper signed git tag for the release (based on the contents
+  of $(VERSION)).
 
 * Run "make git-upload-release".
   This will first verify that you are releasing from a tagged version
@@ -247,30 +258,49 @@
   locations.  In case you need to sign with a non-default key, you can
   use "make GNUPLOADFLAGS='--user KEY' git-upload-release".
 
+* For stable releases you'll have to update the manuals at www.gnu.org.
+
+  - Generate manuals (with the help of the standard gendocs.sh script):
+
+       make web-manual
+
+    The ready-to-be-uploaded manuals (in several formats) will be left
+    in the 'doc/web-manuals' directory.
+
+  - Commit the updated manuals to web CVS:
+
+      make web-manual-update
+
+    If your local username is different from your username at Savannah,
+    you'll have to override the 'CVS_USER' make variable accordingly;
+    for example:
+
+      make web-manual-update CVS_USER=slattarini
+
+  - Check for link errors, fix them, recheck until convergence:
+    <http://validator.w3.org/checklink>
+
+* Create an announcement message with "make announcement".  Edit the
+  generated 'announcement' file appropriately, in particularly filling
+  in by hand any "TODO" left in there.
+
 * Update version number in configure.ac to next alpha number.
-  Re-run ./bootstrap and commit.
+  Re-run ./bootstrap.sh and commit.
 
 * Don't forget to "git push" your changes so they appear in the public
   git tree.
 
-* For stable releases, update the manuals at www.gnu.org:
-  - Generate manuals:
-    cd doc
-    wget "http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~/texinfo/texinfo/util/gendocs.sh"
-    wget "http://savannah.gnu.org/cgi-bin/viewcvs/~checkout~/texinfo/texinfo/util/gendocs_template"
-    sh ./gendocs.sh --email bug-automake@gnu.org automake "GNU Automake"
-  - copy manuals recursively to web cvs,
-  - commit.
-  - Check for link errors, fix them, recheck until convergence:
-    <http://validator.w3.org/checklink>
-
-* Send the announcement at least to <autotools-announce@gnu.org> and
-  <automake@gnu.org>.  If the release is a stable one, the announcement
-  must also go to <info-gnu@gnu.org>; if it is an alpha or beta release,
-  announcement should be sent also to <platform-testers@gnu.org>, to
-  maximize the possibility of early testing on exotic or proprietary
-  systems.  Finally, copy the announcement into the NEWS feed at
+* Send the announcement generated in the earlier steps at least to
+  <autotools-announce@gnu.org> and <automake@gnu.org>.  If the release
+  is a stable one, the announcement must also go to <info-gnu@gnu.org>;
+  if it is an alpha or beta release, announcement should be sent also
+  to <platform-testers@gnu.org>, to maximize the possibility of early
+  testing on exotic or proprietary systems.  Finally, copy an abridged
+  version of the announcement into the NEWS feed at:
   <https://savannah.gnu.org/projects/automake>.
+  Be sure to link a  version to the complete announcement (from
+  the version you sent to the automake list, as get archived on
+  <http://lists.gnu.org/archive/html/automake/>).
 
 -----
 

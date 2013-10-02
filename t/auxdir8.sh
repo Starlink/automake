@@ -19,9 +19,9 @@
 # the config auxdir should be implicitly defined to '.' since
 # the install-sh, mkinstalldirs, etc., scripts are in the top-level
 # directory.
-# Keep this in sync with sister tests auxdir6.test and auxdir7.test.
+# Keep this in sync with sister tests 'auxdir6.sh' and 'auxdir7.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([subdir/Makefile])

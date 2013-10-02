@@ -16,11 +16,10 @@
 
 # Check parallel-tests features:
 # - suffix rules, with PROGRAMS involved
-# See also sister test 'parallel-tests-suffix.test'.
+# See also sister test 'parallel-tests-suffix.sh'.
 
-am_parallel_tests=yes
 required='cc native'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

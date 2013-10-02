@@ -15,11 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that info files are built in builddir when needed.
-# (Similar to txinfo16.test, plus CLEANFILES).
-# (See also txinfo23.test and txinfo25.test).
+# (Similar to txinfo16.sh, plus CLEANFILES).
+# (See also txinfo23.sh and txinfo25.sh).
 
-required='makeinfo tex texi2dvi-o'
-. ./defs || Exit 1
+required='makeinfo tex texi2dvi'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -48,7 +48,7 @@ mkdir build
 cd build
 ../configure
 $MAKE
-test ! -f ../main.info
+test ! -e ../main.info
 test -f main.info
 
 cd ..
@@ -74,7 +74,7 @@ cd build
 $MAKE
 # main.info should be rebuilt in the current directory.
 test -f main.info
-test ! -f ../main.info
+test ! -e ../main.info
 $MAKE dvi
 test -f main.dvi
 

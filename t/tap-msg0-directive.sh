@@ -17,10 +17,9 @@
 # TAP support:
 #  - literal string "0" as a TODO or SKIP message
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test << 'END'
 1..3
@@ -29,7 +28,7 @@ not ok 2 # TODO 0
 ok 3 # SKIP 0
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=3 pass=0 fail=0 xpass=1 xfail=1 skip=1 error=0

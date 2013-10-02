@@ -14,11 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check parallel-tests interactions with "make -n".
-# See also sister test 'parallel-tests-dry-run-1.test'.
+# Check interactions between the parallel test harness and "make -n".
+# See also sister test 'parallel-tests-dry-run-1.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -38,11 +37,11 @@ $AUTOCONF
 make_n_ ()
 {
   st=0
-  $MAKE -n "$@" >output 2>&1 || { cat output; ls -l; Exit 1; }
+  $MAKE -n "$@" >output 2>&1 || { cat output; ls -l; exit 1; }
   cat output
   # Look out for possible errors from common tools used by recipes.
-  $EGREP -i ' (exist|permission|denied|no .*(such|file))' output && Exit 1
-  $EGREP '(mv|cp|rm|cat|grep|sed|awk): ' output && Exit 1
+  $EGREP -i ' (exist|permission|denied|no .*(such|file))' output && exit 1
+  $EGREP '(mv|cp|rm|cat|grep|sed|awk): ' output && exit 1
   :
 }
 
@@ -50,19 +49,19 @@ make_n_ ()
 
 files='foo.log bar.log foo.trs bar.trs'
 
+echo 'exit 0' > foo.test
+echo 'exit 1' > bar.test
+
 for target in check recheck test-suite.log; do
-  test ! -f foo.log
-  test ! -f foo.trs
-  test ! -f bar.log
-  test ! -f bar.trs
-  test ! -f test-suite.log
+  make_n_ $target
+  test ! -e foo.log
+  test ! -e foo.trs
+  test ! -e bar.log
+  test ! -e bar.trs
+  test ! -e test-suite.log
 done
 
-# Creative quoting below to please maintainer-check.
-echo exit '0' > foo.test
-echo exit '1' > bar.test
-
-$MAKE check && Exit 1
+$MAKE check && exit 1
 
 chmod a-w .
 
@@ -72,17 +71,16 @@ test -f foo.trs
 test -f foo.log
 test -f bar.trs
 
-# Creative quoting below to please maintainer-check.
 cat > foo.test <<END
 echo this is bad
 exit 1
 END
-echo exit '0' > bar.test
+echo 'exit 0' > bar.test
 
 for target in check recheck test-suite.log; do
   make_n_ $target
   grep '^:test-result: *FAIL' bar.trs
-  grep 'this is bad' foo.log test-suite.log && Exit 1
+  grep 'this is bad' foo.log test-suite.log && exit 1
   : For shells with busted 'set -e'.
 done
 
@@ -93,7 +91,7 @@ else
   for target in check recheck test-suite.log; do
     make_n_ $target
     for f in $files; do
-      test -f $f && test ! -r $f || Exit 1
+      test -f $f && test ! -r $f || exit 1
     done
   done
 fi
@@ -104,9 +102,9 @@ rm -f foo.log bar.trs
 chmod a-w .
 for target in check recheck test-suite.log $files; do
   make_n_ $target
-  test ! -f foo.log
+  test ! -e foo.log
   test -f foo.trs
-  test ! -f bar.trs
+  test ! -e bar.trs
   test -f bar.log
 done
 

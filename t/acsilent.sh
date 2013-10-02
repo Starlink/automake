@@ -16,22 +16,21 @@
 
 # Test to make sure there are no spurious acinclude warnings.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >configure.ac <<EOF
-AC_INIT
+AC_INIT([$me], [1.0])
 AM_INIT_GUILE_MODULE
 EOF
 
 cat > acinclude.m4 << 'END'
-AC_DEFUN([AM_INIT_GUILE_MODULE],[
-. $srcdir/../GUILE-VERSION
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AC_DEFUN([AM_INIT_GUILE_MODULE], [
+AM_INIT_AUTOMAKE([dist-xz])
 AC_CONFIG_AUX_DIR(..)
 module=[$1]
 AC_SUBST(module)])
 END
 
-$ACLOCAL >output 2>&1 || { cat output; Exit 1; }
+$ACLOCAL >output 2>&1 || { cat output; exit 1; }
 cat output
 test ! -s output

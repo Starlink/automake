@@ -20,7 +20,7 @@
 # conditionals).
 
 required=javac
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([COND], [test x"$cond" = x"yes"])
@@ -57,8 +57,8 @@ $MAKE
 ls -l
 test -f Class1.class
 test -f Class2.class
-test ! -f Class3.class
-test ! -f Class3.java
+test ! -e Class3.class
+test ! -e Class3.java
 
 $MAKE distclean
 
@@ -66,7 +66,7 @@ $MAKE distclean
 $MAKE
 ls -l
 test -f Class1.class
-test ! -f Class2.class
+test ! -e Class2.class
 test -f Class3.class
 test -f Class3.java
 

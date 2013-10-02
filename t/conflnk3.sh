@@ -17,7 +17,7 @@
 # Test to make sure that AC_CONFIG_LINKS using a variable source
 # is not broken.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 SUBDIRS = sdir
@@ -59,8 +59,8 @@ $AUTOMAKE
 
 # $my_src_dir and $my_dest are variables local to configure, they should
 # not appear in Makefile.
-grep my_src_dir Makefile.in && Exit 1
-grep my_dest Makefile.in && Exit 1
+grep my_src_dir Makefile.in && exit 1
+grep my_dest Makefile.in && exit 1
 
 ./configure
 test -r sdir/dest2
@@ -71,12 +71,12 @@ test -r dest5
 $MAKE test
 
 $MAKE distclean
-test ! -r sdir/dest2
-test ! -r sdir/dest3
+test ! -e sdir/dest2
+test ! -e sdir/dest3
 test -r dest  # Should still exist, Automake knows nothing about it.
 test -r dest5 # Ditto.
 rm -f dest dest5
-test ! -r dest4
+test ! -e dest4
 
 mkdir build
 cd build

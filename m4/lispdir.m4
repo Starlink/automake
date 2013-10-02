@@ -9,8 +9,6 @@
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 11
-
 # AM_PATH_LISPDIR
 # ---------------
 AC_DEFUN([AM_PATH_LISPDIR],
@@ -51,5 +49,3 @@ AC_DEFUN([AM_PATH_LISPDIR],
 ])
 AC_SUBST([lispdir])
 ])# AM_PATH_LISPDIR
-
-AU_DEFUN([ud_PATH_LISPDIR], [AM_PATH_LISPDIR])

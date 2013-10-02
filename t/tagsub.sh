@@ -18,7 +18,7 @@
 # François Pinard, and later by Akim Demaille.
 
 required=etags
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([sub/Makefile])
@@ -42,5 +42,7 @@ $FGREP sub/TAGS TAGS
 $FGREP iguana.h sub/TAGS
 
 $MAKE distclean
-test ! -f sub/TAGS
-test ! -f TAGS
+test ! -e sub/TAGS
+test ! -e TAGS
+
+:

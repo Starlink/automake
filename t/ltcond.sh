@@ -18,7 +18,7 @@
 # This combines two examples from the manual.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AM_CONDITIONAL([WANT_LIBFOO], [true])
@@ -61,45 +61,46 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
+cwd=$(pwd) || fatal_ "getting current working directory"
+
 # Install libraries in lib/, and the rest in empty/.
 # (in fact there is no "rest", so as the name imply empty/ is
 # expected to remain empty).
-./configure "--prefix=`pwd`/empty" "--libdir=`pwd`/lib"
+./configure --prefix="$cwd/empty" --libdir="$cwd/lib"
 
 $MAKE
 test -f lib1foo.la
 test -f lib1bar.la
 test -f lib2foo.la
-test ! -f lib2bar.la
-test ! -f lib3foo.la
-test ! -f lib3bar.la
+test ! -e lib2bar.la
+test ! -e lib3foo.la
+test ! -e lib3bar.la
 
 $MAKE check
-test ! -f lib2bar.la
+test ! -e lib2bar.la
 test -f lib3foo.la
-test ! -f lib3bar.la
+test ! -e lib3bar.la
 
 $MAKE install
 test -f lib/lib1foo.la
 test -f lib/lib1bar.la
 test -f lib/lib2foo.la
-test ! -f lib/lib3foo.la
+test ! -e lib/lib3foo.la
 find empty -type f -print > empty.lst
-cat empty.lst
-test 0 = `wc -l < empty.lst`
+test -s empty.lst && { cat empty.lst; exit 1; }
 
 $MAKE uninstall
 find lib -type f -print > lib.lst
-test 0 = `wc -l < lib.lst`
+test -s lib.lst && { cat lib.lst; exit 1; }
 test -f lib1foo.la
 test -f lib1bar.la
 test -f lib2foo.la
 test -f lib3foo.la
 
 $MAKE clean
-test ! -f lib1foo.la
-test ! -f lib1bar.la
-test ! -f lib2foo.la
-test ! -f lib3foo.la
+test ! -e lib1foo.la
+test ! -e lib1bar.la
+test ! -e lib2foo.la
+test ! -e lib3foo.la
 
 :

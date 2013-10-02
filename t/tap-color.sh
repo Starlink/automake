@@ -17,12 +17,9 @@
 # TAP support:
 #  - colorization of TAP results and diagnostic messages
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+required='grep-nonprint'
+. test-init.sh
 
-TERM=ansi; export TERM
-
-esc=''
 # Escape '[' for grep, below.
 red="$esc\[0;31m"
 grn="$esc\[0;32m"
@@ -30,14 +27,6 @@ lgn="$esc\[1;32m"
 blu="$esc\[1;34m"
 mgn="$esc\[0;35m"
 std="$esc\[m"
-
-# Check that grep can parse nonprinting characters.
-# BSD 'grep' works from a pipe, but not a seekable file.
-# GNU or BSD 'grep -a' works on files, but is not portable.
-case `echo "$std" | grep .` in
-  "$std") ;;
-  *) echo "$me: grep can't parse nonprinting characters" >&2; Exit 77;;
-esac
 
 cat > Makefile.am << 'END'
 AUTOMAKE_OPTIONS = color-tests
@@ -47,7 +36,7 @@ TESTS = all.test skip.test bail.test badplan.test noplan.test \
         few.test many.test order.test afterlate.test
 END
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test << 'END'
 1..5
@@ -102,12 +91,10 @@ ok 1
 ok 2
 END
 
-AM_COLOR_TESTS=always $MAKE check >stdout && { cat stdout; Exit 1; }
-cat stdout
-
 test_color ()
 {
-  # Not a useless use of cat; see above comments about grep.
+  # Not a useless use of cat; see above comments "grep-nonprinting"
+  # requirement in 'test-init.sh'.
   cat stdout | grep "^${grn}PASS${std}: all\.test 1 - foo$"
   cat stdout | grep "^${lgn}XFAIL${std}: all\.test 2 - bar # TODO td$"
   cat stdout | grep "^${blu}SKIP${std}: all\.test 3 - baz # SKIP sk$"
@@ -134,13 +121,14 @@ test_no_color ()
   # print the whole failing recipe on standard output, we should content
   # ourselves with a laxer check, to avoid false positives.
   # Keep this in sync with lib/am/check.am:$(am__color_tests).
-  if $FGREP '= Xalways || test -t 1 ' stdout; then
+  if $FGREP '= Xalways; then' stdout; then
     # Extra verbose make, resort to laxer checks.
     # But we also want to check that the testsuite summary is not unduly
     # colorized.
     (
       set +e # In case some grepped regex below isn't matched.
-      # Not a useless use of cat; see above comments about grep.
+      # Not a useless use of cat; see above comments "grep-nonprinting"
+      # requirement in 'test-init.sh'.
       cat stdout | grep "TOTAL.*:"
       cat stdout | grep "PASS.*:"
       cat stdout | grep "FAIL.*:"
@@ -154,19 +142,23 @@ test_no_color ()
       cat stdout | grep '===='
       cat stdout | grep '[Ss]ee .*test-suite\.log'
       cat stdout | grep '[Tt]estsuite summary'
-    ) | grep "$esc" && Exit 1
+    ) | grep "$esc" && exit 1
     : For shells with broken 'set -e'
   else
-    cat stdout | grep "$esc" && Exit 1
+    cat stdout | grep "$esc" && exit 1
     : For shells with broken 'set -e'
   fi
 }
 
-AM_COLOR_TESTS=always $MAKE check >stdout && { cat stdout; Exit 1; }
+# Forced colorization should take place also with non-ANSI terminals;
+# hence the "TERM=dumb" definition.
+TERM=dumb AM_COLOR_TESTS=always $MAKE check >stdout \
+  && { cat stdout; exit 1; }
 cat stdout
 test_color
 
-$MAKE -e check >stdout && { cat stdout; Exit 1; }
+TERM=ansi $MAKE -e check >stdout \
+  && { cat stdout; exit 1; }
 cat stdout
 test_no_color
 

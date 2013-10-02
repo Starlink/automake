@@ -17,7 +17,7 @@
 # Check that 'make -n' works with the lisp_LISP recover rule.
 
 required='emacs non-root'
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'EOF'
 dist_lisp_LISP = am-one.el am-two.el am-three.el
@@ -42,17 +42,15 @@ $MAKE
 test -f am-one.elc
 test -f am-two.elc
 test -f am-three.elc
-test -f elc-stamp
 
-rm -f am-*.elc elc-stamp
+rm -f am-*.elc
 
 chmod a-w .
 
 $MAKE -n
 
-test ! -f am-one.elc
-test ! -f am-two.elc
-test ! -f am-three.elc
-test ! -f elc-stamp
+test ! -e am-one.elc
+test ! -e am-two.elc
+test ! -e am-three.elc
 
 :

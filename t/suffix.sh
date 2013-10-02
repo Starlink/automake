@@ -16,9 +16,9 @@
 
 # Make sure proper suffix rules for C compilation are produced, and
 # only once.
-# See also related test 'suffix2.test'.
+# See also related test 'suffix2.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -32,6 +32,8 @@ END
 
 for use_arlib in false :; do
 
+  rm -rf autom4te*.cache
+
   if $use_arlib; then
     am_warns=
     echo AM_PROG_AR >> configure.ac
@@ -40,17 +42,17 @@ for use_arlib in false :; do
     am_warns=-Wno-extra-portability
   fi
 
-  $ACLOCAL --force
+  $ACLOCAL
 
   $AUTOMAKE $am_warns -i
   grep '^ *\.c' Makefile.in # For debugging.
-  test `grep -c '^\.c\.o:' Makefile.in` -eq 1
-  test `grep -c '^\.c\.obj:' Makefile.in` -eq 1
+  test $(grep -c '^\.c\.o:' Makefile.in) -eq 1
+  test $(grep -c '^\.c\.obj:' Makefile.in) -eq 1
 
   $AUTOMAKE $am_warns
   grep '^ *\.c' Makefile.in # For debugging.
-  test `grep -c '^\.c\.o:' Makefile.in` -eq 1
-  test `grep -c '^\.c\.obj:' Makefile.in` -eq 1
+  test $(grep -c '^\.c\.o:' Makefile.in) -eq 1
+  test $(grep -c '^\.c\.obj:' Makefile.in) -eq 1
 
 done
 

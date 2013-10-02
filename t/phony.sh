@@ -17,7 +17,7 @@
 # Make sure .PHONY can be given dependencies several times.
 # From Ralf Corsepius.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >Makefile.am << 'EOF'
 .PHONY: foo
@@ -26,4 +26,6 @@ EOF
 
 $ACLOCAL
 $AUTOMAKE
-test `$FGREP .PHONY: Makefile.in | wc -l` = 3
+test $($FGREP -c '.PHONY:' Makefile.in) -eq 3
+
+:

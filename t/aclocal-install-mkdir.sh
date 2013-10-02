@@ -19,7 +19,7 @@
 # FIXME: this is a good candidate for a conversion to TAP.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -36,7 +36,7 @@ ACLOCAL="$ACLOCAL --system-acdir=sys-acdir"
 $ACLOCAL -I foo --install
 test -f foo/my-defs.m4
 
-$ACLOCAL --install -I "`pwd`/bar"
+$ACLOCAL --install -I "$(pwd)/bar"
 test -f bar/my-defs.m4
 
 $ACLOCAL --install -I baz/sub/sub2
@@ -50,21 +50,21 @@ mkdir zardoz2
 $ACLOCAL --install -I zardoz1 -I zardoz2
 test -d zardoz1
 grep MY_MACRO zardoz1/my-defs.m4
-ls zardoz2 | grep . && Exit 1
+ls zardoz2 | grep . && exit 1
 
 # Directories in ACLOCAL_PATH should never be created if they don't
 # exist.
-ACLOCAL_PATH="`pwd`/none:`pwd`/none2" $ACLOCAL --install && Exit 1
-test ! -d none
-test ! -d none2
-ACLOCAL_PATH="`pwd`/none:`pwd`/none2" $ACLOCAL --install -I x
+ACLOCAL_PATH="$(pwd)/none:$(pwd)/none2" $ACLOCAL --install && exit 1
+test ! -e none
+test ! -e none2
+ACLOCAL_PATH="$(pwd)/none:$(pwd)/none2" $ACLOCAL --install -I x
 test -f x/my-defs.m4
-test ! -d none
-test ! -d none2
+test ! -e none
+test ! -e none2
 
 # It's better if aclocal doesn't create the first include dir on failure.
-$ACLOCAL --install -I none -I none2 && Exit 1
-test ! -d none
-test ! -d none2
+$ACLOCAL --install -I none -I none2 && exit 1
+test ! -e none
+test ! -e none2
 
 :

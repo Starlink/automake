@@ -17,7 +17,7 @@
 # Test for bug in conditionals.
 # Report from Robert Boehne.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -46,6 +46,6 @@ $ACLOCAL
 $AUTOMAKE
 
 $FGREP helldl Makefile.in # For debugging.
-test `$FGREP -c 'helldl$(EXEEXT):' Makefile.in` -eq 2
+test $($FGREP -c 'helldl$(EXEEXT):' Makefile.in) -eq 2
 
 :

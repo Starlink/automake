@@ -20,10 +20,9 @@
 #  - stdout and stderr of a test script go in its log file
 #  - TEST_SUITE_LOG redefinition, at either automake or make time
 #  - VERBOSE environment variable support
-# Keep in sync with 'tap-log.test'.
+# Keep in sync with 'tap-log.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_OUTPUT
@@ -89,10 +88,10 @@ $AUTOMAKE -a
 
 ./configure
 
-TEST_SUITE_LOG=my.log $MAKE -e check && Exit 1
+TEST_SUITE_LOG=my.log $MAKE -e check && exit 1
 ls -l # For debugging.
-test ! -f test-suite.log
-test ! -f global.log
+test ! -e test-suite.log
+test ! -e global.log
 test -f my.log
 st=0
 for result in pass fail xfail xpass skip error; do
@@ -100,19 +99,19 @@ for result in pass fail xfail xpass skip error; do
   $FGREP "$pmarker $result $pmarker" $result.log || st=1
   $FGREP "$cmarker $result $cmarker" $result.log || st=1
 done
-test $st -eq 0 || Exit 1
+test $st -eq 0 || exit 1
 cat my.log # For debugging.
 for result in xfail fail xpass skip error; do
   cat $result.log # For debugging.
   $FGREP "$pmarker $result $pmarker" my.log || st=1
   $FGREP "$cmarker $result $cmarker" my.log || st=1
 done
-test `$FGREP -c "$pmarker" my.log` -eq 5
-test `$FGREP -c "$cmarker" my.log` -eq 5
+test $($FGREP -c "$pmarker" my.log) -eq 5
+test $($FGREP -c "$cmarker" my.log) -eq 5
 
 have_rst_section ()
 {
-  eqeq=`echo "$1" | sed 's/./=/g'`
+  eqeq=$(echo "$1" | sed 's/./=/g')
   # Assume $1 contains no RE metacharacters.
   sed -n "/^$1$/,/^$eqeq$/p" $2 > got
   (echo "$1" && echo "$eqeq") > exp
@@ -122,7 +121,7 @@ have_rst_section ()
 }
 
 # Passed test scripts shouldn't be mentioned in the global log.
-$EGREP ':.*[^x]pass' my.log && Exit 1
+$EGREP ':.*[^x]pass' my.log && exit 1
 # But failing (expectedly or not) and skipped ones should.
 have_rst_section 'SKIP: skip'   my.log
 have_rst_section 'FAIL: fail'   my.log
@@ -133,13 +132,13 @@ have_rst_section 'ERROR: error' my.log
 touch error2.log test-suite.log global.log
 TEST_SUITE_LOG=my.log $MAKE -e mostlyclean
 ls -l # For debugging.
-test ! -f my.log
-test ! -f pass.log
-test ! -f fail.log
-test ! -f xfail.log
-test ! -f xpass.log
-test ! -f skip.log
-test ! -f error.log
+test ! -e my.log
+test ! -e pass.log
+test ! -e fail.log
+test ! -e xfail.log
+test ! -e xpass.log
+test ! -e skip.log
+test ! -e error.log
 # "make mostlyclean" shouldn't remove unrelated log files.
 test -f error2.log
 test -f test-suite.log
@@ -147,27 +146,27 @@ test -f global.log
 
 rm -f *.log
 
-VERBOSE=yes $MAKE check >stdout && { cat stdout; Exit 1; }
+VERBOSE=yes $MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 cat global.log
-test ! -f my.log
-test ! -f test-suite.log
+test ! -e my.log
+test ! -e test-suite.log
 # Check that VERBOSE causes the global testsuite log to be
 # emitted on stdout.
-out=`cat stdout`
-log=`cat global.log`
-case $out in *"$log"*) ;; *) Exit 1;; esac
+out=$(cat stdout)
+log=$(cat global.log)
+case $out in *"$log"*) ;; *) exit 1;; esac
 
 touch error2.log test-suite.log my.log
 $MAKE clean
 ls -l # For debugging.
-test ! -f global.log
-test ! -f pass.log
-test ! -f fail.log
-test ! -f xfail.log
-test ! -f xpass.log
-test ! -f skip.log
-test ! -f error.log
+test ! -e global.log
+test ! -e pass.log
+test ! -e fail.log
+test ! -e xfail.log
+test ! -e xpass.log
+test ! -e skip.log
+test ! -e error.log
 # "make clean" shouldn't remove unrelated log files.
 test -f error2.log
 test -f test-suite.log

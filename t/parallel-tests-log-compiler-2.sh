@@ -17,11 +17,10 @@
 # Check parallel-tests features:
 # - per-extension "test runners" a.k.a. "log compilers" (xxx_LOG_COMPILER
 #   and xxx_LOG_FLAGS), when some tests are PROGRAMS.
-# See also related test 'parallel-tests-log-compiler-1.test'.
+# See also related test 'parallel-tests-log-compiler-1.sh'.
 
-am_parallel_tests=yes
 required='cc native'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -83,7 +82,7 @@ $AUTOMAKE -a
 ./configure
 
 $MAKE
-$MAKE check || { cat test-suite.log; Exit 1; }
+$MAKE check || { cat test-suite.log; exit 1; }
 ls -l . sub
 cat test-suite.log
 grep 'chk-compiler  *1  *2' foo.log

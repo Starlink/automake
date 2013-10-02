@@ -17,7 +17,7 @@
 # Check that distributed symlinks in the source tree will be expanded
 # as regular files in $(distdir).
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo text > file
 
@@ -36,7 +36,7 @@ ln -s foo  bar1
 ln -s bar1 bar2
 ln -s bar2 bar3
 
-ln -s "`pwd`/foo" quux
+ln -s "$(pwd)/foo" quux
 
 cat >> configure.ac << 'END'
 AC_OUTPUT

@@ -18,7 +18,7 @@
 # properly, when a subpackage is involved.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_PROG_CC
@@ -120,7 +120,7 @@ cd ..
 $MAKE dist
 test -f lib-dist-hook-has-run
 test -f subpack-1.tar.gz
-test ! -d subpack-1 # Make sure "dist" cleans up after itself.
+test ! -e subpack-1 # Make sure "dist" cleans up after itself.
 
 rm -f lib-dist-hook-has-run subpack-1.tar.gz
 

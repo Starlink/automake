@@ -19,7 +19,7 @@
 # modifiers.  Also check that '.java' files are not distributed by
 # default.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -50,7 +50,7 @@ $AUTOCONF
 # Automake used to display non-fatal warnings with this test, but
 # they were unexpected, so we want to consider them as failures in
 # this test.
-$AUTOMAKE 2>stderr || { cat stderr >&2; Exit 1; }
+$AUTOMAKE 2>stderr || { cat stderr >&2; exit 1; }
 cat stderr >&2
 test ! -s stderr
 
@@ -58,11 +58,11 @@ test ! -s stderr
 
 $MAKE distdir
 ls -l $distdir # For debugging.
-test ! -f $distdir/Class.java
+test ! -e $distdir/Class.java
 test -f $distdir/ClassDist.java
-test ! -f $distdir/ClassNobase.java
+test ! -e $distdir/ClassNobase.java
 test -f $distdir/ClassNobaseDist.java
-test ! -f $distdir/ClassNodist.java
-test ! -f $distdir/ClassNobaseNodist.java
+test ! -e $distdir/ClassNodist.java
+test ! -e $distdir/ClassNobaseNodist.java
 
 :

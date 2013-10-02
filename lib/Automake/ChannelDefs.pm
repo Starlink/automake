@@ -156,7 +156,7 @@ register_channel 'automake', type => 'fatal', backtrace => 1,
 
 register_channel 'extra-portability', type => 'warning', silent => 1;
 register_channel 'gnu', type => 'warning';
-register_channel 'obsolete', type => 'warning', silent => 1;
+register_channel 'obsolete', type => 'warning';
 register_channel 'override', type => 'warning', silent => 1;
 register_channel 'portability', type => 'warning', silent => 1;
 register_channel 'portability-recursive', type => 'warning', silent => 1;
@@ -194,7 +194,7 @@ Warning categories include:
   unsupported        unsupported or incomplete features (default)
   all                all the warnings
   no-CATEGORY        turn off warnings in CATEGORY
-  none'              turn off all the warnings
+  none               turn off all the warnings
   error              treat warnings as errors
 EOF
 }

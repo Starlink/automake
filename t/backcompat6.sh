@@ -15,17 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Backward-compatibility test: try to build and distribute a package
-# using obsoleted forms of AC_INIT, AM_INIT_AUTOMAKE and AC_OUTPUT.
+# using obsoleted forms of AC_INIT, AM_INIT_AUTOMAKE and AC_OUTPUT,
+# and 'configure.in' as autconf input file.
 # This script can also serve as mild stress-testing for Automake.
 # See also the similar test 'backcompat5.test'.
 
 required=cc
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 # Anyone doing something like this in a real-life package probably
 # deserves to be killed.
-cat > configure.in <<'END'
+cat > configure.ac <<'END'
 dnl: Everything here is *deliberately* underquoted!
 AC_INIT(quux.c)
 PACKAGE=nonesuch-zardoz
@@ -77,8 +78,8 @@ int main (void)
 }
 END
 
-$ACLOCAL
-$AUTOMAKE --add-missing
+$ACLOCAL -Wno-obsolete
+$AUTOMAKE -Wno-obsolete --add-missing
 $AUTOCONF
 
 ./configure

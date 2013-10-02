@@ -16,12 +16,11 @@
 
 # TAP support:
 #  - handling of "ambiguous" TODO and SKIP directives
-# See also related test 'tap-todo-skip-together.test'.
+# See also related test 'tap-todo-skip-together.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test <<END
 1..6
@@ -33,7 +32,7 @@ ok 5 # SKIP SKIP
 not ok 6 # TODO TODO
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=6 pass=2 fail=2 xpass=0 xfail=1 skip=1 error=0

@@ -14,16 +14,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Test installation with substitutions.  This test is based on nobase.test.
+# Test installation with substitutions.  This test is based on
+# 'nobase.sh'.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'EOF'
 AC_PROG_CC
 AM_PROG_AR
 AC_PROG_RANLIB
-if test -n "$doit"; then
+if test x"$doit" = x"yes"; then
   AC_SUBST([basehdr], [sub/base.h])
   AC_SUBST([nobasehdr], [sub/nobase.h])
   AC_SUBST([basedata], [sub/base.dat])
@@ -139,7 +140,7 @@ rm -f install-sh
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a --copy
-./configure --prefix "`pwd`/inst" --program-prefix=p doit=yes
+./configure --prefix "$(pwd)/inst" --program-prefix=p doit=yes
 
 $MAKE
 $MAKE test-install-data
@@ -147,9 +148,9 @@ $MAKE test-install-exec
 $MAKE uninstall
 $MAKE clean
 
-test `find inst/foo -type f -print | wc -l` = 0
+test $(find inst/foo -type f -print | wc -l) -eq 0
 
-./configure --prefix "`pwd`/inst" --program-prefix=p doit=
+./configure --prefix "$(pwd)/inst" --program-prefix=p doit=no
 
 $MAKE
 $MAKE test-install-nothing-data
@@ -162,14 +163,14 @@ $MAKE uninstall
 $MAKE distclean
 mkdir build
 cd build
-../configure --prefix "`pwd`/inst" --program-prefix=p doit=yes
+../configure --prefix "$(pwd)/inst" --program-prefix=p doit=yes
 $MAKE
 $MAKE test-install-data
 $MAKE test-install-exec
 $MAKE uninstall
-test `find inst/foo -type f -print | wc -l` = 0
+test $(find inst/foo -type f -print | wc -l) -eq 0
 
-../configure --prefix "`pwd`/inst" --program-prefix=p doit=
+../configure --prefix "$(pwd)/inst" --program-prefix=p doit=no
 $MAKE
 $MAKE test-install-nothing-data
 $MAKE test-install-nothing-exec

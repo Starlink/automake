@@ -17,21 +17,23 @@
 # Test to make sure vala support handles from-scratch VPATH builds.
 # See automake bug#8753.
 
-required="cc valac GNUmake"
-. ./defs || Exit 1
+required="cc valac pkg-config GNUmake"
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_SRCDIR([hello.vala])
 AC_PROG_CC
 AM_PROG_VALAC([0.7.3])
+PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.4])
 AC_OUTPUT
 END
 
 cat > Makefile.am <<'END'
 bin_PROGRAMS = foo bar
-AM_VALAFLAGS = --profile=posix
+AM_CFLAGS = $(GOBJECT_CFLAGS)
+LDADD = $(GOBJECT_LIBS)
 foo_SOURCES = hello.vala
-bar_VALAFLAGS = $(AM_VALAFLAGS) -H zardoz.h
+bar_VALAFLAGS = -H zardoz.h
 bar_SOURCES = goodbye.vala
 END
 
@@ -74,7 +76,7 @@ grep barbarbar ../hello.c
 
 # Rebuild rules are not uselessly triggered.
 $MAKE -q
-$MAKE -n | grep '\.stamp' && Exit 1
+$MAKE -n | grep '\.stamp' && exit 1
 
 # Cleanup rules work also in VPATH builds.
 $MAKE clean
@@ -83,9 +85,9 @@ test -f ../bar_vala.stamp
 test -f ../zardoz.h
 test -f ../hello.c
 $MAKE maintainer-clean
-test ! -f ../zardoz.h
-test ! -f ../hello.c
-test ! -f ../foo_vala.stamp
-test ! -f ../bar_vala.stamp
+test ! -e ../zardoz.h
+test ! -e ../hello.c
+test ! -e ../foo_vala.stamp
+test ! -e ../bar_vala.stamp
 
 :

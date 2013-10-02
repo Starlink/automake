@@ -16,10 +16,10 @@
 
 # Make sure proper suffix rules for C compilation are produced,
 # and only once, even for libtool libraries.
-# See also related test 'suffix.test'.
+# See also related test 'suffix.sh'.
 required=libtoolize
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -43,12 +43,12 @@ $ACLOCAL
 
 $AUTOMAKE -a
 grep '^ *\.c' Makefile.in # For debugging.
-test `grep -c '^\.c\.o:' Makefile.in` -eq 1
-test `grep -c '^\.c\.obj:' Makefile.in` -eq 1
+test $(grep -c '^\.c\.o:' Makefile.in) -eq 1
+test $(grep -c '^\.c\.obj:' Makefile.in) -eq 1
 
 $AUTOMAKE -i
 grep '^ *\.c' Makefile.in # For debugging.
-test `grep -c '^\.c\.o:' Makefile.in` -eq 1
-test `grep -c '^\.c\.obj:' Makefile.in` -eq 1
+test $(grep -c '^\.c\.o:' Makefile.in) -eq 1
+test $(grep -c '^\.c\.obj:' Makefile.in) -eq 1
 
 :

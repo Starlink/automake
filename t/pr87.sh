@@ -18,7 +18,7 @@
 # "make distcheck" fails when two source dirs exist.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 subdirs="foo bar"
 
@@ -37,12 +37,16 @@ EOF
 done
 
 echo "SUBDIRS = $subdirs" > Makefile.am
-cat >configure.ac <<EOF
-AC_INIT(`echo $subdirs | sed 's|\([a-z][a-z]*\).*|\1/\1.c|'`)
-AC_CONFIG_AUX_DIR(.)
-AM_INIT_AUTOMAKE($me, 1.0)
+
+cat > configure.ac <<EOF
+AC_INIT([$me], [1.0])
+AC_CONFIG_SRCDIR([foo/foo.c])
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE
 AC_PROG_CC
-AC_OUTPUT(Makefile `echo $subdirs | sed 's|\([a-z][a-z]*\)|\1/Makefile|g'`)
+AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([$(echo $subdirs | sed 's|\([a-z][a-z]*\)|\1/Makefile|g')])
+AC_OUTPUT
 EOF
 
 mkdir build
@@ -56,13 +60,13 @@ $AUTOMAKE -a
     if test "$line" = ".c.o:"; then
        read next
        if test -z "$next"; then
-	  Exit 1
+	  exit 1
        else
           : # For shells with broken 'set -e'.
        fi
        break
     fi
- done) < foo/Makefile.in || Exit 1
+ done) < foo/Makefile.in || exit 1
 
 cd build
 ../configure

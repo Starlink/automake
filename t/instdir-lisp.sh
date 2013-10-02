@@ -17,7 +17,7 @@
 # If $(lispdir) is the empty string, then nothing should be installed there.
 
 required=emacs
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AM_PATH_LISPDIR
@@ -34,8 +34,9 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
-destdir=`pwd`/dest
+cwd=$(pwd) || fatal_ "getting current working directory"
+instdir=$cwd/inst
+destdir=$cwd/dest
 mkdir build
 cd build
 ../configure --prefix="$instdir"
@@ -45,13 +46,13 @@ lispdir=
 export lispdir
 
 $MAKE -e install
-test ! -d "$instdir"
+test ! -e "$instdir"
 $MAKE -e install DESTDIR="$destdir"
-test ! -d "$instdir"
-test ! -d "$destdir"
-$MAKE -e uninstall > stdout || { cat stdout; Exit 1; }
+test ! -e "$instdir"
+test ! -e "$destdir"
+$MAKE -e uninstall > stdout || { cat stdout; exit 1; }
 cat stdout
-grep 'rm -f' stdout && Exit 1
+grep 'rm -f' stdout && exit 1
 $MAKE -e uninstall DESTDIR="$destdir"
 
 :

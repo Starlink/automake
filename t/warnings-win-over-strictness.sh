@@ -17,7 +17,7 @@
 # Check that, on the command line, explicitly-defined warnings take
 # precedence over implicit strictness-implied warnings.
 
-. ./defs || Exit 1
+. test-init.sh
 
 # We want complete control over automake options.
 AUTOMAKE=$am_original_AUTOMAKE
@@ -32,7 +32,7 @@ ko ()
 {
   AUTOMAKE_run $*
   grep '^Makefile\.am:.*:=.*not portable' stderr
-  test `wc -l <stderr` -eq 1
+  test $(wc -l <stderr) -eq 1
 }
 
 set_am_opts()

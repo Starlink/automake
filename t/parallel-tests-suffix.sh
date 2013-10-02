@@ -16,10 +16,9 @@
 
 # Check parallel-tests features:
 # - suffix rules
-# See also sister test 'parallel-tests-suffix-prog.test'.
+# See also sister test 'parallel-tests-suffix-prog.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT

@@ -19,7 +19,7 @@
 # Suggested by observations from Braden McDaniel.
 
 required=GNUmake
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 

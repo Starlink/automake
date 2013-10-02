@@ -18,7 +18,7 @@
 # options like '--ignore-deps' and '--silent-rules' are preserved across
 # automake reruns.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_MAINTAINER_MODE
@@ -35,8 +35,8 @@ END
 $ACLOCAL
 $AUTOCONF
 # Order flavors so that all needed files are installed early.
-for flavor in --gnits --gnu --foreign --cygnus --ignore-deps
-do
+for flavor in --gnits --gnu --foreign --ignore-deps; do
+
   $AUTOMAKE --add-missing $flavor
   ./configure --enable-maintainer-mode
   grep " $flavor" Makefile
@@ -54,6 +54,7 @@ do
   touch Makefile.am
   $MAKE
   grep " $flavor" Makefile
+
 done
 
 :

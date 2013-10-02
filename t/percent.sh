@@ -17,7 +17,7 @@
 # Test to make sure that -Wportability understands %-style pattern
 # rules.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<EOF
 AC_PROG_CC

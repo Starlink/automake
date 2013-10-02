@@ -16,9 +16,9 @@
 
 # Make sure that when automake automatically activates support for
 # dependency tracking, it adds proper text to the configure help screen.
-# Keep this in sync with sister test 'help-depend.test'
+# Keep this in sync with sister test 'help-depend.sh'
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])

@@ -16,10 +16,10 @@
 
 # Basic semantic checks on Yacc + C++ support (when yacc-generated
 # headers are not involved).
-# Keep in sync with sister test 'yacc-basic.test'.
+# Keep in sync with sister test 'yacc-basic.sh'.
 
-required=yacc
-. ./defs || Exit 1
+required='c++ yacc'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -46,7 +46,8 @@ cat > parse1.yy << 'END'
 // Valid C++, but deliberately invalid C.
 #include <cstdio>
 #include <cstdlib>
-int yylex (void) { return getchar (); }
+// "std::" qualification required by Sun C++ 5.9.
+int yylex (void) { return std::getchar (); }
 void yyerror (const char *s) { return; }
 %}
 %%
@@ -88,10 +89,10 @@ test -f foo4-parse4.cpp
 test -f foo3-parse3.output
 test -f foo4-parse4.output
 
-if cross_compiling; then :; else
+if ! cross_compiling; then
   for i in 1 2 3 4; do
     echo a | ./foo$i
-    echo b | ./foo$i && Exit 1
+    echo b | ./foo$i && exit 1
     : For shells with busted 'set -e'.
   done
 fi
@@ -131,9 +132,9 @@ test -f foo4-parse4.cpp
 ./configure # Re-create 'Makefile'.
 $MAKE maintainer-clean
 ls -l
-test ! -f parse1.cc
-test ! -f parse2.c++
-test ! -f foo3-parse3.cxx
-test ! -f foo4-parse4.cpp
+test ! -e parse1.cc
+test ! -e parse2.c++
+test ! -e foo3-parse3.cxx
+test ! -e foo4-parse4.cpp
 
 :

@@ -16,8 +16,7 @@
 
 # Custom test drivers: per-extension test drivers.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -42,7 +41,7 @@ LOG_DRIVER_FLAGS = _
 END
 
 mkdir sub bin
-PATH=`pwd`/bin$PATH_SEPARATOR$PATH; export PATH
+PATH=$(pwd)/bin$PATH_SEPARATOR$PATH; export PATH
 
 cat > wrapper.skel <<'END'
 #! /bin/sh
@@ -125,8 +124,8 @@ $MAKE
 VERBOSE=yes $MAKE check
 ls -l . sub
 
-test ! -r BAD.log
-test ! -r BAD.trs
+test ! -e BAD.log
+test ! -e BAD.trs
 
 echo 'chk-wrapper 1.chk --am-chk --chk' > 1.exp
 echo 'test-wrapper 2.test -am-test -test' > 2.exp
@@ -141,4 +140,4 @@ for x in 1 2 3 4.c 5.suf sub/test; do
   diff $x.exp $x.log || st=1
 done
 
-Exit $st
+exit $st

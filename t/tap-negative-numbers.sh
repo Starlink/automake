@@ -18,10 +18,9 @@
 #  - don't spuriously recognize negative TAP result numbers, but correctly
 #    interpret them as test descriptions instead
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test <<'END'
 1..7
@@ -34,7 +33,7 @@ ok -121
 not ok -50000
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=7 pass=2 fail=2 xpass=1 xfail=1 skip=1 error=0

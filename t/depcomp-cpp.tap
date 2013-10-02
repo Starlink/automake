@@ -2,6 +2,7 @@
 # Automatically generated test.  DO NOT EDIT BY HAND!
 am_create_testdir=empty depmode=cpp depcomp_with_libtool=no
 required="gcc"
-. ./defs || Exit 1
+. test-init.sh
 plan_ 28
-. "$am_testauxdir/depcomp.sh"; exit "$?"
+. depcomp.sh
+exit $?

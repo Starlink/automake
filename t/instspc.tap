@@ -19,7 +19,7 @@
 # Original report from James Amundson about file names with spaces.
 # Other characters added by Paul Eggert.
 
-. ./defs || Exit 99
+. test-init.sh
 
 # Usage: is_in_list ITEM [LIST...]
 is_in_list ()
@@ -219,8 +219,8 @@ if test $# -gt 0; then
     esac
   done
   # We need to determine the TAP plan adaptively.
-  n=`for t in $test_names_list; do echo $t; done | wc -l`
-  plan_ `expr $n '*' 2` # Two tests per "problematic string".
+  n=$(for t in $test_names_list; do echo $t; done | wc -l)
+  plan_ $(($n * 2)) # Two tests per "problematic string".
   unset n
 else
   test_names_list=$all_test_names_list
@@ -228,7 +228,7 @@ else
   plan_ 94
 fi
 
-ocwd=`pwd` || fatal_ "cannot get current working directory"
+ocwd=$(pwd) || fatal_ "getting current working directory"
 
 create_input_data
 
@@ -285,7 +285,13 @@ for test_name in $test_names_list; do
         ;;
       dest)
         build=build-$test_name
-        dest=$ocwd/$test_string
+        # Also use $test_name in the definition of $dest, to avoid
+        # interferences among different tests in case $test_string
+        # is strangely munged (which is not unexpected, considering
+        # how tricky its characters are).  With some shells, this
+        # has already happened (at least on OpenIndiana 11 and on
+        # Solaris 10).
+        dest=$ocwd/dest-$test_name/$test_string
         mkdir "$build" || fatal_ "cannot create '$build'"
         ;;
       *)
@@ -324,9 +330,9 @@ for test_name in $test_names_list; do
     # the test directory not to be removed when the script terminates.
     if not am_keeping_testdirs && test "$r" = ok; then
       rm_rf_ "$build" "$dest" || fatal_ "removing temporary subdirectory"
-    else
-      : For lesser shells with broken 'set -e'.
     fi
+
+    : For shells with busted 'set -e'.
 
   done # $instspc_action
 

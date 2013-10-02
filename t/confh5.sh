@@ -16,7 +16,7 @@
 
 # Make sure we do not distribute header sources when they are built.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_SUBST([FOO], [NameToBeGrepped])
@@ -31,7 +31,6 @@ cat > Makefile.am << 'END'
 test: distdir
 	test -f $(distdir)/config.h.in
 	test -f $(distdir)/include/config.h.in.in
-	: # Solaris Sh does not support 'test -e'.
 	test ! -f $(distdir)/include/config.h.in
 	test ! -r $(distdir)/include/config.h.in
 END

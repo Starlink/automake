@@ -18,12 +18,11 @@
 # AM_TESTS_FD_REDIRECT, for tests which are binary executables
 # We use some tricks to ensure that all code paths in 'lib/am/check2.am'
 # are covered, even on platforms where $(EXEEXT) would be naturally empty.
-# See also the more generic test 'check-fd-redirect.test', and
-# sister test 'parallel-tests-fd-redirect.test'.
+# See also the more generic test 'check-fd-redirect.sh', and
+# sister test 'parallel-tests-fd-redirect.sh'.
 
 required='cc native'
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -113,6 +112,6 @@ cat qux.log
 test $st -eq 0
 grep "^ bazbazbaz$" stdout
 grep "^ quxquxqux$" stdout
-$EGREP '(bazbazbaz|quxquxqux)' *.log && Exit 1
+$EGREP '(bazbazbaz|quxquxqux)' *.log && exit 1
 
 :

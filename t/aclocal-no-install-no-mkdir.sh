@@ -18,7 +18,7 @@
 # if the '--install' option is not given.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -30,8 +30,7 @@ cat > sys-acdir/my-defs.m4 <<END
 AC_DEFUN([MY_MACRO], [:])
 END
 
-$ACLOCAL -I foo --system-acdir=sys-acdir && Exit 1
-test ! -d foo
-test ! -r foo
+$ACLOCAL -I foo --system-acdir=sys-acdir && exit 1
+test ! -e foo
 
 :

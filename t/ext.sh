@@ -16,30 +16,28 @@
 
 # Test to make sure extensions are set correctly for various languages.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_F77
 AC_PROG_FC
 AC_PROG_OBJC
+AC_PROG_OBJCXX
 AM_PROG_UPC
 END
 
 cat > Makefile.am << 'END'
 bin_PROGRAMS = foo
-foo_SOURCES = 1.f 2.for 3.f90 4.f95 5.F 6.F90 7.F95 8.r 9.m 10.upc
+foo_SOURCES = 1.f 2.for 3.f90 4.f95 5.F 6.F90 7.F95 8.r 9.m 10.mm 11.upc
 END
 
 $ACLOCAL
 $AUTOMAKE
 
-for ext in f for f90 f95 F F90 F95 r m upc
-do
-   # Some versions of the BSD shell wrongly exit when 'set -e' is active
-   # if the last command within a compound statement fails and is guarded
-   # by an && only.  So we play safe and use the following idiom, instead
-   # of the apparently simpler 'grep ... && Exit 1'.
-   if grep "^$ext\.o:" Makefile.in; then Exit 1; else :; fi
+for ext in f for f90 f95 F F90 F95 r m mm upc; do
    grep "^\.$ext\.o:" Makefile.in
+   grep "^$ext\.o:" Makefile.in && exit 1
+   : For shells with busted 'set -e'.
 done
-Exit 0
+
+:

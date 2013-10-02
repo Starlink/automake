@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that info files are built in builddir when needed.
-# Similar to txinfo24.test, but obfuscating filenames with variable
+# Similar to txinfo24.sh, but obfuscating filenames with variable
 # references.
 # Report from Ralf Corsepius.
 
-required='makeinfo tex texi2dvi-o'
-. ./defs || Exit 1
+required='makeinfo tex texi2dvi'
+. test-init.sh
 
 # This setting, when honored by GNU ls, used to cause an infinite loop
 # in mdate-sh.
@@ -82,7 +82,7 @@ cd build
 $MAKE
 # main.info should be rebuilt in the current directory.
 test -f main.info
-test ! -f ../main.info
+test ! -e ../main.info
 $MAKE dvi
 test -f main.dvi
 

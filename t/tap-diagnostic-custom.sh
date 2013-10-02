@@ -18,8 +18,7 @@
 #  - option '--diagnostic-string' to customize the string introducing
 #    TAP diagnostics
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 fetch_tap_driver
 
@@ -58,7 +57,7 @@ for string in \
 '## leave its behaviour in this context undefined for the moment.'
 do
   case $string in '##'*) continue;; esac
-  i=`expr $i + 1`
+  i=$(($i + 1))
   unindent >> Makefile.am << END
     TEST_EXTENSIONS += .t$i
     TESTS += foo$i.t$i
@@ -82,13 +81,13 @@ $AUTOMAKE
 
 ./configure
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 count_test_results total=$i pass=$i fail=0 xpass=0 xfail=0 skip=0 error=0
 
 cat later.mk >> Makefile
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
-$FGREP 'blah blah' stdout && Exit 1
+$FGREP 'blah blah' stdout && exit 1
 
 :

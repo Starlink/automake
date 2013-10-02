@@ -17,8 +17,7 @@
 # Test the "make recheck" semantics for custom test drivers, as documented
 # in the Automake manual.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -110,7 +109,7 @@ cat > n-100 <<END
 :recheck: no
 END
 
-rechecked=`echo y-[0-9]*`
+rechecked=$(echo y-[0-9]*)
 
 for t in [yn]-[0-9]*; do echo $t; done \
   | sed 's/.*/TESTS += &/' >> Makefile.am
@@ -145,7 +144,7 @@ $AUTOMAKE
 
 # The ':test-result:' fields should be ignored by "make recheck",
 # but should cause the testsuite report to detect errors.
-$MAKE check && Exit 1
+$MAKE check && exit 1
 ls -l
 for t in $tests; do test -f $t.run; done
 rm -f *.run
@@ -154,10 +153,11 @@ rm -f *.run
 # fields indicating success, so "make recheck" must pass.  Still, the
 # next "make recheck" call should still re-run the same set of tests.
 for iteration in 1 2; do
+  using_gmake || $sleep # Required by BSD make.
   $MAKE recheck
   ls -l
   for t in $rechecked; do test -f $t.run; done
-  find . -name 'n-*.run' | grep . && Exit 1
+  find . -name 'n-*.run' | grep . && exit 1
   : For shells with busted 'set -e'.
 done
 

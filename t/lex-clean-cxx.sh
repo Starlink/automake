@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check that C++ source and header files derived from non-distributed
-# Yacc sources are cleaned by "make clean", while C++ source and
-# header files derived from distributed Yacc sources are cleaned by
-# "make maintainer-clean".
-# See also sister test 'lex-clean.test'.
+# Check that C++ source files derived from non-distributed Lex sources
+# are cleaned by "make clean", while C++ source files derived from
+# distributed Lex sources are cleaned by "make maintainer-clean".
+# See also sister test 'lex-clean.sh'.
 
-required=lex
-. ./defs || Exit 1
+required='c++ lex'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -104,10 +103,10 @@ for target in clean distclean; do
   ls -l
   test -f parsefoo.cxx
   test -f bar-parsebar.cc
-  test ! -r parsebaz.l++
-  test ! -r parsebaz.c++
-  test ! -r parsequx.lpp
-  test ! -r qux-parsequx.cpp
+  test ! -e parsebaz.l++
+  test ! -e parsebaz.c++
+  test ! -e parsequx.lpp
+  test ! -e qux-parsequx.cpp
 done
 
 cp config.sav config.status
@@ -117,11 +116,11 @@ $MAKE maintainer-clean
 ls -l
 test -f parsefoo.lxx
 test -f parsebar.ll
-test ! -r parsefoo.cxx
-test ! -r bar-parsebar.cc
+test ! -e parsefoo.cxx
+test ! -e bar-parsebar.cc
 test -f parsefoo.lxx
 test -f parsebar.ll
-test ! -r parsefoo.cxx
-test ! -r bar-parsebar.cc
+test ! -e parsefoo.cxx
+test ! -e bar-parsebar.cc
 
 :
