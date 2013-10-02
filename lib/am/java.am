@@ -1,6 +1,5 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 1998, 1999, 2001, 2003, 2004, 2006, 2008, 2009 Free Software
-## Foundation, Inc.
+## Copyright (C) 1998-2012 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -20,11 +19,13 @@
 ## Building.  ##
 ## ---------- ##
 
+if %?FIRST%
 JAVAC = javac
-CLASSPATH_ENV = CLASSPATH=$(JAVAROOT):$(srcdir)/$(JAVAROOT):$$CLASSPATH
+CLASSPATH_ENV = CLASSPATH=$(JAVAROOT):$(srcdir)/$(JAVAROOT)$${CLASSPATH:+":$$CLASSPATH"}
 JAVAROOT = $(top_builddir)
+endif %?FIRST%
 
-class%DIR%.stamp: $(%DIR%_JAVA)
+class%NDIR%.stamp: $(am__java_sources)
 	@list1='$?'; list2=; if test -n "$$list1"; then \
 	  for p in $$list1; do \
 	    if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
@@ -33,7 +34,7 @@ class%DIR%.stamp: $(%DIR%_JAVA)
 	  echo '$(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) $(AM_JAVACFLAGS) $(JAVACFLAGS) '"$$list2"; \
 	  $(CLASSPATH_ENV) $(JAVAC) -d $(JAVAROOT) $(AM_JAVACFLAGS) $(JAVACFLAGS) $$list2; \
 	else :; fi
-	echo timestamp > class%DIR%.stamp
+	echo timestamp > $@
 
 
 ## ------------ ##
@@ -44,13 +45,14 @@ if %?INSTALL%
 am__installdirs += "$(DESTDIR)$(%NDIR%dir)"
 ?EXEC?.PHONY install-exec-am: install-%DIR%JAVA
 ?!EXEC?.PHONY install-data-am: install-%DIR%JAVA
-install-%DIR%JAVA: class%DIR%.stamp
+install-%DIR%JAVA: class%NDIR%.stamp
 	@$(NORMAL_INSTALL)
-	test -z "$(%NDIR%dir)" || $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)"
 ## A single .java file can be compiled into multiple .class files.  So
 ## we just install all the .class files that got built into this
 ## directory.  This is not optimal, but will have to do for now.
 	@test -n "$(%DIR%_JAVA)" && test -n "$(%NDIR%dir)" || exit 0; \
+	echo " $(MKDIR_P) '$(DESTDIR)$(%NDIR%dir)'"; \
+	$(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)"; \
 	set x *.class; shift; test "$$1" != "*.class" || exit 0; \
 	echo " $(INSTALL_DATA)" "$$@" "'$(DESTDIR)$(%NDIR%dir)/$$p'"; \
 	$(INSTALL_DATA) "$$@" "$(DESTDIR)$(%NDIR%dir)"
@@ -76,9 +78,9 @@ endif %?INSTALL%
 ## Cleaning.  ##
 ## ---------- ##
 
-.PHONY clean-am: clean-%DIR%JAVA
-clean-%DIR%JAVA:
-	-rm -f *.class class%DIR%.stamp
+.PHONY clean-am: clean-%NDIR%JAVA
+clean-%NDIR%JAVA:
+	-rm -f *.class class%NDIR%.stamp
 
 
 ## -------------- ##
