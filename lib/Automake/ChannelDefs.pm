@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2003, 2006, 2008, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2002-2012 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ Automake::ChannelDefs - channel definitions for Automake and helper functions
   verb ($MESSAGE, [%OPTIONS]);
   switch_warning ($CATEGORY);
   parse_WARNINGS ();
-  parse_warning ($OPTION, $ARGUMENT);
+  parse_warnings ($OPTION, $ARGUMENT);
   Automake::ChannelDefs::set_strictness ($STRICTNESS_NAME);
 
 =head1 DESCRIPTION
@@ -55,7 +55,7 @@ shorthand function to output on specific channels.
 
 =cut
 
-use 5.005;
+use 5.006;
 use strict;
 use Exporter;
 
@@ -79,7 +79,7 @@ Fatal errors.  Use C<&fatal> to send messages over this channel.
 
 =item C<error>
 
-Common errors.   Use C<&error> to send messages over this channel.
+Common errors.  Use C<&error> to send messages over this channel.
 
 =item C<error-gnu>
 
@@ -87,7 +87,7 @@ Errors related to GNU Standards.
 
 =item C<error-gnu/warn>
 
-Errors related to GNU Standards that should be warnings in `foreign' mode.
+Errors related to GNU Standards that should be warnings in 'foreign' mode.
 
 =item C<error-gnits>
 
@@ -113,6 +113,10 @@ variables (silent by default).
 =item C<portability>
 
 Warnings about non-portable constructs.
+
+=item C<extra-portability>
+
+Extra warnings about non-portable constructs covering obscure tools.
 
 =item C<syntax>
 
@@ -147,9 +151,10 @@ register_channel 'automake', type => 'fatal', backtrace => 1,
   header => ("####################\n" .
 	     "## Internal Error ##\n" .
 	     "####################\n"),
-  footer => "\nPlease contact <bug-automake\@gnu.org>.",
+  footer => "\nPlease contact <$PACKAGE_BUGREPORT>.",
   uniq_part => UP_NONE, ordered => 0;
 
+register_channel 'extra-portability', type => 'warning', silent => 1;
 register_channel 'gnu', type => 'warning';
 register_channel 'obsolete', type => 'warning', silent => 1;
 register_channel 'override', type => 'warning', silent => 1;
@@ -161,6 +166,10 @@ register_channel 'unsupported', type => 'warning';
 register_channel 'verb', type => 'debug', silent => 1, uniq_part => UP_NONE,
   ordered => 0;
 register_channel 'note', type => 'debug', silent => 0;
+
+setup_channel_type 'warning', header => 'warning: ';
+setup_channel_type 'error', header => 'error: ';
+setup_channel_type 'fatal', header => 'error: ';
 
 =head2 FUNCTIONS
 
@@ -174,18 +183,20 @@ Display warning categories.
 
 sub usage ()
 {
-  print "Warning categories include:
-  `gnu'           GNU coding standards (default in gnu and gnits modes)
-  `obsolete'      obsolete features or constructions
-  `override'      user redefinitions of Automake rules or variables
-  `portability'   portability issues (default in gnu and gnits modes)
-  `syntax'        dubious syntactic constructs (default)
-  `unsupported'   unsupported or incomplete features (default)
-  `all'           all the warnings
-  `no-CATEGORY'   turn off warnings in CATEGORY
-  `none'          turn off all the warnings
-  `error'         treat warnings as errors
-";
+  print <<EOF;
+Warning categories include:
+  gnu                GNU coding standards (default in gnu and gnits modes)
+  obsolete           obsolete features or constructions
+  override           user redefinitions of Automake rules or variables
+  portability        portability issues (default in gnu and gnits modes)
+  extra-portability  extra portability issues related to obscure tools
+  syntax             dubious syntactic constructs (default)
+  unsupported        unsupported or incomplete features (default)
+  all                all the warnings
+  no-CATEGORY        turn off warnings in CATEGORY
+  none'              turn off all the warnings
+  error              treat warnings as errors
+EOF
 }
 
 =item C<prog_error ($MESSAGE, [%OPTIONS])>
@@ -281,8 +292,38 @@ sub switch_warning ($)
   elsif (channel_type ($cat) eq 'warning')
     {
       setup_channel $cat, silent => $has_no;
-      setup_channel 'portability-recursive', silent => $has_no
-        if $cat eq 'portability';
+      #
+      # Handling of portability warnings is trickier.  For relevant tests,
+      # see 'dollarvar2', 'extra-portability' and 'extra-portability3'.
+      #
+      # -Wportability-recursive and -Wno-portability-recursive should not
+      # have any effect on other 'portability' or 'extra-portability'
+      # warnings, so there's no need to handle them separately or ad-hoc.
+      #
+      if ($cat eq 'extra-portability' && ! $has_no) # -Wextra-portability
+        {
+          # -Wextra-portability must enable 'portability' and
+          # 'portability-recursive' warnings.
+          setup_channel 'portability', silent => 0;
+          setup_channel 'portability-recursive', silent => 0;
+        }
+      if ($cat eq 'portability') # -Wportability or -Wno-portability
+        {
+          if ($has_no) # -Wno-portability
+            {
+              # -Wno-portability must disable 'extra-portability' and
+              # 'portability-recursive' warnings.
+              setup_channel 'portability-recursive', silent => 1;
+              setup_channel 'extra-portability', silent => 1;
+            }
+          else # -Wportability
+            {
+              # -Wportability must enable 'portability-recursive'
+              # warnings.  But it should have no influence over the
+              # 'extra-portability' warnings.
+              setup_channel 'portability-recursive', silent => 0;
+            }
+        }
     }
   else
     {
@@ -307,7 +348,7 @@ sub parse_WARNINGS ()
     }
 }
 
-=item C<parse_warning ($OPTION, $ARGUMENT)>
+=item C<parse_warnings ($OPTION, $ARGUMENT)>
 
 Parse the argument of C<--warning=CATEGORY> or C<-WCATEGORY>.
 
@@ -323,7 +364,7 @@ sub parse_warnings ($$)
 
   foreach my $cat (split (',', $categories))
     {
-      msg 'unsupported', "unknown warning category `$cat'"
+      msg 'unsupported', "unknown warning category '$cat'"
 	if switch_warning $cat;
     }
 }
@@ -344,6 +385,7 @@ sub set_strictness ($)
       setup_channel 'error-gnu/warn', silent => 0, type => 'error';
       setup_channel 'error-gnits', silent => 1;
       setup_channel 'portability', silent => 0;
+      setup_channel 'extra-portability', silent => 1;
       setup_channel 'gnu', silent => 0;
     }
   elsif ($name eq 'gnits')
@@ -352,6 +394,7 @@ sub set_strictness ($)
       setup_channel 'error-gnu/warn', silent => 0, type => 'error';
       setup_channel 'error-gnits', silent => 0;
       setup_channel 'portability', silent => 0;
+      setup_channel 'extra-portability', silent => 1;
       setup_channel 'gnu', silent => 0;
     }
   elsif ($name eq 'foreign')
@@ -360,6 +403,7 @@ sub set_strictness ($)
       setup_channel 'error-gnu/warn', silent => 0, type => 'warning';
       setup_channel 'error-gnits', silent => 1;
       setup_channel 'portability', silent => 1;
+      setup_channel 'extra-portability', silent => 1;
       setup_channel 'gnu', silent => 1;
     }
   elsif ($name eq 'startree')
@@ -373,7 +417,7 @@ sub set_strictness ($)
     }
   else
     {
-      prog_error "level `$name' not recognized\n";
+      prog_error "level '$name' not recognized";
     }
 }
 
@@ -388,6 +432,8 @@ L<Automake::Channels>
 Written by Alexandre Duret-Lutz E<lt>F<adl@gnu.org>E<gt>.
 
 =cut
+
+1;
 
 ### Setup "GNU" style for perl-mode and cperl-mode.
 ## Local Variables:
