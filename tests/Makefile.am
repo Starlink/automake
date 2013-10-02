@@ -1,6 +1,25 @@
 ## Process this file with automake to create Makefile.in
 
-XFAIL_TESTS = auxdir2.test cond17.test txinfo5.test
+XFAIL_TESTS =					\
+all.test					\
+auxdir2.test					\
+cond17.test					\
+txinfo5.test
+
+include $(srcdir)/parallel-tests.am
+
+$(srcdir)/parallel-tests.am: gen-parallel-tests Makefile.am
+	(cd $(srcdir) && $(SHELL) ./gen-parallel-tests) >$@
+
+$(parallel_tests): $(parallel_tests:-p.test=.test) Makefile.am
+	input=`echo $@ | sed 's,.*/,,; s,-p.test$$,.test,'`; \
+	sed 's,^\. \./defs,. ./defs-p,' < $(srcdir)/$$input > $@
+	chmod a+rx $@
+
+MAINTAINERCLEANFILES = $(parallel_tests)
+
+defs-p: defs Makefile.am
+	sed 's,^AM_INIT_AUTOMAKE$$,&([parallel-tests]),' < defs >$@
 
 TESTS =	\
 aclibobj.test \
@@ -24,6 +43,7 @@ acloca18.test \
 acloca19.test \
 acloca20.test \
 acloca21.test \
+acloca22.test \
 acoutnoq.test \
 acoutpt.test \
 acoutpt2.test \
@@ -92,6 +112,7 @@ check7.test \
 check8.test \
 check9.test \
 check10.test \
+check11.test \
 checkall.test \
 clean.test \
 clean2.test \
@@ -104,6 +125,7 @@ colon4.test \
 colon5.test \
 colon6.test \
 colon7.test \
+color.test \
 comment.test \
 comment2.test \
 comment3.test \
@@ -114,7 +136,9 @@ comment7.test \
 comment8.test \
 comment9.test \
 commen10.test \
+commen11.test \
 compile.test \
+compile2.test \
 compile_f90_c_cxx.test \
 compile_f_c_cxx.test \
 cond.test \
@@ -154,6 +178,11 @@ cond35.test \
 cond36.test \
 cond37.test \
 cond38.test \
+cond39.test \
+cond40.test \
+cond41.test \
+cond42.test \
+cond43.test \
 condd.test \
 condhook.test \
 condinc.test \
@@ -173,6 +202,7 @@ confincl.test \
 conflnk.test \
 conflnk2.test \
 conflnk3.test \
+conflnk4.test \
 confsub.test \
 confvar.test \
 confvar2.test \
@@ -211,11 +241,13 @@ depend2.test \
 depend3.test \
 depend4.test \
 depend5.test \
+depend6.test \
 destdir.test \
 dirforbid.test \
 dirlist.test \
 dirlist2.test \
 discover.test \
+distcleancheck.test \
 distcom2.test \
 distcom3.test \
 distcom4.test \
@@ -225,6 +257,8 @@ distcom7.test \
 distdir.test \
 distname.test \
 dollar.test \
+dollarvar.test \
+dollarvar2.test \
 double.test \
 dup2.test \
 else.test \
@@ -248,13 +282,18 @@ extra4.test \
 extra5.test \
 extra6.test \
 extra7.test \
+extra8.test \
 f90only.test \
+flavor.test \
 flibs.test \
 fn99.test \
 fn99subdir.test \
 fnoc.test \
 fo.test	\
 fort1.test \
+fort2.test \
+fort4.test \
+fort5.test \
 fonly.test \
 fortdep.test \
 fpinst2.test \
@@ -291,10 +330,25 @@ instsh2.test \
 instsh3.test \
 instdat.test \
 instdat2.test \
+instdir.test \
+instdir2.test \
+instdir-java.test \
+instdir-lisp.test \
+instdir-ltlib.test \
+instdir-prog.test \
+instdir-python.test \
+instdir-texi.test \
 instexec.test \
+instfail.test \
+instfail-info.test \
+instfail-java.test \
+instfail-libtool.test \
 insthook.test \
 instman.test \
 instman2.test \
+instmany.test \
+instmany-mans.test \
+instmany-python.test \
 instspc.test \
 interp.test \
 interp2.test \
@@ -310,6 +364,7 @@ lex2.test \
 lex3.test \
 lex4.test \
 lex5.test \
+libexec.test \
 libobj2.test \
 libobj3.test \
 libobj4.test \
@@ -359,16 +414,25 @@ ltcond.test \
 ltcond2.test \
 ltconv.test \
 ltdeps.test \
+ltinstloc.test \
 ltlibobjs.test \
 ltlibsrc.test \
+ltorder.test \
 lzma.test \
 maintclean.test \
 make.test \
 makej.test \
+makej2.test \
+maken.test \
+maken2.test \
+maken3.test \
+maken4.test \
 makevars.test \
 man.test \
 man2.test \
 man3.test \
+man4.test \
+man5.test \
 mclean.test \
 mdate.test \
 mdate2.test \
@@ -384,9 +448,12 @@ missing6.test \
 mkinstall.test \
 mkinst2.test \
 mkinst3.test \
+mmode.test \
 mmodely.test \
 multlib.test \
 nobase.test \
+nobase-libtool.test \
+nobase-python.test \
 nodef.test \
 nodef2.test \
 nodep.test \
@@ -401,6 +468,7 @@ noinst.test \
 noinstdir.test \
 nolink.test \
 nostdinc.test \
+notrans.test \
 number.test \
 objc.test \
 objc2.test \
@@ -422,6 +490,18 @@ output12.test \
 output13.test \
 output-order.test \
 overrid.test \
+parallel-am.test \
+parallel-am2.test \
+parallel-am3.test \
+parallel-tests.test \
+parallel-tests2.test \
+parallel-tests3.test \
+parallel-tests4.test \
+parallel-tests5.test \
+parallel-tests6.test \
+parallel-tests7.test \
+parallel-tests8.test \
+parallel-tests9.test \
 parse.test \
 percent.test \
 percent2.test \
@@ -490,8 +570,16 @@ req.test \
 reqd.test \
 reqd2.test \
 rulepat.test \
+sanity.test \
 scripts.test \
 seenc.test \
+silent.test \
+silent2.test \
+silent3.test \
+silent4.test \
+silent5.test \
+silent6.test \
+silent7.test \
 sinclude.test \
 srcsub.test \
 srcsub2.test \
@@ -503,6 +591,7 @@ specflg6.test	\
 specflg7.test	\
 specflg8.test	\
 specflg9.test	\
+specflg10.test	\
 spell.test \
 spell2.test \
 spell3.test \
@@ -540,8 +629,11 @@ subobjname.test \
 subpkg.test \
 subpkg2.test \
 subpkg3.test \
+subpkg4.test \
 subst.test \
 subst2.test \
+subst3.test \
+subst4.test \
 substref.test \
 substre2.test \
 substtarg.test \
@@ -557,6 +649,7 @@ suffix9.test \
 suffix10.test \
 suffix11.test \
 suffix12.test \
+suffix13.test \
 symlink.test \
 symlink2.test \
 symlink3.test \
@@ -595,11 +688,20 @@ txinfo28.test \
 txinfo29.test \
 txinfo30.test \
 txinfo31.test \
+txinfo32.test \
+txinfo33.test \
 transform.test \
+transform2.test \
 unused.test \
 upc.test \
 upc2.test \
 upc3.test \
+vala.test \
+vala1.test \
+vala2.test \
+vala3.test \
+vala4.test \
+vala5.test \
 vars.test \
 vars3.test \
 vartar.test \
@@ -618,6 +720,7 @@ werror.test \
 werror2.test \
 whoami.test \
 xsource.test \
+xz.test \
 yacc.test \
 yacc2.test \
 yacc3.test \
@@ -627,12 +730,16 @@ yacc6.test \
 yacc7.test \
 yacc8.test \
 yaccpp.test \
-yaccvpath.test
+yaccvpath.test \
+$(parallel_tests)
 
-EXTRA_DIST = ChangeLog-old $(TESTS)
+EXTRA_DIST = ChangeLog-old gen-parallel-tests $(TESTS)
 
 # Each test case depends on defs, aclocal, and automake.
-check_SCRIPTS = defs aclocal-$(APIVERSION) automake-$(APIVERSION)
+check_SCRIPTS = defs defs-p aclocal-$(APIVERSION) automake-$(APIVERSION)
 
-distclean-local:
-	-rm -rf testSubDir
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	-chmod -R u+rwx *.dir
+	-rm -rf defs-p *.dir

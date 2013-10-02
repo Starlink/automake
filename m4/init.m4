@@ -1,13 +1,13 @@
 # Do all the work for Automake.                             -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2008 Free Software Foundation, Inc.
+# 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 13
+# serial 16
 
 # This macro actually does too much.  Some checks are only needed if
 # your package does certain things.  But this isn't really a big deal.
@@ -24,7 +24,7 @@
 # arguments mandatory, and then we can depend on a new Autoconf
 # release and drop the old call support.
 AC_DEFUN([AM_INIT_AUTOMAKE],
-[AC_PREREQ([2.60])dnl
+[AC_PREREQ([2.62])dnl
 dnl Autoconf wants to disallow AM_ names.  We explicitly allow
 dnl the ones we care about.
 m4_pattern_allow([^AM_[A-Z]+FLAGS$])dnl
@@ -75,8 +75,8 @@ AM_MISSING_PROG(AUTOCONF, autoconf)
 AM_MISSING_PROG(AUTOMAKE, automake-${am__api_version})
 AM_MISSING_PROG(AUTOHEADER, autoheader)
 AM_MISSING_PROG(MAKEINFO, makeinfo)
-AM_PROG_INSTALL_SH
-AM_PROG_INSTALL_STRIP
+AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
+AC_REQUIRE([AM_PROG_INSTALL_STRIP])dnl
 AC_REQUIRE([AM_PROG_MKDIR_P])dnl
 # We need awk for the "check" target.  The system "awk" is bad on
 # some platforms.
@@ -84,23 +84,36 @@ AC_REQUIRE([AC_PROG_AWK])dnl
 AC_REQUIRE([AC_PROG_MAKE_SET])dnl
 AC_REQUIRE([AM_SET_LEADING_DOT])dnl
 _AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])],
-              [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
-	      		     [_AM_PROG_TAR([v7])])])
+	      [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
+			     [_AM_PROG_TAR([v7])])])
 _AM_IF_OPTION([no-dependencies],,
 [AC_PROVIDE_IFELSE([AC_PROG_CC],
-                  [_AM_DEPENDENCIES(CC)],
-                  [define([AC_PROG_CC],
-                          defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+		  [_AM_DEPENDENCIES(CC)],
+		  [define([AC_PROG_CC],
+			  defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_CXX],
-                  [_AM_DEPENDENCIES(CXX)],
-                  [define([AC_PROG_CXX],
-                          defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+		  [_AM_DEPENDENCIES(CXX)],
+		  [define([AC_PROG_CXX],
+			  defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
 AC_PROVIDE_IFELSE([AC_PROG_OBJC],
-                  [_AM_DEPENDENCIES(OBJC)],
-                  [define([AC_PROG_OBJC],
-                          defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
+		  [_AM_DEPENDENCIES(OBJC)],
+		  [define([AC_PROG_OBJC],
+			  defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
 ])
+_AM_IF_OPTION([silent-rules], [AC_REQUIRE([AM_SILENT_RULES])])dnl
+dnl The `parallel-tests' driver may need to know about EXEEXT, so add the
+dnl `am__EXEEXT' conditional if _AM_COMPILER_EXEEXT was seen.  This macro
+dnl is hooked onto _AC_COMPILER_EXEEXT early, see below.
+AC_CONFIG_COMMANDS_PRE(dnl
+[m4_provide_if([_AM_COMPILER_EXEEXT],
+  [AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])])])dnl
 ])
+
+dnl Hook into `_AC_COMPILER_EXEEXT' early to learn its expansion.  Do not
+dnl add the conditional right here, as _AC_COMPILER_EXEEXT may be further
+dnl mangled by Autoconf and run in a shell conditional statement.
+m4_define([_AC_COMPILER_EXEEXT],
+m4_defn([_AC_COMPILER_EXEEXT])[m4_provide([_AM_COMPILER_EXEEXT])])
 
 
 # When config.status generates a header, we must update the stamp-h file.

@@ -11,9 +11,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package Automake::DisjConditions;
 
@@ -193,6 +191,26 @@ sub new ($;@)
   $_disjcondition_singletons{$string} = $self;
   return $self;
 }
+
+
+=item C<CLONE>
+
+Internal special subroutine to fix up the self hashes in
+C<%_disjcondition_singletons> upon thread creation.  C<CLONE> is invoked
+automatically with ithreads from Perl 5.7.2 or later, so if you use this
+module with earlier versions of Perl, it is not thread-safe.
+
+=cut
+
+sub CLONE
+{
+  foreach my $self (values %_disjcondition_singletons)
+    {
+      my %h = map { $_ => $_ } @{$self->{'conds'}};
+      $self->{'hash'} = \%h;
+    }
+}
+
 
 =item C<@conds = $set-E<gt>conds>
 

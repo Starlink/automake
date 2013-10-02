@@ -1,5 +1,6 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 1998, 2001, 2003, 2004, 2006, 2008 Free Software Foundation, Inc.
+## Copyright (C) 1998, 2001, 2003, 2004, 2006, 2008, 2009 Free Software
+## Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -12,10 +13,9 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+include inst-vars.am
 man%SECTION%dir = $(mandir)/man%SECTION%
 
 ## ------------ ##
@@ -29,72 +29,118 @@ man%SECTION%dir = $(mandir)/man%SECTION%
 ?INSTALL-MAN?install-data-am: install-man
 ?INSTALL-MAN?am__installdirs += "$(DESTDIR)$(man%SECTION%dir)"
 .PHONY install-man: install-man%SECTION%
-install-man%SECTION%: $(man%SECTION%_MANS) $(man_MANS)
+install-man%SECTION%: %DEPS%
 	@$(NORMAL_INSTALL)
 	test -z "$(man%SECTION%dir)" || $(MKDIR_P) "$(DESTDIR)$(man%SECTION%dir)"
-	@list='$(man%SECTION%_MANS) $(dist_man%SECTION%_MANS) $(nodist_man%SECTION%_MANS)'; \
-## Extract all items from man_MANS that should go in this section.
+if %?NOTRANS_MANS%
+## Handle MANS with notrans_ prefix
+	@list='%NOTRANS_SECT_LIST%'; test -n "$(man%SECTION%dir)" || exit 0; \
+	{ for i in $$list; do echo "$$i"; done;  \
+## Extract all items from notrans_man_MANS that should go in this section.
 ## This must be done dynamically to support conditionals.
-	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
-	for i in $$l2; do \
-	  case "$$i" in \
-## Have to accept files like `foo.1c'.
-	    *.%SECTION%*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
+?HAVE_NOTRANS?	l2='%NOTRANS_LIST%'; for i in $$l2; do echo "$$i"; done | \
+## Accept for `man1' files like `foo.1c' but not `sub.1/foo.2' or `foo-2.1.4'.
+?HAVE_NOTRANS?	  sed -n '/\.%SECTION%[a-z]*$$/p'; \
+## Extract basename of manpage, change the extension if needed.
+	} | while read p; do \
 ## Find the file.
-	  if test -f $$i; then file=$$i; \
-	  else file=$(srcdir)/$$i; fi; \
-## Change the extension if needed.
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  case "$$ext" in \
-	    %SECTION%*) ;; \
-	    *) ext='%SECTION%' ;; \
-	  esac; \
-## Extract basename of man page and run it through the program rename
-## transform.
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man%SECTION%dir)/$$inst'"; \
-	  $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man%SECTION%dir)/$$inst"; \
-	  $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(man%SECTION%dir)/$$inst" || :; \
-	done
+	  if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; echo "$$p"; \
+	done | \
+## Extract the basename of the man page and change the extension if needed.
+	sed 'n;s,.*/,,;p;s,\.[^%SECTION%][0-9a-z]*$$,.%SECTION%,' | \
+	sed 'N;N;s,\n, ,g' | { \
+## We now have a list "sourcefile basename installed-name".
+	list=; while read file base inst; do \
+	  if test "$$base" = "$$inst"; then list="$$list $$file"; else \
+	    echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man%SECTION%dir)/$$inst'"; \
+	    $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man%SECTION%dir)/$$inst" || exit $$?; \
+	  fi; \
+	done; \
+	for i in $$list; do echo "$$i"; done | $(am__base_list) | \
+	while read files; do \
+	  test -z "$$files" || { \
+	    echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(man%SECTION%dir)'"; \
+	    $(INSTALL_DATA) $$files "$(DESTDIR)$(man%SECTION%dir)" || exit $$?; }; \
+	done; }
+endif %?NOTRANS_MANS%
+if %?TRANS_MANS%
+## Handle MANS without notrans_ prefix
+	@list='%TRANS_SECT_LIST%'; test -n "$(man%SECTION%dir)" || exit 0; \
+	{ for i in $$list; do echo "$$i"; done; \
+## Extract all items from notrans_man_MANS that should go in this section.
+## This must be done dynamically to support conditionals.
+?HAVE_TRANS?	l2='%TRANS_LIST%'; for i in $$l2; do echo "$$i"; done | \
+## Accept for `man1' files like `foo.1c' but not `sub.1/foo.2' or `foo-2.1.4'.
+?HAVE_TRANS?	  sed -n '/\.%SECTION%[a-z]*$$/p'; \
+## Extract basename of manpage, change the extension if needed.
+	} | while read p; do \
+## Find the file.
+	  if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; echo "$$p"; \
+	done | \
+## Extract the basename of the man page and change the extension if needed.
+	sed -e 'n;s,.*/,,;p;h;s,.*\.,,;s,^[^%SECTION%][0-9a-z]*$$,%SECTION%,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,' | \
+	sed 'N;N;s,\n, ,g' | { \
+## We now have a list "sourcefile basename installed-name".
+	list=; while read file base inst; do \
+	  if test "$$base" = "$$inst"; then list="$$list $$file"; else \
+	    echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man%SECTION%dir)/$$inst'"; \
+	    $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man%SECTION%dir)/$$inst" || exit $$?; \
+	   $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(man%SECTION%dir)/$$inst" || :; \
+	  fi; \
+	done; \
+	for i in $$list; do echo "$$i"; done | $(am__base_list) | \
+	while read files; do \
+	  test -z "$$files" || { \
+	    echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(man%SECTION%dir)'"; \
+	    $(INSTALL_DATA) $$files "$(DESTDIR)$(man%SECTION%dir)" || exit $$?; }; \
+	    for f in $$files; do \
+	      $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(man%SECTION%dir)/$$f" || :; \
+            done \
+	done; }
+endif %?TRANS_MANS%
 
 
 ## -------------- ##
 ## Uninstalling.  ##
 ## -------------- ##
 
-## This is just completely gross.
 .PHONY: uninstall-man
 ?INSTALL-MAN?uninstall-am: uninstall-man
 .PHONY uninstall-man: uninstall-man%SECTION%
 uninstall-man%SECTION%:
 	@$(NORMAL_UNINSTALL)
-	@list='$(man%SECTION%_MANS) $(dist_man%SECTION%_MANS) $(nodist_man%SECTION%_MANS)'; \
+if %?NOTRANS_MANS%
+## Handle MANS with notrans_ prefix
+	@list='%NOTRANS_SECT_LIST%'; test -n "$(man%SECTION%dir)" || exit 0; \
+	files=`{ for i in $$list; do echo "$$i"; done; \
+## Extract all items from notrans_man_MANS that should go in this section.
+## This must be done dynamically to support conditionals.
+?HAVE_NOTRANS?	l2='%NOTRANS_LIST%'; for i in $$l2; do echo "$$i"; done | \
+## Accept for `man1' files like `foo.1c' but not `sub.1/foo.2' or `foo-2.1.4'.
+?HAVE_NOTRANS?	  sed -n '/\.%SECTION%[a-z]*$$/p'; \
+## Extract basename of manpage, change the extension if needed.
+	} | sed 's,.*/,,;s,\.[^%SECTION%][0-9a-z]*$$,.%SECTION%,'`; \
+	test -z "$$files" || { \
+	  echo " ( cd '$(DESTDIR)$(man%SECTION%dir)' && rm -f" $$files ")"; \
+	  cd "$(DESTDIR)$(man%SECTION%dir)" && rm -f $$files; }
+endif %?NOTRANS_MANS%
+if %?TRANS_MANS%
+## Handle MANS without notrans_ prefix
+	@list='%TRANS_SECT_LIST%'; test -n "$(man%SECTION%dir)" || exit 0; \
+	files=`{ for i in $$list; do echo "$$i"; done; \
 ## Extract all items from man_MANS that should go in this section.
 ## This must be done dynamically to support conditionals.
-	l2='$(man_MANS) $(dist_man_MANS) $(nodist_man_MANS)'; \
-	for i in $$l2; do \
-	  case "$$i" in \
-## Have to accept files like `foo.1c'.
-	    *.%SECTION%*) list="$$list $$i" ;; \
-	  esac; \
-	done; \
-	for i in $$list; do \
-## Change the extension if needed.
-	  ext=`echo $$i | sed -e 's/^.*\\.//'`; \
-	  case "$$ext" in \
-	    %SECTION%*) ;; \
-	    *) ext='%SECTION%' ;; \
-	  esac; \
-## Extract basename of man page and run it through the program rename
-## transform.
-	  inst=`echo $$i | sed -e 's/\\.[0-9a-z]*$$//'`; \
-	  inst=`echo $$inst | sed -e 's/^.*\///'`; \
-	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
-	  echo " rm -f '$(DESTDIR)$(man%SECTION%dir)/$$inst'"; \
-	  rm -f "$(DESTDIR)$(man%SECTION%dir)/$$inst"; \
-	done
+?HAVE_TRANS?	l2='%TRANS_LIST%'; for i in $$l2; do echo "$$i"; done | \
+## Accept for `man1' files like `foo.1c' but not `sub.1/foo.2' or `foo-2.1.4'.
+?HAVE_TRANS?	  sed -n '/\.%SECTION%[a-z]*$$/p'; \
+## Extract basename of manpage, run it through the program rename
+## transform, and change the extension if needed.
+	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^%SECTION%][0-9a-z]*$$,%SECTION%,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
+	test -z "$$files" || { \
+	  echo " ( cd '$(DESTDIR)$(man%SECTION%dir)' && rm -f" $$files ")"; \
+	  cd "$(DESTDIR)$(man%SECTION%dir)" && rm -f $$files; }
+endif %?TRANS_MANS%

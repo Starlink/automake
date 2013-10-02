@@ -1,6 +1,6 @@
 ## automake - create Makefile.in from Makefile.am
 ## Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2003, 2004,
-## 2005, 2006, 2007 Free Software Foundation, Inc.
+## 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,9 +13,7 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if %?INSTALL%
 include inst-vars.am
@@ -27,30 +25,28 @@ endif %?INSTALL%
 
 if %?INSTALL%
 am__installdirs += "$(DESTDIR)$(%NDIR%dir)"
-?BASE?%DIR%LTLIBRARIES_INSTALL = $(INSTALL)
-?!BASE?%DIR%LTLIBRARIES_INSTALL = $(install_sh) -c
-?EXEC?.PHONY install-exec-am: install-%DIR%LTLIBRARIES
-?!EXEC?.PHONY install-data-am: install-%DIR%LTLIBRARIES
+.PHONY install-%EXEC?exec:data%-am: install-%DIR%LTLIBRARIES
 install-%DIR%LTLIBRARIES: $(%DIR%_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(%NDIR%dir)" || $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)"
+if %?BASE%
 ## Funny invocation because Makefile variable can be empty, leading to
 ## a syntax error in sh.
-	@list='$(%DIR%_LTLIBRARIES)'; for p in $$list; do \
+	@list='$(%DIR%_LTLIBRARIES)'; test -n "$(%NDIR%dir)" || list=; \
+	list2=; for p in $$list; do \
 	  if test -f $$p; then \
-## Compute basename of source file.  Unless this is a nobase_ target, we
-## want to install 'python/foo.py' as '$(DESTDIR)$(%NDIR%dir)/foo.yo',
-## not '$(DESTDIR)$(%NDIR%dir)/python/foo.yo'.
-?BASE?	    f=$(am__strip_dir) \
-?!BASE?	    f=$$p; \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
 ## Note that we explicitly set the libtool mode.  This avoids any lossage
 ## if the program doesn't have a name that libtool expects.
 ## Use INSTALL and not INSTALL_DATA because libtool knows the right
 ## permissions to use.
-?LIBTOOL?	    echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(%DIR%LTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-?LIBTOOL?	    $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(%DIR%LTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(%NDIR%dir)/$$f"; \
-?!LIBTOOL?	    echo " $(%DIR%LTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
-?!LIBTOOL?	    $(%DIR%LTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(%NDIR%dir)/$$f"; \
+?LIBTOOL?	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(%NDIR%dir)'"; \
+?LIBTOOL?	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(%NDIR%dir)"; \
+?!LIBTOOL?	  echo " $(INSTALL) $(INSTALL_STRIP_FLAG) $$list '$(DESTDIR)$(%NDIR%dir)'"; \
+?!LIBTOOL?	  $(INSTALL) $(INSTALL_STRIP_FLAG) $$list "$(DESTDIR)$(%NDIR%dir)"; \
 ## Install the .la file, then use its contents to determine the names of
 ## the files which were installed (it would be better to have libtool
 ## tell us what files it installs, but there doesn't seem to be a switch
@@ -76,7 +72,57 @@ install-%DIR%LTLIBRARIES: $(%DIR%_LTLIBRARIES)
               ); \
 	    else :; fi; \
 	  else :; fi; \
+	}
+else !%?BASE%
+	@list='$(%DIR%_LTLIBRARIES)'; test -n "$(%NDIR%dir)"  || list=; \
+	for p in $$list; do if test -f "$$p"; then echo "$$p $$p"; else :; fi; done | \
+	sed '/ .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+	$(AWK) 'BEGIN { cur = "." } \
+	  { if ($$2 == cur) { files = files " " $$1 } \
+	    else { print cur, files; files = $$1; cur = $$2 } } \
+	  END { print cur, files }' | \
+	while read dir files; do \
+	  test -z "$$files" || { \
+	    test "x$$dir" = x. || { \
+	      echo "$(MKDIR_P) '$(DESTDIR)$(%NDIR%dir)/$$dir'"; \
+	      $(MKDIR_P) "$(DESTDIR)$(%NDIR%dir)/$$dir"; }; \
+## Note that we explicitly set the libtool mode.  This avoids any lossage
+## if the program doesn't have a name that libtool expects.
+## Use INSTALL and not INSTALL_DATA because libtool knows the right
+## permissions to use.
+?LIBTOOL?	    echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$files '$(DESTDIR)$(%NDIR%dir)/$$dir'"; \
+?LIBTOOL?	    $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$files "$(DESTDIR)$(%NDIR%dir)/$$dir" || exit $$?; \
+?!LIBTOOL?	    echo " $(INSTALL) $(INSTALL_STRIP_FLAG) $$files '$(DESTDIR)$(%NDIR%dir)/$$dir'"; \
+?!LIBTOOL?	    $(INSTALL) $(INSTALL_STRIP_FLAG) $$files "$(DESTDIR)$(%NDIR%dir)/$$dir" || exit $$?; \
+## Repeat as continuing code:
+## Install the .la file, then use its contents to determine the names of
+## the files which were installed (it would be better to have libtool
+## tell us what files it installs, but there doesn't seem to be a switch
+## for that).  The .la file consists of a sequence of
+## variable settings.  Is this part of the published interface of libtool?
+## The libtool manual suggests searching for the string "dlname='<dlname>'"
+## at one point, so presumably it is to some extent.  I think we can 
+## guarantee that the $p are all .la files -- so fail noisily if this isn't
+## the case.
+	    if $(MANIFEST); then \
+	      echo "MANIFEST:$(DESTDIR)$(%NDIR%dir)/$$f"; \
+	      expr $$p : '.*\.la$$' >/dev/null || \
+		{ echo "Installing non-la file $$p!"; exit 1; }; \
+	      (. ./$$p; \
+		if test -n "$$library_names"; then \
+		  for l in $$library_names; do \
+		    echo "MANIFEST:$(DESTDIR)$$libdir/$$l"; \
+		  done; \
+		fi; \
+		if test -n "$$old_library"; then \
+		  echo "MANIFEST:$(DESTDIR)$$libdir/$$old_library"; \
+		else :; fi; \
+              ); \
+	    else :; fi; \
+	  else :; fi; \
+	  }; \
 	done
+endif !%?BASE%
 endif %?INSTALL%
 
 
@@ -88,12 +134,13 @@ if %?INSTALL%
 .PHONY uninstall-am: uninstall-%DIR%LTLIBRARIES
 uninstall-%DIR%LTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(%DIR%_LTLIBRARIES)'; for p in $$list; do \
-?BASE?	  p=$(am__strip_dir) \
-?LIBTOOL?	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(%NDIR%dir)/$$p'"; \
-?LIBTOOL?	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(%NDIR%dir)/$$p"; \
-?!LIBTOOL?	  echo " rm -f '$(DESTDIR)$(%NDIR%dir)/$$p'"; \
-?!LIBTOOL?	  rm -f "$(DESTDIR)$(%NDIR%dir)/$$p"; \
+	@list='$(%DIR%_LTLIBRARIES)'; test -n "$(%NDIR%dir)" || list=; \
+	for p in $$list; do \
+	  %BASE?$(am__strip_dir):f=$$p;% \
+?LIBTOOL?	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
+?LIBTOOL?	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(%NDIR%dir)/$$f"; \
+?!LIBTOOL?	  echo " rm -f '$(DESTDIR)$(%NDIR%dir)/$$f'"; \
+?!LIBTOOL?	  rm -f "$(DESTDIR)$(%NDIR%dir)/$$f"; \
 	done
 endif %?INSTALL%
 

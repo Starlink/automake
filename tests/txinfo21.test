@@ -1,28 +1,24 @@
 #! /bin/sh
 # Copyright (C) 2003, 2004, 2006, 2008  Free Software Foundation, Inc.
 #
-# This file is part of GNU Automake.
-#
-# GNU Automake is free software; you can redistribute it and/or modify
+# This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
-# GNU Automake is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Automake; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test support for building HTML documentation, and the many
 # install-DOC flavors.
 
 required='makeinfo-html tex texi2dvi'
-. ./defs || exit 1
+. ./defs || Exit 1
 
 set -e
 
@@ -154,7 +150,7 @@ test ! -f share/txinfo21/dvi/main.dvi
 test ! -f share/txinfo21/dvi/main2.dvi
 test ! -f share/txinfo21/dvi/main3.dvi
 
-(dvips --help 2>/dev/null >/dev/null) || exit 77
+(dvips --help 2>/dev/null >/dev/null) || Exit 77
 
 $MAKE install-ps
 test -f share/txinfo21/ps/main.ps
@@ -166,7 +162,7 @@ test ! -f share/txinfo21/ps/main2.ps
 test ! -f share/txinfo21/ps/main3.ps
 
 (pdfetex --help 2>/dev/null >/dev/null) ||
-  (pdftex --help 2>/dev/null >/dev/null) || exit 77
+  (pdftex --help 2>/dev/null >/dev/null) || Exit 77
 
 $MAKE install-pdf
 test -f share/txinfo21/pdf/main.pdf

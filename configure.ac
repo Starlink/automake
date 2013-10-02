@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006,
-# 2004, 2006, 2007, 2008  Free Software Foundation, Inc.
+# Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
+# 2004, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,9 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 dnl  Since this is a Starlink-customised version of automake, change the
 dnl  package name and bug-reporting address.  Unlike autoconf, automake
@@ -31,7 +29,7 @@ AC_INIT([Starlink Automake], [1.10-starlink], [starlink@jiscmail.ac.uk], automak
 
 dnl Require Autoconf 2.60 for AC_REQUIRE_AUX_FILE.
 AC_PREREQ(2.60)
-dnl AC_INIT([GNU Automake], [1.10.2], [bug-automake@gnu.org])
+dnl AC_INIT([GNU Automake], [1.11], [bug-automake@gnu.org])
 
 AC_CONFIG_SRCDIR(automake.in)
 AC_CONFIG_AUX_DIR(lib)
@@ -45,13 +43,11 @@ AC_SUBST(STAR_MANIFEST_DIR)
 
 # Save the AUTOCONF setting before AM_INIT_AUTOMAKE overrides it; this
 # way we can run Autoconf tests from configure (or from the test
-# suite) without being bothered by `missing'.
+# suite) without being bothered by `missing'.  Likewise for autoheader.
 AC_SUBST([am_AUTOCONF], ["${AUTOCONF-autoconf}"])
+AC_SUBST([am_AUTOHEADER], ["${AUTOHEADER-autoheader}"])
 
-AM_INIT_AUTOMAKE([1.8 dist-bzip2])
-dnl Should be as below, but this doesn't work when it's 1.8.2-starlink which
-dnl in the path (as it has to be)
-dnl AM_INIT_AUTOMAKE([1.8a dist-bzip2 filename-length-max=99])
+AM_INIT_AUTOMAKE([1.10a dist-bzip2 filename-length-max=99 color-tests parallel-tests])
 
 # The API version is the base version.  We must guarantee
 # compatibility for all releases with the same API version.
@@ -68,8 +64,8 @@ AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE-$APIVERSION"])
 
 # $AUTOMAKE and $ACLOCAL are always run after a `cd $top_srcdir',
 # hence `.' is really what we want for perllibdir, libdir, and acdir.
-ACLOCAL="perllibdir=`pwd`\"/lib$PATH_SEPARATOR./lib\" `pwd`/aclocal --acdir=m4 -I m4"
-AUTOMAKE="perllibdir=`pwd`\"/lib$PATH_SEPARATOR./lib\" `pwd`/automake --libdir=lib"
+ACLOCAL="perllibdir=\"`pwd`/lib$PATH_SEPARATOR./lib\" \"`pwd`/aclocal\" --acdir=m4 -I m4"
+AUTOMAKE="perllibdir=\"`pwd`/lib$PATH_SEPARATOR./lib\" \"`pwd`/automake\" --libdir=lib"
 
 AC_PATH_PROG(PERL, perl)
 if test -z "$PERL"; then
@@ -83,8 +79,37 @@ installed, select the one Automake should use using
   ./configure PERL=/path/to/perl])
 }
 
+# We require ithreads support, and version 5.7.2 for CLONE.
+AC_CACHE_CHECK([whether $PERL supports ithreads], [am_cv_prog_PERL_ithreads],
+[if $PERL -e '
+    require 5.007_002;
+    use Config;
+    if ($Config{useithreads})
+      {
+	require threads;
+	import threads;
+	require Thread::Queue;
+	import Thread::Queue;
+	exit 0;
+      }
+    exit 1;' >&AS_MESSAGE_LOG_FD 2>&1
+then
+  am_cv_prog_PERL_ithreads=yes
+else
+  am_cv_prog_PERL_ithreads=no
+fi])
+if test $am_cv_prog_PERL_ithreads = yes; then
+  PERL_THREADS=1;
+else
+  PERL_THREADS=0;
+fi
+AC_SUBST([PERL_THREADS])
+
 # The test suite will skip some tests if tex is absent.
 AC_CHECK_PROG([TEX], [tex], [tex])
+
+# Generate man pages.
+AM_MISSING_PROG([HELP2MAN], [help2man])
 
 # Test for Autoconf.  We run Autoconf in a subdirectory to ease
 # deletion of any files created (such as those added to
@@ -121,7 +146,7 @@ fi
 
 AC_CACHE_CHECK([whether autoconf is recent enough], [am_cv_autoconf_version],
 [mkdir conftest
-echo 'AC''_PREREQ(2.60)' > conftest/conftest.ac
+echo 'AC''_PREREQ([[2.62]])' > conftest/conftest.ac
 if AM_RUN_LOG([cd conftest && eval $am_AUTOCONF -o /dev/null conftest.ac]);
 then
   am_cv_autoconf_version=yes
@@ -130,7 +155,7 @@ else
 fi
 rm -rf conftest])
 if test "$am_cv_autoconf_version" = no; then
-  AC_MSG_ERROR([Autoconf 2.60 or better is required.])
+  AC_MSG_ERROR([Autoconf 2.61a-341 or better is required.])
 fi
 
 # Test for ln.  We need use it to install the versioned binaries.
@@ -163,6 +188,23 @@ AC_SUBST([MODIFICATION_DELAY])
 # Test for things needed by the test suite.
 AC_PROG_EGREP
 AC_PROG_FGREP
+
+AC_CACHE_CHECK([whether /bin/sh has working 'set -e' with exit trap],
+[am_cv_sh_errexit_works],
+[if /bin/sh -ec "trap 'exit \$?' 0; (exit 77); exit 77"; test $? = 77
+then
+  am_cv_sh_errexit_works=yes
+else
+  am_cv_sh_errexit_works=no
+fi
+])
+if test $am_cv_sh_errexit_works = no; then
+  AC_MSG_WARN([`${MAKE-make} check' will leave leftover directories tests/*.dir])
+  AC_MSG_WARN([you can clean them up manually using `${MAKE-make} clean' or])
+  AC_MSG_WARN([`cd tests && ${MAKE-make} clean-local-check'])
+  dnl restore font-lock: `
+fi
+AC_SUBST([sh_errexit_works], [$am_cv_sh_errexit_works])
 
 AC_CONFIG_FILES([
   Makefile

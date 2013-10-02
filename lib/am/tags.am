@@ -1,6 +1,6 @@
 ## automake - create Makefile.in from Makefile.am
 ## Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
-## 2004, 2007, 2008  Free Software Foundation, Inc.
+## 2004, 2007, 2008, 2009  Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,9 +13,7 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## ---- ##
 ## ID.  ##
@@ -39,11 +37,16 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 
 ETAGS = etags
 .PHONY: tags
+if %?SUBDIRS%
+AM_RECURSIVE_TARGETS += tags TAGS
+endif %?SUBDIRS%
 tags: TAGS
 
 TAGS: %TAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
-	tags=; \
+## We use the positional parameters to build the subdir list with
+## absolute names, without the need to worry about white space in `pwd`.
+	set x; \
 	here=`pwd`; \
 ## It is tempting to use if/endif here, but don't: the previous
 ## backslash will cause bad results (automake doesn't `see' the `if').
@@ -64,7 +67,7 @@ TAGS: %TAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 ?SUBDIRS?	  if test "$$subdir" = .; then :; else \
 ?SUBDIRS?	    test ! -f $$subdir/TAGS || \
 ## Note that the = is mandatory for --etags-include.
-?SUBDIRS?	      tags="$$tags $$include_option=$$here/$$subdir/TAGS"; \
+?SUBDIRS?	      set "$$@" "$$include_option=$$here/$$subdir/TAGS"; \
 ?SUBDIRS?	  fi; \
 ?SUBDIRS?	done; \
 ## Make sure the list of sources is unique.
@@ -75,11 +78,18 @@ TAGS: %TAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 	  done | \
 	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
 	      END { if (nonempty) { for (i in files) print i; }; }'`; \
+## Remove the `x' we added first:
+	shift; \
 ## Make sure we have something to run etags on.
-	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
+	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
 	  test -n "$$unique" || unique=$$empty_fix; \
-	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	    $$tags $$unique; \
+	  if test $$# -gt 0; then \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      "$$@" $$unique; \
+	  else \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      $$unique; \
+	  fi; \
 	fi
 
 
@@ -89,6 +99,9 @@ TAGS: %TAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 
 CTAGS = ctags
 .PHONY: CTAGS ctags
+if %?SUBDIRS%
+AM_RECURSIVE_TARGETS += ctags CTAGS
+endif %?SUBDIRS%
 ctags: CTAGS
 
 ## We have a dummy name here because `tags' has already been in use
@@ -96,7 +109,6 @@ ctags: CTAGS
 ## dependencies here are useless.
 CTAGS: %CTAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
-	tags=; \
 ## Make sure the list of sources is unique.
 	list='$(SOURCES) $(HEADERS) %CONFIG% $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -106,9 +118,9 @@ CTAGS: %CTAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 	  $(AWK) '{ files[$$0] = 1; nonempty = 1; } \
 	      END { if (nonempty) { for (i in files) print i; }; }'`; \
 ## Make sure we have something to run ctags on.
-	test -z "$(CTAGS_ARGS)$$tags$$unique" \
+	test -z "$(CTAGS_ARGS)$$unique" \
 	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
-	     $$tags $$unique
+	     $$unique
 
 
 ## --------------- ##
@@ -118,8 +130,8 @@ CTAGS: %CTAGSDIRS% $(HEADERS) $(SOURCES) %CONFIG% $(TAGS_DEPENDENCIES) \
 .PHONY: GTAGS
 GTAGS:
 	here=`$(am__cd) $(top_builddir) && pwd` \
-	  && cd $(top_srcdir) \
-	  && gtags -i $(GTAGS_ARGS) $$here
+	  && $(am__cd) $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) "$$here"
 
 
 ## ---------- ##

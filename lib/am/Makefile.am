@@ -2,7 +2,7 @@
 
 ## Makefile for Automake lib/am.
 
-## Copyright (C) 1995, 1996, 1997, 1998, 1999, 2001, 2003, 2004
+## Copyright (C) 1995, 1996, 1997, 1998, 1999, 2001, 2003, 2004, 2008
 ## Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
@@ -16,15 +16,14 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-## 02110-1301, USA.
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 amdir = $(pkgvdatadir)/am
 
 dist_am_DATA = \
 ansi2knr.am \
 check.am \
+check2.am \
 clean-hdr.am \
 clean.am \
 compile.am \
@@ -65,4 +64,5 @@ tags.am \
 texi-vers.am \
 texibuild.am \
 texinfos.am \
+vala.am \
 yacc.am
