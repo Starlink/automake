@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2004-2012 Free Software Foundation, Inc.
+# Copyright (C) 2004-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,22 +54,18 @@ $AUTOCONF
 $AUTOMAKE
 ./configure
 
-$MAKE dep-test1 >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O dep-test1
 $FGREP 'BEG: one.z somethingelse.a :END' stdout
 
-$MAKE dep-test2 >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O dep-test2
 $FGREP 'BEG: three.z :END' stdout
 
 ./configure two=2
 
-$MAKE dep-test1 >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O dep-test1
 $FGREP 'BEG: two.z somethingelse.a :END' stdout
 
-$MAKE dep-test2 >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O dep-test2
 $FGREP 'BEG: two.z somethingelse.a :END' stdout
 
 :

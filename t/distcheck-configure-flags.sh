@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ AS_IF([test $success = yes && test "$sentence" = 'it works :-)'],
 AC_OUTPUT
 END
 
-unset sentence || :
+unset sentence
 
 : > Makefile.am
 
@@ -41,14 +41,13 @@ $AUTOCONF
 # make command line or in the environment.
 
 env DISTCHECK_CONFIGURE_FLAGS='--enable-success sentence=it\ works\ :-\)' \
-  $MAKE distcheck # Not 'make -e' here, deliberately.
+  $MAKE distcheck
 
 $MAKE distcheck \
   DISTCHECK_CONFIGURE_FLAGS="--enable-success=yes sentence='it works :-)'"
 
 # Sanity check.
-$MAKE distcheck >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL distcheck
 grep "^configure:.* success='no', sentence=''" output
 
 :

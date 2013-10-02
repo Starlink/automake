@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,9 +47,7 @@ END
 
 tests_list=$(echo *.test)
 
-TESTS="$tests_list" $MAKE -e check >stdout && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL TESTS="$tests_list" check
 count_test_results total=9 pass=2 fail=0 xpass=0 xfail=2 skip=0 error=5
 
 for tst in $tests_list; do

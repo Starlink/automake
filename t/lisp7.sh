@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2005-2012 Free Software Foundation, Inc.
+# Copyright (C) 2005-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,9 +37,7 @@ $AUTOCONF
 $AUTOMAKE --add-missing
 ./configure
 
-$MAKE >stdout || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O
 test ! -e am-one.elc
 test ! -e am-two.elc
 test ! -e am-three.elc

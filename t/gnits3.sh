@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,8 +87,9 @@ cd build
 $MAKE
 $MAKE install
 $MAKE installcheck && exit 1
-$MAKE -k installcheck 2>stderr || : # Never trust the exit status of make -k.
-cat stderr >&2
+# Don't trust th exit status of "make -k" for non-GNU makes.
+if using_gmake; then status=FAIL; else status=IGNORE; fi
+run_make -e $status -E -- -k installcheck
 $MAKE grep-stderr
 
 # Make sure there is no more error when all targets are exempted.

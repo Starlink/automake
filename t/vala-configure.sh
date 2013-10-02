@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2008-2012 Free Software Foundation, Inc.
+# Copyright (C) 2008-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ chmod +x bin/valac.old
 PATH=$(pwd)/bin$PATH_SEPARATOR$PATH; export PATH
 
 # Avoid interferences from the environment.
-VALAC= vala_version=; unset VALAC vala_version
+unset VALAC vala_version
 
 $ACLOCAL
 $AUTOMAKE -a

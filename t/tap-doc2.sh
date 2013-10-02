@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,8 +83,7 @@ case $MAKE in *\ -j*) skip_ "can't work easily with concurrent make";; esac
 # Prevent Sun Distributed Make from trying to run in parallel.
 DMAKE_MODE=serial; export DMAKE_MODE
 
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 
 cat > exp <<'END'
 PASS: foo.test 1 - Swallows fly
@@ -106,10 +105,9 @@ diff exp got
 
 grep '^Please report to bug-automake@gnu\.org$' stdout
 
-env \
+run_make -O check \
   TESTS='foo.test baz.test' \
-  TEST_LOG_DRIVER_FLAGS='--comments --ignore-exit' \
-  $MAKE -e check >stdout || { cat stdout; exit 1; }
+  TEST_LOG_DRIVER_FLAGS='--comments --ignore-exit'
 
 cat > exp <<'END'
 PASS: foo.test 1 - Swallows fly

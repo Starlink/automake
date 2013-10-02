@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2007-2012 Free Software Foundation, Inc.
+# Copyright (C) 2007-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test Automake TESTS color output, using the expect(1) program.
-# Keep this in sync with the sister test 'color.sh'.
+# Keep this in sync with the sister test 'color-tests.sh'.
 
 required='grep-nonprint'
 # For gen-testsuite-part: ==> try-with-serial-tests <==
@@ -152,6 +152,13 @@ test_no_color ()
   fi
 }
 
+our_make ()
+{
+  set "MAKE=$MAKE" ${1+"$@"}
+  env "$@" expect -f $srcdir/expect-make >stdout || { cat stdout; exit 1; }
+  cat stdout
+}
+
 cat >expect-make <<'END'
 eval spawn $env(MAKE) -e check
 expect eof
@@ -169,31 +176,21 @@ for vpath in false :; do
 
   $srcdir/configure
 
-  TERM=ansi MAKE=$MAKE expect -f $srcdir/expect-make >stdout \
-    || { cat stdout; exit 1; }
-  cat stdout
+  our_make TERM=ansi
   test_color
 
-  TERM=dumb MAKE=$MAKE expect -f $srcdir/expect-make >stdout \
-    || { cat stdout; exit 1; }
-  cat stdout
+  our_make TERM=dumb
   test_no_color
 
-  AM_COLOR_TESTS=no MAKE=$MAKE expect -f $srcdir/expect-make >stdout \
-    || { cat stdout; exit 1; }
-  cat stdout
+  our_make AM_COLOR_TESTS=no
   test_no_color
 
   $srcdir/configure testsuite_colorized=false
 
-  TERM=ansi MAKE=$MAKE expect -f $srcdir/expect-make >stdout \
-    || { cat stdout; exit 1; }
-  cat stdout
+  our_make TERM=ansi
   test_no_color
 
-  TERM=ansi MAKE="env AM_COLOR_TESTS=always $MAKE" \
-    expect -f $srcdir/expect-make >stdout || { cat stdout; exit 1; }
-  cat stdout
+  our_make TERM=ansi MAKE="env AM_COLOR_TESTS=always $MAKE"
   test_color
 
   $MAKE distclean

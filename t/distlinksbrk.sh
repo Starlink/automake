@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,9 +60,8 @@ for lnk in $lnk1 $lnk2 $lnka $lnkb; do
   $AUTOMAKE
   ./configure
   # Distribution must fail, with a decent error message.
-  $MAKE distdir >out 2>&1 && { cat out; exit 1; }
-  cat out
-  $FGREP $lnk out
+  run_make -M -e FAIL distdir
+  $FGREP $lnk output
 done
 
 :

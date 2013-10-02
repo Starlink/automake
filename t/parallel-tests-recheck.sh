@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,16 +55,14 @@ $AUTOCONF
 $AUTOMAKE -a
 
 ./configure
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 count_test_results total=3 pass=1 fail=1 skip=0 xfail=0 xpass=0 error=1
 
 # Running this two times in a row should produce the same results the
 # second time.
 for i in 1 2; do
   using_gmake || $sleep # Required by BSD make.
-  $MAKE recheck >stdout && { cat stdout; exit 1; }
-  cat stdout
+  run_make -O -e FAIL recheck
   count_test_results total=2 pass=0 fail=1 skip=0 xfail=0 xpass=0 error=1
   grep 'foo\.test' stdout && exit 1
   grep '^ERROR: bar\.test$' stdout

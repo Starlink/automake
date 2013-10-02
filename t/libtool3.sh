@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@ AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
+# FIXME: stop disabling the warnings in the 'unsupported' category
+# FIXME: once the 'subdir-objects' option has been mandatory.
+AUTOMAKE_OPTIONS = -Wno-unsupported
+
 lib_LTLIBRARIES = lib0.la liba/liba.la
 lib0_la_SOURCES = 0.c
 liba_liba_la_SOURCES = liba/a.c

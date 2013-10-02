@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 . test-init.sh
 
 mkdir am sys
-# FIXME: remove in Automake 1.14.
+# FIXME: remove in Automake 2.0
 mkdir am/internal
 : > am/internal/ac-config-macro-dirs.m4
 

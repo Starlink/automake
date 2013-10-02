@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1999-2012 Free Software Foundation, Inc.
+# Copyright (C) 1999-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ AC_PROG_CC
 END
 
 $ACLOCAL
-$AUTOMAKE
+$AUTOMAKE -Wno-unsupported
 
 grep '^z\.o: x/z\.c$' Makefile.in
 

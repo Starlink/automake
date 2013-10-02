@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,10 +63,9 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 ./configure
-$MAKE >output
-cat output
-grep in--mk output
-grep in--sub output
-grep at--toplevel output
+run_make -O
+grep in--mk stdout
+grep in--sub stdout
+grep at--toplevel stdout
 
 $MAKE distcheck

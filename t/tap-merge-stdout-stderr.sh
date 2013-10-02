@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,10 +40,9 @@ echo "# foo foo foo" >&2
 END
 chmod a+x all.test
 
-$MAKE check >stdout || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O check
 count_test_results total=4 pass=2 fail=0 xpass=0 xfail=1 skip=1 error=0
+
 grep '^# all\.test: foo foo foo' stdout
 
 cat > all.test <<END
@@ -53,19 +52,12 @@ echo ok 1
 echo 'Bail out!' >&2
 END
 
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL check
 count_test_results total=2 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=1
 
 # See that the option '--no-merge' can override the effect of '--merge'.
 
-TEST_LOG_DRIVER_FLAGS=--no-merge $MAKE -e check >stdout \
-  || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O TEST_LOG_DRIVER_FLAGS=--no-merge check
 count_test_results total=1 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=0
-
-
 
 :

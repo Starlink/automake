@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,8 +53,13 @@ Hello walls.
 END
 
 $ACLOCAL
-$AUTOMAKE --add-missing
 $AUTOCONF
+
+AUTOMAKE_fails --add-missing
+grep "Makefile\.am:.*undocumented.* automake hack" stderr
+grep "Makefile\.am:.*'info-in-builddir' automake option" stderr
+
+$AUTOMAKE --add-missing -Wno-obsolete
 
 mkdir build
 cd build

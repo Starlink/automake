@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,9 +48,10 @@ XT_ACLOCAL_PATH=/usr/local/share/aclocal:/usr/share/aclocal
 
 # Find the location of the pkg-config executable.
 oIFS=$IFS dir=
+IFS=:
 for d in $PATH; do
   IFS=$oIFS
-  if test -f $dir/pkg-config || test -f $dir/pkg-config.exe; then
+  if test -f $d/pkg-config || test -f $d/pkg-config.exe; then
     dir=$d
     break
   fi
@@ -61,7 +62,7 @@ IFS=$oIFS
 # where the corresponding pkg.m4 might be installed.
 if test -n "$dir"; then
   # Only support standard installation layouts.
-  XT_ACLOCAL_PATH=${dir%/bin}/share/alocal:$XT_ACLOCAL_PATH
+  XT_ACLOCAL_PATH=${dir%/bin}/share/aclocal:$XT_ACLOCAL_PATH
 fi
 
 XT_ACLOCAL_PATH=$XT_ACLOCAL_PATH${ACLOCAL_PATH+":$ACLOCAL_PATH"}
@@ -77,7 +78,7 @@ else
    echo "skip_all_ \"pkg-config m4 macros not found\"" >> get.sh
 fi
 
-ACLOCAL_PATH=; unset ACLOCAL_PATH
+unset ACLOCAL_PATH
 . ./get.sh
 
 $ACLOCAL --force -I m4 || cat >> get.sh <<'END'

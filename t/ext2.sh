@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ AC_PROG_CXX
 EOF
 
 cat >Makefile.am <<EOF
+AUTOMAKE_OPTIONS = subdir-objects
 bin_PROGRAMS = p q r
 p_SOURCES = a.cc b.cpp c.cxx
 q_SOURCES = sub/d.cc sub/e.cpp sub/f.cxx

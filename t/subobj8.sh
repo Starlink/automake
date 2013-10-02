@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2001-2012 Free Software Foundation, Inc.
+# Copyright (C) 2001-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ AC_INIT([$me], [1.0])
 AC_CONFIG_AUX_DIR([tools])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_CONFIG_FILES([Makefile foo/Makefile])
 AC_OUTPUT
 END

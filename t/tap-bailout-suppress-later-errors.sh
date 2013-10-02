@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,10 +52,7 @@ ok 2
 ok 3
 END
 
-TESTS='foo.test bar.test baz.test' $MAKE -e check >stdout \
-  && { cat stdout; exit 1; }
-cat stdout
-
+run_make -e FAIL -O TESTS='foo.test bar.test baz.test' check
 count_test_results total=5 pass=1 fail=0 xpass=0 xfail=0 skip=1 error=3
 
 grep '^ERROR: foo\.test - Bail out!$' stdout

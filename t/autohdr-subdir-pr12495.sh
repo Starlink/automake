@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,8 +67,7 @@ ocwd=$(pwd)
 for x in b c; do
   test $x = b || cd sub
   rm -f $x.h.in
-  $MAKE $x.h.in 2>stderr && { cat stderr >&2; exit 1; }
-  cat stderr >&2
+  run_make -E -e FAIL $x.h.in
   test ! -f $x.h.in
   if using_gmake; then
     grep "No rule to make target [\`\"']$x\.h\.in[\`\"']" stderr

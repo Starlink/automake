@@ -12,16 +12,16 @@
   and check everything in.
 
 * If you incorporate a change from somebody on the net:
-  First, if it is a large change, you must make sure they have signed the
-  appropriate paperwork.
-  Second, be sure to add their name and email address to THANKS
+  - First, if it is a large change, you must make sure they have
+    signed the appropriate paperwork.
+  - Second, be sure to add their name and email address to THANKS.
 
 * If a change fixes a test, mention the test in the commit message.
   If a change fixes a bug registered in the Automake debbugs tracker,
   mention the bug number in the commit message.
 
 * If somebody reports a new bug, mention his name in the commit message
-  and in the test case you write.  Put him into THANKS.
+  that fixes or exposes the bug, and put him into THANKS.
 
 * When documenting a non-trivial idiom or example in the manual, be
   sure to add a test case for it, and to reference such test case from
@@ -35,19 +35,28 @@
   which should be updated by hand whenever the GPL gets updated (which
   shouldn't happen that often anyway :-)
 
-* Changes other than bug fixes must be mentioned in NEWS.  Important
-  bug fixes should be mentioned in NEWS, too.
+* Changes other than *trivial* bug fixes must be mentioned in NEWS.
+
+* Changes which are potentially controversial, require a non-trivial
+  plan, or must be implemented gradually with a roadmap spanning several
+  releases (either minor or major) should be discussed on the list,
+  and have a proper entry in the PLANS directory.  This entry should be
+  always committed in the "maint" branch, even if the change it deals
+  with is only for the master branch, or a topic branch.  Usually, in
+  addition to this, it is useful to open a "wishlist" report on the
+  Automake debbugs tracker, to keep the idea more visible, and have the
+  discussions surrounding it easily archived in a central place.
 
 ============================================================================
 = Naming
 
-* We've adopted the convention that internal AC_SUBSTs should be
-  named with a leading 'am__', and internally generated targets
-  should be named with a leading 'am--'.  This convention, although
-  in place from at least February 2001, isn't yet universally used.
+* We've adopted the convention that internal AC_SUBSTs and make variables
+  should be named with a leading 'am__', and internally generated targets
+  should be named with a leading 'am--'.  This convention, although in
+  place from at least February 2001, isn't yet universally used.
   But all new code should use it.
 
-  We used to use '_am_' as the prefix for an internal AC_SUBST.
+  We used to use '_am_' as the prefix for an internal AC_SUBSTs.
   However, it turns out that NEWS-OS 4.2R complains if a Makefile
   variable begins with the underscore character.  Yay for them.
   I changed the target naming convention just to be safe.
@@ -57,12 +66,11 @@
 
 * Always use $(...) and not ${...}
 
-* Use ':', not 'true'.  Use 'exit 1', not 'false'.
+* Prefer ':' over 'true', mostly for consistency with existing code.
 
-* Use '##' comments liberally.  Comment anything even remotely
-  unusual.
+* Use '##' comments liberally.  Comment anything even remotely unusual.
 
-* Never use basename or dirname.  Instead use sed.
+* Never use basename or dirname.  Instead, use sed.
 
 * Do not use 'cd' within back-quotes, use '$(am__cd)' instead.
   Otherwise the directory name may be printed, depending on CDPATH.
@@ -71,9 +79,9 @@
   computed with CDPATH.
 
 * For install and uninstall rules, if a loop is required, it should be
-  silent.  Then the body of the loop itself should print each
-  "important" command it runs.  The printed commands should be preceded
-  by a single space.
+  silent.  Then the body of the loop itself should print each "important"
+  command it runs.  The printed commands should be preceded by a single
+  space.
 
 * Ensure install rules do not create any installation directory where
   nothing is to be actually installed.  See automake bug#11030.
@@ -86,11 +94,56 @@
   default), and other portions using the GNU style (cperl-mode's
   default).  Write new code using GNU style.
 
-* Don't use & for function calls, unless required.
+* Don't use & for function calls, unless really required.
   The use of & prevents prototypes from being checked.
-  Just as above, don't change massively all the code to strip the
-  &, just convert the old code as you work on it, and write new
-  code without.
+
+============================================================================
+= Automake versioning and compatibility scheme
+
+* There are three kinds of automake releases:
+
+    - new major releases (e.g., 2.0, 5.0)
+    - new minor releases (e.g., 1.14, 2.1)
+    - micro a.k.a. "bug-fixing" releases (e.g., 1.13.2, 2.0.1, 3.5.17).
+
+  A new major release should have the major version number bumped, and
+  the minor and micro version numbers reset to zero.  A new minor release
+  should have the major version number unchanged, the minor version number
+  bumped, and the micro version number reset to zero.  Finally, a new
+  micro version should have the major and minor version numbers unchanged,
+  and the micro version number bumped.
+
+  For example, the first minor version after 1.13.2 will be 1.14; the
+  first bug-fixing version after 1.14 that will be 1.14.1; the first
+  new major version after all such releases will be 2.0; the first
+  bug-fixing version after 2.0 will be 2.0.1; and a further bug-fixing
+  version after 2.0.1 will be 2.0.2.
+
+* Micro releases should be just bug-fixing releases; no new features
+  should be added, and ideally, only trivial bugs, recent regressions,
+  or documentation issues should be addressed by them.  On the other
+  hand, it's OK to include testsuite work and even testsuite refactoring
+  in a micro version, since a regression there is not going to annoy or
+  inconvenience Automake users, but only the Automake developers.
+
+* Minor releases can introduce new "safe" features, do non-trivial but
+  mostly safe code clean-ups, and even add new runtime warnings (rigorously
+  non-fatal).  But they shouldn't include any backward incompatible change,
+  nor contain any potentially destabilizing refactoring or sweeping change,
+  nor introduce new features whose implementation might be liable to cause
+  bugs or regressions in existing code.  However, it might be acceptable to
+  introduce very limited and localized backward-incompatibilities, *only*
+  if that is necessary to fix non-trivial bugs, address serious performance
+  issues, or greatly enhance usability.  But please, do this sparsely and
+  rarely!
+
+* Major releases can introduce backward-incompatibilities (albeit such
+  incompatibilities should be announced well in advance, and a smooth
+  transition plan prepared for them), and try more risking and daring
+  refactorings and code cleanups.
+
+* For more information, refer to the extensive discussion associated
+  with automake bug#13578.
 
 ============================================================================
 = Working with git
@@ -103,22 +156,43 @@
   latest stable version of Autoconf installed and available early
   in your PATH.
 
-* The Automake git tree currently carries two basic branches: 'master' for
-  the current development, and 'maint' for maintenance and bug fixes.  The
-  maint branch should be kept regularly merged into the master branch.
-  It is advisable to merge only after a set of related commits have been
-  applied, to avoid introducing too much noise in the history.
+* The Automake git tree currently carries three basic branches: 'micro',
+  'maint' and 'master'.
+
+* The 'micro' branch, reserved to changes that should go into the next
+  micro release; so it will just see fixes for regressions, trivial
+  bugs, or documentation issues, and no "active" development whatsoever.
+  Since emergency regression-fixing or security releases could be cut
+  from this branch at any time, it should always be kept in a releasable
+  state.
+
+* The 'maint' branch is where the development of the next minor release
+  takes place.  It should be kept in a stable, almost-releasable state,
+  to simplify testing and deploying of new minor version.  Note that
+  this is not a hard rule, and such "stability" is not expected to be
+  absolute (emergency releases are cut from the 'micro' branch anyway).
+
+* The 'master' branch is reserved for the development of the next major
+  release.  Experimenting a little is OK here, but don't let the branch
+  grow too unstable; if you need to do exploratory programming or
+  over-arching change, you should use a dedicated topic branch, and
+  only merge that back once it is reasonably stable.
+
+* The 'micro' branch should be kept regularly merged into the 'maint'
+  branch, and the 'maint' branch into the 'master' branch.  It is advisable
+  to merge only after a set of related commits have been applied, to avoid
+  introducing too much noise in the history.
 
 * There may be a number of longer-lived feature branches for new
   developments.  They should be based off of a common ancestor of all
   active branches to which the feature should or might be merged later.
-  in the future, we might introduce a special branch named 'next' that
-  may serve as common ground for feature merging and testing, should
-  they not yet be ready for master.
 
-* After a major release is done, the master branch is to be merged into
-  the maint branch, and then a "new" master branch created stemming
-  from the resulting commit.
+* After a new minor release is done, the 'maint' branch is to be merged
+  into the 'micro' branch, and then a "new" 'maint' branch created
+  stemming from the resulting commit.
+  Similarly, after a new major release is done, the 'master' branch is to
+  be merged into both the 'micro' and 'maint' branches, and then "new"
+  'master' branch created stemming from the resulting commit.
 
 * When fixing a bug (especially a long-standing one), it may be useful
   to commit the fix to a new temporary branch based off the commit that
@@ -126,15 +200,17 @@
   the active branches descending from the buggy commit.  This offers a
   simple way to fix the bug consistently and effectively.
 
-* For merges from branches other than maint, prefer 'git merge --log' over
-  plain 'git merge', so that a later 'git log' gives an indication of which
-  actual patches were merged even when they don't appear early in the list.
+* When merging, prefer 'git merge --log' over plain 'git merge', so that
+  a later 'git log' gives an indication of which actual patches were
+  merged even when they don't appear early in the list.
 
-* master and release branches should not be rewound, i.e., should always
-  fast-forward, except maybe for privacy issues.  The maint branch should not
-  be rewound except maybe after retiring a release branch or a new stable
-  release.  For next, and for feature branches, the announcement for the
-  branch should document rewinding policy.
+* The 'master', 'maint' and 'micro' branches should not be rewound, i.e.,
+  should always fast-forward, except maybe for privacy issues.  For
+  feature branches, the announcement for the branch should document
+  the rewinding policy.
+  If a topic branch is expected to be rewound, it is good practice to put
+  it in the 'experimental/*' namespace; for example, a rewindable branch
+  dealing with Vala support could be named like "experimental/vala-work".
 
 ============================================================================
 = Writing a good commit message
@@ -148,8 +224,9 @@
       <reference to relevant bugs, if any>
 
       Here goes a more detailed explanation of why the commit is needed,
-      and a general overview of what it does, and how.  This section is
-      optional, but you are expected to provide it more often than not.
+      and a general overview of what it does, and how.  This section
+      should almost always be provided, possibly only with the expection
+      of obvious fixes or very trivial changes.
 
       And if the detailed explanation is quite long or detailed, you can
       want to break it in more paragraphs.
@@ -166,10 +243,10 @@
 
       <detailed list of touched files>
 
-* The <detailed list of touched files> is mandatory but for the most
-  trivial changes, and should follows the GNU guidelines for ChangeLog
-  entries (described explicitly in the GNU Coding Standards); it might
-  be something of this sort:
+* The <detailed list of touched files> should usually be provided (but
+  for short or trivial changes), and should follow the GNU guidelines
+  for ChangeLog entries (described explicitly in the GNU Coding
+  Standards); it might be something of this sort:
 
     * some/file (func1): Improved frobnication.
     (func2): Adjusted accordingly.
@@ -202,8 +279,6 @@
 
 * Use "make check" and "make maintainer-check" liberally.
 
-* Make sure each test file is executable.
-
 * Export the 'keep_testdirs' environment variable to "yes" to keep
   test directories for successful tests also.
 
@@ -235,9 +310,14 @@
   The repository will always have its own "odd" number so we can easily
   distinguish net and repo versions.)
 
-* Run this:
+* Run these commands, in this order:
 
-    make bootstrap && make check && make distcheck
+    make bootstrap
+    make check keep_testdirs=yes
+    make maintainer-check
+    make distcheck
+    make check-no-trailing-backslash-in-recipes
+    make check-cc-no-c-o
 
   It is also advised to run "git clean -fdx" before invoking the
   bootstrap, to ensure a really clean rebuild.  However, it must
@@ -304,7 +384,7 @@
 
 -----
 
-Copyright (C) 2003-2012 Free Software Foundation, Inc.
+Copyright (C) 2003-2013 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

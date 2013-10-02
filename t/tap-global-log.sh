@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -101,8 +101,7 @@ cat > skipall.test << 'END'
 1..0 # SKIP all
 END
 
-# We don't care about the exit status of "make check" here.
-TESTS="$(echo *.test)" $MAKE -e check || :
+run_make -e IGNORE TESTS="$(echo *.test)" check
 cat test-suite.log
 
 grep ':.*ok|not seen' test-suite.log && exit 1

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 # See 'parallel-tests-trailing-whitespace.sh' for a similar issue.
 
 . test-init.sh
+
 cat >> configure.ac << 'END'
 AC_OUTPUT
 END
@@ -33,10 +34,9 @@ $AUTOCONF
 $AUTOMAKE -a
 
 ./configure
-$MAKE check >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O check
 for x in TOTAL PASS FAIL XPASS FAIL SKIP ERROR; do
   grep "^# $x: *0$" stdout
 done
 
-exit 0
+:

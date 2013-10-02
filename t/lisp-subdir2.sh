@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ test -f sub/am-two.el
 test -f x/y/z/am-three.el
 
 # Byte-compiling only a subset of the elisp files.
-$MAKE am-one.elc sub/am-two.elc 
+$MAKE am-one.elc sub/am-two.elc
 test -f am-one.elc
 test -f sub/am-two.elc
 test ! -e x/y/z/am-three.elc

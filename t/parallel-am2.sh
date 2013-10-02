@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2008-2012 Free Software Foundation, Inc.
+# Copyright (C) 2008-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ $ACLOCAL
 # Thus we install the auxiliary files in a prior step.
 
 # Generate expected output using non-threaded code.
-unset AUTOMAKE_JOBS || :
+unset AUTOMAKE_JOBS
 rm -f install-sh missing depcomp
 AUTOMAKE_fails --add-missing
 mv stderr expected

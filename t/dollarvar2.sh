@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,13 +65,8 @@ grep 'recursive variable expansion' stderr
 cat >Makefile.am <<'EOF'
 x = 1
 bla = $(foo$(x))
-noinst_PROGRAMS = foo
-foo_CPPFLAGS = -Dwhatever
+oops = $(var-with-dash)
 EOF
-
-echo AC_PROG_CC >> configure.ac
-
-$ACLOCAL --force
 
 # Can disable both 'portability' and 'portability-recursive' warnings.
 $AUTOMAKE -Wno-portability
@@ -79,13 +74,13 @@ $AUTOMAKE -Wno-portability
 # Disabling 'portability-recursive' warnings should not disable
 # 'portability' warnings.
 AUTOMAKE_fails -Wportability -Wno-portability-recursive
-grep AM_PROG_CC_C_O stderr
+grep 'var-with-dash' stderr
 grep 'recursive variable expansion' stderr && exit 1
 
 # Enabling 'portability-recursive' warnings should not enable
 # all the 'portability' warning.
 AUTOMAKE_fails -Wno-portability -Wportability-recursive
-grep AM_PROG_CC_C_O stderr && exit 1
+grep 'var-with-dash' stderr && exit 1
 grep 'recursive variable expansion' stderr
 
 :

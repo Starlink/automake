@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,8 +68,7 @@ test -d foo && exit 1
 
 rm -rf $me-1.0
 # Remove the dot from VERSION for the next grep.
-VERSION=10 MKDIR_P='echo MKDIR_P' $MAKE -e distdir >stdout || :
-cat stdout
+run_make -O -e IGNORE VERSION=10 MKDIR_P='echo MKDIR_P' distdir
 
 # Make sure no './' appear in the directory names.  srcdir is '..', so
 # this also checks that no directory is created in the source tree.

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,14 @@ $PERL -V || st=1
 # It's OK for the user not to have the TAP::Parser module; this can
 # happen with older perl installation, or on MinGW/MSYS.
 $PERL -e 'use TAP::Parser; print $TAP::Parser::VERSION, "\n"' || :
+
+# It's OK if the selected Lex and Yacc programs don't know how to print
+# the version number or the help screen; those are usually available only
+# for Flex and Bison.
+$LEX --version || :
+$LEX --help || :
+$YACC --version || :
+$YACC --help || :
 
 cat "$am_top_builddir/config.log" || st=1
 cat "$am_top_builddir/t/wrap/aclocal-$APIVERSION" || st=1

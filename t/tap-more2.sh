@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -82,8 +82,7 @@ $AUTOMAKE
 ./configure
 
 for target in check distcheck; do
-  $MAKE $target >stdout || { cat stdout; exit 1; }
-  cat stdout
+  run_make -O $target
   count_test_results total=3 pass=1 fail=0 xpass=0 xfail=1 skip=1 error=0
 done
 

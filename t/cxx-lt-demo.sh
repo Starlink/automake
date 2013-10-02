@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -94,10 +94,12 @@ $AUTOCONF
 $AUTOMAKE --add-missing --copy
 
 ls -l . ax # For debugging.
-for f in ltmain.sh depcomp config.guess config.sub; do
+# Ideally, the 'compile' script should not be required by C++ compilers.
+# But alas, LT_INIT seems to invoke AC_PROG_CC anyway, and that brings in
+# that script.
+for f in ltmain.sh depcomp compile config.guess config.sub; do
   test -f ax/$f && test ! -h ax/$f || exit 1
 done
-test ! -e ax/compile # Not required by C++ compilers.
 
 cat > src/main.cc << 'END'
 #include "libfoo.h++"
@@ -112,7 +114,6 @@ END
 
 cat > lib/libfoo.c++ << 'END'
 #include "libfoo.h++"
-#include <string>
 std::string target (void)
 {
   std::string s1 = "Test";
@@ -122,7 +123,7 @@ std::string target (void)
 END
 
 ./configure
-CC=false $MAKE -e
+run_make CC=false
 ls -l . src lib # For debugging.
 $MAKE test-objs
 VERBOSE=yes $MAKE check-TESTS

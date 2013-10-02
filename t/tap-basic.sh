@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -80,9 +80,7 @@ $AUTOMAKE
 
 # Basilar usage and testsuite progress output.
 
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL check
 count_test_results total=20 pass=4 fail=4 xpass=4 xfail=4 skip=4 error=0
 
 test -f success.log
@@ -127,9 +125,7 @@ Bail out!
 ok 1
 END
 
-TESTS=bail.test $MAKE -e check >stdout && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL check TESTS=bail.test
 count_test_results total=1 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=1
 
 test ! -e success.log
@@ -146,9 +142,7 @@ $FGREP 'success.test' stdout && exit 1
 
 rm -f *.log *.test
 
-TEST_LOGS=ok.log $MAKE -e check >stdout || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O check TEST_LOGS=ok.log
 count_test_results total=3 pass=1 fail=0 xpass=0 xfail=1 skip=1 error=0
 
 test -f ok.test

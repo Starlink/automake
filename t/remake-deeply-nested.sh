@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ echo "AC_SUBST([FOO], [$magic1])" >> configure.ac
 
 echo "@FOO@" > bar.in
 echo "AC_CONFIG_FILES([bar])" >> configure.ac
-d=; unset d # Avoid unduly interferences from the environment.
+unset d # Avoid unduly interferences from the environment.
 for i in 0 1 2 3 4 5 6 7 8 9; do
   d=${d+"$d/"}sub$i
   echo "SUBDIRS = sub$i" > Makefile.am

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -63,7 +63,17 @@ $AUTOMAKE
 
 ./configure
 
-$MAKE
+# Exuberant Ctags (at least version 5.8) doesn't generate any tags
+# for file extensions it doesn't recognize.  This can be fixed by
+# using the '--langmap' option.  But we must be careful, because
+# etags from Emacs (at least version 23.4) doesn't recognize that
+# option.
+if etags --help | grep '.*--langmap'; then
+  run_make ETAGSFLAGS="--langmap=c:+.pc"
+else
+  $MAKE
+fi
+
 cat TAGS
 cat sub/TAGS
 $FGREP foo-main.pc TAGS

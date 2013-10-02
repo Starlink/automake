@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,14 +45,13 @@ chmod a+x foo.test
 
 $ACLOCAL
 $AUTOCONF
-$AUTOMAKE
+$AUTOMAKE -a
 ./configure
 
 # We can build the distribution.
-$MAKE distcheck >output 2>&1 || { cat output; exit 1; }
-cat output
+run_make -M distcheck
 # Sanity check: verify that our code has hit a problem removing
 # the distdir, but has recovered from it.
-grep "rm:.*$destdir" output || fatal_ "expected code path not covered"
+$EGREP "(^| )(rm|find):.*$distdir" output || fatal_ "expected code path not covered"
 
 :

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -178,13 +178,12 @@ $MAKE distclean
 
 # Overriding pythondir and pyexecdir at make time should be enough.
 ./configure --prefix="$cwd/bad-prefix"
-pythondir=$py_site pyexecdir=$py_site
-export pythondir pyexecdir
-check_install -e
+check_install pythondir="$py_site" pyexecdir="$py_site" \
+              AM_MAKEFLAGS="pythondir='$py_site' pyexecdir='$py_site'"
 test ! -e bad-prefix
 $MAKE test-run
-check_uninstall -e
-unset pythondir pyexecdir
+check_uninstall pythondir="$py_site" pyexecdir="$py_site" \
+                AM_MAKEFLAGS="pythondir='$py_site' pyexecdir='$py_site'"
 
 # Also check that the distribution is self-contained, for completeness.
 $MAKE distcheck

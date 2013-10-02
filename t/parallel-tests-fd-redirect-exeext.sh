@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -104,12 +104,10 @@ grep '^\.test\$(EXEEXT)\.log:' Makefile || st=1
 grep '^qux\.log:' Makefile && st=1
 test $st -eq 0 || fatal_ "doesn't cover expected code paths"
 
-st=0
-$MAKE check >stdout || st=1
-cat stdout
+run_make -O -e IGNORE check
 cat baz.log
 cat qux.log
-test $st -eq 0
+test $am_make_rc -eq 0
 grep "^ bazbazbaz$" stdout
 grep "^ quxquxqux$" stdout
 $EGREP '(bazbazbaz|quxquxqux)' *.log && exit 1

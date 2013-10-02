@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2008-2012 Free Software Foundation, Inc.
+# Copyright (C) 2008-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ $EGREP '^configure\.ac:7:.* missing m4 quoting.*macro depth 2( |$)' stderr
 sed '/.AM_COND_IF/{
         s/^/[/
         s/$/]/
-     }' < configure.ac > configure.int
-mv -f configure.int configure.ac
+     }' < configure.ac > configure.tmp
+mv -f configure.tmp configure.ac
 rm -rf autom4te*.cache
 $AUTOMAKE
 

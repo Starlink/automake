@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,10 +70,7 @@ cat > e.test <<END
 ok 0 # TODO
 END
 
-TESTS='a.test b.test c.test d.test e.test' $MAKE -e check >stdout \
-  && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL TESTS='a.test b.test c.test d.test e.test' check
 count_test_results total=5 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=5
 
 grep '^ERROR: a\.test 0 # OUT-OF-ORDER (expecting 1)$' stdout

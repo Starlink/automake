@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ my_make_check ()
     *) fatal_ "bad argument '$1' for my_make_check";;
   esac
   cat all.test
-  $MAKE check >stdout || : # Don't care about the exit status in this test.
-  cat stdout
+  # We don't care about the exit status in this test.
+  run_make -O -e IGNORE check
   count_test_results total=15 pass=0 fail=0 error=0 \
                      xpass=$xpass xfail=$xfail skip=$skip
   # Don't be too strict w.r.t. possible normalization of "TODO: foo" into

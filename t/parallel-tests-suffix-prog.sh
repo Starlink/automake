@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
+AUTOMAKE_OPTIONS = subdir-objects
 ## Note that automake should not match the '/test' part of 'sub/test' as
 ## '.test' suffix, nor the '/chk' part of 'sub/chk' as '.chk' suffix.
 TESTS = $(dist_TESTS) $(check_PROGRAMS)

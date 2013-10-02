@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,9 +37,7 @@ not ok \\\\\\\\\\# TODO
 ok     \\\\\\\\\\# SKIP
 END
 
-$MAKE check >stdout || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O check
 count_test_results total=8 pass=2 fail=0 xpass=0 xfail=3 skip=3 error=0
 
 grep '^XFAIL: all\.test 1 .*# TODO' stdout

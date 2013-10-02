@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,20 +53,18 @@ do_check ()
   shift
   cat > summary.exp
   cat all.test
-  st=0
   if test $use_colors = yes; then
     # Forced colorization should take place also with non-ANSI terminals;
     # hence the "TERM=dumb" definition.
-    make_cmd="env TERM=dumb AM_COLOR_TESTS=always $MAKE -e"
+    make_args='TERM=dumb AM_COLOR_TESTS=always'
   else
-    make_cmd=$MAKE
+    make_args=
   fi
-  $make_cmd check > stdout || st=$?
-  cat stdout
+  run_make -O -e IGNORE $make_args check
   if test $expect_failure = yes; then
-    test $st -gt 0 || exit 1
+    test $am_make_rc -gt 0 || exit 1
   else
-    test $st -eq 0 || exit 1
+    test $am_make_rc -eq 0 || exit 1
   fi
   $PERL "$am_testaux_srcdir"/extract-testsuite-summary.pl stdout >summary.got \
     || fatal_ "cannot extract testsuite summary"

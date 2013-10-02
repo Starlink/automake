@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2007-2012 Free Software Foundation, Inc.
+# Copyright (C) 2007-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test Automake TESTS color output, by forcing it.
-# Keep this in sync with the sister test 'color2.sh'.
+# Keep this in sync with the sister test 'color-tests2.sh'.
 
 required='grep-nonprint'
 # For gen-testsuite-part: ==> try-with-serial-tests <==
@@ -134,13 +134,12 @@ for vpath in false :; do
 
   # Forced colorization should take place also with non-ANSI terminals;
   # hence the "TERM=dumb" definition.
-  TERM=dumb AM_COLOR_TESTS=always $MAKE -e check >stdout \
-    && { cat stdout; exit 1; }
-  cat stdout
+  AM_COLOR_TESTS=always; export AM_COLOR_TESTS
+  run_make -e FAIL -O TERM=dumb check
   test_color
 
-  TERM=ansi $MAKE -e check >stdout && { cat stdout; exit 1; }
-  cat stdout
+  unset AM_COLOR_TESTS
+  run_make -e FAIL -O TERM=ansi check
   test_no_color
 
   $MAKE distclean

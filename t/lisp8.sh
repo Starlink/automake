@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2005-2012 Free Software Foundation, Inc.
+# Copyright (C) 2005-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,23 +37,17 @@ $AUTOCONF
 $AUTOMAKE --add-missing
 ./configure
 
-# Use append mode here to avoid dropping output.  See automake bug#11413.
-: >stdout
-$MAKE -j >>stdout || { cat stdout; exit 1; }
-
-cat stdout
+run_make -O -- -j
 
 test -f am-one.elc
 test -f am-two.elc
 test -f am-three.elc
 
+# Delete ...
 rm -f am-*.elc
 
-# Use append mode here to avoid dropping output.  See automake bug#11413.
-: >stdout
-$MAKE -j >>stdout || { cat stdout; exit 1; }
-
-cat stdout
+# ... and recover.
+run_make -O -- -j
 test -f am-one.elc
 test -f am-two.elc
 test -f am-three.elc

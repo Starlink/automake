@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,8 +42,7 @@ test ! -e foobar1.trs || exit 99
 test ! -e foobar2.log || exit 99
 test ! -e foobar2.trs || exit 99
 
-$MAKE check >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -e FAIL -M check
 grep 'test-suite\.log.*foobar1\.log' output
 grep 'test-suite\.log.*foobar1\.trs' output
 grep 'test-suite\.log.*foobar2\.log' output

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -102,17 +102,15 @@ do_count ()
   $EGREP 'XFAIL: baz\.sh 3( |$)' stdout
 }
 
-st=0; $MAKE check >stdout || st=$?
-cat stdout
+run_make -O -e IGNORE check
 cat test-suite.log
 cat foo.log
 cat bar.log
 cat baz.log
-test $st -eq 0 || exit 1
+test $am_make_rc -eq 0 || exit 1
 do_count
 
-$MAKE distcheck >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O distcheck
 do_count
 
 :

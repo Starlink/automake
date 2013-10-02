@@ -6,7 +6,7 @@ Adam J. Richter                 adam@yggdrasil.com
 Adam Mercer                     ramercer@gmail.com
 Adam Sampson                    ats@offog.org
 Adrian Bunk                     bunk@fs.tum.de
-Akim Demaille                   akim@freefriends.org
+Akim Demaille                   akim@gnu.org
 Alan Modra                      amodra@bigpond.net.au
 Alex Hornby                     alex@anvil.co.uk
 Alex Unleashed                  unledev@gmail.com
@@ -48,7 +48,9 @@ Bob Friesenhahn                 bfriesen@simple.dallas.tx.us
 Bob Proulx                      rwp@hprwp.fc.hp.com
 Bob Rossi                       bob@brasko.net
 Bobby Jack                      bobbykjack@yahoo.co.uk
+Boris Kolpackov                 boris@codesynthesis.com
 Braden N. McDaniel              braden@endoframe.com
+Brandon Black                   blblack@gmail.com
 Brendan O'Dea                   bod@debian.org
 Brian Cameron                   Brian.Cameron@Sun.COM
 Brian Ford                      ford@vss.fsi.com
@@ -65,6 +67,7 @@ Christian Cornelssen            ccorn@cs.tu-berlin.de
 Christina Gratorp               christina.gratorp@gmail.com
 Claudio Fontana                 sick_soul@yahoo.it
 Clifford Wolf                   clifford@clifford.at
+Colin Watson                    cjwatson@ubuntu.com
 Dagobert Michelsen              dam@opencsw.org
 Daiki Ueno                      ueno@unixuser.org
 Dalibor Topic                   robilad@kaffe.org
@@ -91,6 +94,7 @@ Dennis Schridde                 devurandom@gmx.net
 Derek R. Price                  derek.price@openavenue.com
 Diab Jerius                     djerius@cfa.harvard.edu
 Didier Cassirame                faded@free.fr
+Diego Elio Pettenò              flameeyes@flameeyes.eu
 Dieter Baron                    dillo@stieltjes.smc.univie.ac.at
 Dieter Jurzitza                 DJurzitza@harmanbecker.com
 Дилян Палаузов                  dilyan.palauzov@aegee.org
@@ -105,7 +109,7 @@ Elmar Hoffmann                  elho@elho.net
 Elrond                          Elrond@Wunder-Nett.org
 Enrico Scholz                   enrico.scholz@informatik.tu-chemnitz.de
 Erez Zadok                      ezk@cs.columbia.edu
-Eric Blake                      ebb9@byu.net
+Eric Blake                      eblake@redhat.com
 Eric Dorland                    eric@debian.org
 Eric Magnien                    emagnien@club-internet.fr
 Eric Siegerman                  erics_97@pobox.com
@@ -116,6 +120,7 @@ Esben Haabendal Soerensen       bart@kom.aau.dk
 Ezra Peisach                    epeisach@MED-XTAL.BU.EDU
 Fabian Alenius                  fabian.alenius@gmail.com
 Federico Simoncelli             fsimonce@redhat.com
+Felix Salfelder                 felix@salfelder.org
 Flavien Astraud                 flav42@yahoo.fr
 Florian Briegel                 briegel@zone42.de
 Francesco Salvestrini           salvestrini@gmail.com
@@ -125,6 +130,7 @@ Ganesan Rajagopal               rganesan@novell.com
 Garrett D'Amore                 garrett@qualcomm.com
 Garth Corral                    garthc@inktomi.com
 Gary V Vaughan                  gvaughan@oranda.demon.co.uk
+Gavin Smith                     gavinsmith0123@gmail.com
 Geoffrey Keating                geoffk@apple.com
 Glenn Amerine                   glenn@pie.mhsc.org
 Gord Matzigkeit                 gord@gnu.ai.mit.edu
@@ -222,6 +228,7 @@ Luo Yi                          luoyi.ly@gmail.com
 Maciej Stachowiak               mstachow@mit.edu
 Maciej W. Rozycki               macro@ds2.pg.gda.pl
 Manu Rouat                      emmanuel.rouat@wanadoo.fr
+Marc Herbert                    marc.herbert@intel.com
 Marcus Brinkmann                Marcus.Brinkmann@ruhr-uni-bochum.de
 Marcus G. Daniels               mgd@ute.santafe.edu
 Marius Vollmer                  mvo@zagadka.ping.de
@@ -253,8 +260,10 @@ Maxim Sinev                     good@goods.ru
 Maynard Johnson                 maynardj@us.ibm.com
 Merijn de Jonge                 M.de.Jonge@cwi.nl
 Michael Brantley                Michael-Brantley@deshaw.com
+Michael Daniels                 mdaniels@rim.com
 Michael Hofmann                 mhofma@googlemail.com
 Michael Ploujnikov              ploujj@gmail.com
+Michael Zucchi                  notzed@gmail.com
 Michel de Ruiter                mdruiter@cs.vu.nl
 Mike Castle                     dalgoda@ix.netcom.com
 Mike Frysinger                  vapier@gentoo.org
@@ -295,6 +304,7 @@ Paul Jarc                       prj@po.cwru.edu
 Paul Lunau                      temp@lunau.me.uk
 Paul Martinolich                martinol@datasync.com
 Paul Thomas                     PTHOMAS@novell.com
+Pavel Raiskup                   praiskup@redhat.com
 Pavel Roskin                    pavel_roskin@geocities.com
 Pavel Sanda                     ps@twin.jikos.cz
 Per Bothner                     bothner@cygnus.com
@@ -309,6 +319,7 @@ Peter Muir                      iyhi@yahoo.com
 Peter O'Gorman                  peter@pogma.com
 Peter Rosin                     peda@lysator.liu.se
 Peter Seiderer                  seiderer123@ciselant.de
+Petr Hracek                     phracek@redhat.com
 Petter Reinholdtsen             pere@hungry.com
 Petteri Räty                    betelgeuse@gentoo.org
 Phil Edwards                    phil@jaj.com
@@ -321,7 +332,7 @@ Rainer Orth                     ro@techfak.uni-bielefeld.de
 Rafael Laboissiere              laboissiere@psy.mpg.de
 Rainer Tammer                   tammer@tammer.net
 Raja R Harinath                 harinath@cs.umn.edu
-Ralf Corsepius                  corsepiu@faw.uni-ulm.de
+Ralf Corsepius                  ralf.corsepius@gmail.com
 Ralf Menzel                     menzel@ls6.cs.uni-dortmund.de
 Ralf Wildenhues                 Ralf.Wildenhues@gmx.de
 Ralph Schleicher                rs@purple.UL.BaWue.DE
@@ -330,6 +341,7 @@ Reuben Thomas                   rrt@sc3d.org
 Rich Wales                      richw@webcom.com
 Richard Boulton                 richard@tartarus.org
 Richard Dawe                    rich@phekda.freeserve.co.uk
+Richard W.M. Jones              rjones@redhat.com
 Rob Savoye                      rob@cygnus.com
 Robert Bihlmeyer                robbe@orcus.priv.at
 Robert Boehne                   rboehne@ricardo-us.com
@@ -337,6 +349,7 @@ Robert Collins                  robert.collins@itdomain.com.au
 Robert Swafford                 robert.swafford@l-3com.com
 Roberto Bagnara                 bagnara@cs.unipr.it
 Roman Fietze                    roman.fietze@telemotive.de
+Ronald Copley                   ronald.copley@gmail.com
 Ronald Landheer                 ronald@landheer.com
 Roumen Petrov                   bugtrack@roumenpetrov.info
 Russ Allbery                    rra@stanford.edu
@@ -387,6 +400,7 @@ Tim Rice                        tim@multitalents.net
 Tim Van Holder                  tim.van.holder@pandora.be
 Toshio Kuratomi                 toshio@tiki-lounge.com
 Tom Epperly                     tepperly@llnl.gov
+Tom Rini                        tom_rini@mentor.com
 Ulrich Drepper                  drepper@gnu.ai.mit.edu
 Ulrich Eckhardt                 eckhardt@satorlaser.com
 Václav Haisman                  V.Haisman@sh.cvut.cz

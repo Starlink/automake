@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2001-2012 Free Software Foundation, Inc.
+# Copyright (C) 2001-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ required='cc yacc'
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([sub/Makefile])
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_PROG_YACC
 AC_OUTPUT
 END
@@ -77,7 +76,9 @@ c_outputs='zardoz.c bar-quux.c sub/foo-zardoz.c sub/dir/quux.c'
 
 $ACLOCAL
 $AUTOCONF
-$AUTOMAKE -a
+# FIXME: stop disabling the warnings in the 'unsupported' category
+# FIXME: once the 'subdir-objects' option has been mandatory.
+$AUTOMAKE -a -Wno-unsupported
 
 for vpath in : false; do
 

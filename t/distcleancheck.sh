@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2008-2012 Free Software Foundation, Inc.
+# Copyright (C) 2008-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,9 +62,7 @@ mv -f t Makefile.am
 $AUTOMAKE
 ./configure
 $MAKE
-$MAKE distcheck 2>stderr && { cat srderr >&2; exit 1; }
-cat stderr >&2
-
+run_make -E -e FAIL distcheck
 grep 'ERROR:.*files left in build directory after distclean' stderr
 grep '^\./foo\.1$' stderr
 

@@ -1,5 +1,5 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 2001-2012 Free Software Foundation, Inc.
+## Copyright (C) 2001-2013 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -238,7 +238,7 @@ am__set_TESTS_bases = \
 	$(MAKE) $(AM_MAKEFLAGS) $<
 
 # Leading 'am--fnord' is there to ensure the list of targets does not
-# exand to empty, as could happen e.g. with make check TESTS=''.
+# expand to empty, as could happen e.g. with make check TESTS=''.
 am--fnord $(TEST_LOGS) $(TEST_LOGS:.log=.trs): $(am__force_recheck)
 am--force-recheck:
 	@:

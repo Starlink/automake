@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 nil=__no_such_program
 
-unset NONESUCH || :
+unset NONESUCH
 
 cat >>configure.ac << END
 AM_MISSING_PROG([NONESUCH],[$nil])

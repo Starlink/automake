@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ required="valac cc pkg-config libtoolize GNUmake"
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
-AM_PROG_CC_C_O
 AM_PROG_AR
 AC_PROG_RANLIB
 AC_PROG_LIBTOOL
@@ -32,6 +31,7 @@ AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
+AUTOMAKE_OPTIONS = subdir-objects
 lib_LIBRARIES = libmu.a
 lib_LTLIBRARIES = src/libzardoz.la
 libmu_a_SOURCES = mu.vala mu2.c mu.vapi mu2.h
@@ -76,7 +76,7 @@ int main ()
 }
 END
 
-mkdir src
+mkdir -p src
 cat > src/zardoz-foo.vala << 'END'
 using GLib;
 public class Foo {

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@ do_and_check_silent_build ()
             *) rebuild=false;;
   esac
 
-  $MAKE >stdout || { cat stdout; exit 1; }
-  cat stdout
+  run_make -O
   # Avoid spurious failures with SunStudio Fortran compilers.
   sed '/^NOTICE:/d' stdout > t
   mv -f t stdout
@@ -74,8 +73,7 @@ do_and_check_verbose_build ()
             *) rebuild=false;;
   esac
 
-  $MAKE V=1 >stdout || { cat stdout; exit 1; }
-  cat stdout
+  run_make -O V=1
 
   grep ' -c ' stdout
   grep ' -o ' stdout
@@ -93,18 +91,11 @@ do_and_check_verbose_build ()
 mkdir sub
 
 cat >>configure.ac <<'EOF'
-AM_PROG_CC_C_O
 AC_PROG_F77
 AC_PROG_FC
 AC_PROG_LEX
 AC_PROG_YACC
 AC_PROG_CXX
-
-# FIXME: remove this hack once the requirements c++, fortran and fortran77
-# are implemented correctly.
-test -n "`echo $CXX`" || AC_MSG_ERROR([C++ compiler not found], [77])
-test -n "`echo $FC`"  || AC_MSG_ERROR([Fortran compiler not found], [77])
-test -n "`echo $F77`" || AC_MSG_ERROR([Fortran 77 compiler not found], [77])
 
 # The SunStudio C++ compiler is unfortunately named 'sunCC' (or even just
 # 'CC', yuck!); similarly and the Portland group C++ compiler is named

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ noinst_LTLIBRARIES = foo.la zoo.d/old2.la
 
 $(srcdir)/zoo_d_old2_la.c: $(srcdir)/old_la.c
 	cp $(srcdir)/old_la.c $@
+
+AUTOMAKE_OPTIONS = -Wno-unsupported
 END
 
 cat > foo.c << 'END'

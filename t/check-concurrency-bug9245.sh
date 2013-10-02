@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,16 +42,15 @@ $AUTOMAKE -a
 
 ./configure
 
-# Some make implementations don't grok the '-j' option.
-$MAKE -j1 || exit 77
+$MAKE -j1 || skip_ "'$MAKE' doesn't support the -j option"
 
 for j in '' -j1 -j2; do
   $MAKE $j check && exit 1
-  TESTS=foo.test $MAKE $j -e check && exit 1
+  run_make -e FAIL -- $j TESTS=foo.test check
   $MAKE $j recheck && exit 1
-  TEST_LOGS=foo.log $MAKE $j -e check && exit 1
+  run_make -e FAIL -- $j TEST_LOGS=foo.log check
   rm -f test-suite.log
-  $MAKE $j test-suite.log && exit 1
+  run_make -e FAIL $j test-suite.log
   test -f test-suite.log || exit 1
 done
 

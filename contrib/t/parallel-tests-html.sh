@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,12 +87,12 @@ test ! -e bla
 
 # Always create the HTML output, even if there were no failures.
 rm -f mylog.html
-env TESTS=foo.test $MAKE -e check-html
+run_make TESTS=foo.test check-html
 test -f mylog.html
 
 # Create summarizing HTML output also with recheck-html.
 rm -f mylog.html
-env TESTS=foo.test $MAKE -e recheck-html
+run_make TESTS=foo.test recheck-html
 test -f mylog.html
 
 # Create HTML output for an individual test.
@@ -120,7 +120,7 @@ test ! -e mylog.html
 
 $MAKE clean
 test ! -e mylog.html
-env TEST_LOGS=foo.log $MAKE -e check-html
+run_make TEST_LOGS=foo.log check-html
 test -f bla
 test -f foo.log
 test ! -e bar.log
@@ -128,7 +128,7 @@ test ! -e baz.log
 test -f mylog.html
 
 $MAKE clean
-env TESTS=foo.test $MAKE -e recheck-html
+run_make TESTS=foo.test recheck-html
 test -f bla
 test ! -e foo.log
 test -f mylog.html
