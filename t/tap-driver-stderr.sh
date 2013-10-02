@@ -18,9 +18,8 @@
 #  - error messages from awk/shell/perl goes to the console
 
 required=non-root
-am_parallel_tests=yes
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 fetch_tap_driver
 
@@ -42,7 +41,7 @@ for suf in trs log; do
   cat $tst.trs || :
   test $st -eq 0
 
-  $FGREP 'Hello, World!' stderr stdout && Exit 1
+  $FGREP 'Hello, World!' stderr stdout && exit 1
   $FGREP $tst.$suf stderr
 
 done

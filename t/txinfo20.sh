@@ -17,7 +17,7 @@
 # Make sure info files survive makeinfo errors.
 
 required=makeinfo
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -62,15 +62,17 @@ cat > main.texi << 'END'
 END
 
 # makeinfo will bail out, but we should conserve the old info files.
-$MAKE && Exit 1
+$MAKE && exit 1
 test -f main
 test -f main-1
 
 # Restore main.texi, and break sub/main.texi.
 cp main.texi sub/main.texi
 mv main.old main.texi
-$MAKE && Exit 1
+$MAKE && exit 1
 test -f main
-test ! -f main-1
+test ! -e main-1
 test -f sub/main
 test -f sub/main-1
+
+:

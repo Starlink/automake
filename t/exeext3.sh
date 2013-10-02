@@ -16,7 +16,7 @@
 
 # Make sure we can override a program rule.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -36,6 +36,8 @@ $ACLOCAL
 $AUTOMAKE -Wno-override
 
 $FGREP 'maude$(EXEEXT):' Makefile.in
-test 1 = `grep 'maude.*:' Makefile.in | wc -l`
+test 1 -eq $(grep -c 'maude.*:' Makefile.in)
 $FGREP '3dldf$(EXEEXT):' Makefile.in
-test 1 = `grep '3dldf.*:' Makefile.in | wc -l`
+test 1 -eq $(grep -c '3dldf.*:' Makefile.in)
+
+:

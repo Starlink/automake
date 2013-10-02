@@ -16,11 +16,11 @@
 
 # Another test to make sure no-dependencies option does the right thing.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 bin_PROGRAMS = foo
-foo_SOURCES = a.c b.cpp c.m d.S e.java f.upc
+foo_SOURCES = a.c b.cpp c.m cxx.mm d.S e.java f.upc
 END
 
 cat > configure.ac << 'END'
@@ -30,6 +30,7 @@ AC_CONFIG_FILES([Makefile])
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_OBJC
+AC_PROG_OBJCXX
 AM_PROG_AS
 AM_PROG_GCJ
 AM_PROG_UPC
@@ -39,6 +40,6 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-grep DEPMODE Makefile.in && Exit 1
+grep DEPMODE Makefile.in && exit 1
 
 :

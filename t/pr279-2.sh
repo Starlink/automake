@@ -16,7 +16,7 @@
 
 # Another test related to PR 279.
 # Multiple DEPENDENCIES on conditionals.
-# Please keep this in sync with sister test pr279.test.
+# Please keep this in sync with sister test 'pr279.sh'.
 #
 # == Report ==
 # When defining xxx_LDADD and xxx_DEPENDENCIES variables where the
@@ -24,7 +24,7 @@
 # fail with messages like:
 #       foo_DEPENDENCIES was already defined in condition TRUE, ...
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

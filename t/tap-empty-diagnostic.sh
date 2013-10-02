@@ -17,10 +17,9 @@
 # TAP support:
 #  - empty diagnostic messages are discarder
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 sed 's/\$$//' > all.test <<END
 1..1$
@@ -31,11 +30,11 @@ ok 1$
 #   ${tab} $tab${tab}$
 END
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 grep '^PASS:.*all\.test' stdout # Sanity check.
-grep '#.*all\.test' stdout && Exit 1
-grep "all\.test[ $tab]*:[ $tab]*$" stdout && Exit 1
+grep '#.*all\.test' stdout && exit 1
+grep "all\.test[ $tab]*:[ $tab]*$" stdout && exit 1
 
 :

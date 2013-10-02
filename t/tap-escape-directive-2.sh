@@ -17,10 +17,9 @@
 # TAP support:
 #  - "escape" TODO and SKIP directives (by escaping the "#" character)
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test <<'END'
 1..8
@@ -38,7 +37,7 @@ not ok \\\\\\\\\\# TODO
 ok     \\\\\\\\\\# SKIP
 END
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=8 pass=2 fail=0 xpass=0 xfail=3 skip=3 error=0

@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Basic semantic checks on Yacc support (without yacc-generated headers).
-# Keep in sync with sister test 'yacc-cxx.test'.
+# Keep in sync with sister test 'yacc-cxx.sh'.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -67,11 +67,11 @@ test -f bar-parse.c
 # Check that per-object flags are honored.
 test -f bar-parse.output
 
-if cross_compiling; then :; else
+if ! cross_compiling; then
   echo a | ./foo
-  echo b | ./foo && Exit 1
+  echo b | ./foo && exit 1
   echo a | ./bar
-  echo b | ./bar && Exit 1
+  echo b | ./bar && exit 1
   : For shells with busted 'set -e'.
 fi
 
@@ -102,7 +102,7 @@ test -f bar-parse.c
 ./configure # We must re-create 'Makefile'.
 $MAKE maintainer-clean
 ls -l
-test ! -f parse.c
-test ! -f bar-parse.c
+test ! -e parse.c
+test ! -e bar-parse.c
 
 :

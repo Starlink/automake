@@ -18,8 +18,7 @@
 # and do not diagnose valid (albeit more unusual) ones.
 # See automake bug#9400.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_OUTPUT
@@ -40,7 +39,7 @@ $AUTOMAKE -a
 grep -i 'log' Makefile.in # For debugging.
 
 for lc in $valid_extensions; do
-  uc=`echo $lc | tr '[a-z]' '[A-Z]'`
+  uc=$(echo $lc | tr '[a-z]' '[A-Z]')
   $FGREP "\$(${uc}_LOG_COMPILER)" Makefile.in
   grep "^${uc}_LOG_COMPILE =" Makefile.in
   grep "^\.${lc}\.log:" Makefile.in
@@ -58,15 +57,15 @@ END
 
 AUTOMAKE_fails
 for suf in mu .x-y a-b .t.1 .6c .0 .11  @suf@ .@ext@ '.=' '_&_'; do
-  suf2=`printf '%s\n' "$suf" | sed -e 's/\./\\./'`
+  suf2=$(printf '%s\n' "$suf" | sed -e 's/\./\\./')
   $EGREP "^Makefile\.am:2:.*invalid test extension.* $suf2( |$)" stderr
 done
 
 # Verify that we accept valid suffixes, even if intermixed with
 # invalid ones.
-$EGREP '\.(sh|test|t33)' stderr && Exit 1
+$EGREP '\.(sh|test|t33)' stderr && exit 1
 
 # Verify that we don't try to handle invalid suffixes.
-$EGREP '(LOG_COMPILER|non-POSIX var|bad character)' stderr && Exit 1
+$EGREP '(LOG_COMPILER|non-POSIX var|bad character)' stderr && exit 1
 
 :

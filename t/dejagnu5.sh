@@ -18,7 +18,7 @@
 # the package by default.
 
 required=runtest
-. ./defs || Exit 1
+. test-init.sh
 
 package=$me
 

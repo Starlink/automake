@@ -24,8 +24,7 @@
 #    correct test script(s)
 #  - "make distcheck" works
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 fetch_tap_driver
 
@@ -118,40 +117,42 @@ for try in 0 1; do
 
   # Success.
 
-  $run_make check >stdout || { cat stdout; Exit 1; }
+  # Use append mode here to avoid dropping output.  See automake bug#11413.
+  : >stdout
+  $run_make check >>stdout || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=6 pass=4 fail=0 xpass=0 xfail=1 skip=1 error=0
   grep '^PASS: 1\.test 1 - mu$' stdout
   grep '^SKIP: 1\.test 2 zardoz # SKIP$' stdout
-  test `$FGREP -c '1.test' stdout` -eq 2
+  test $(grep -c '1\.test' stdout) -eq 2
   grep '^PASS: 2\.test 1$' stdout
   grep '^XFAIL: 2\.test 2 # TODO not implemented$' stdout
   grep '^PASS: 2\.test 3$' stdout
-  test `$FGREP -c '2.test' stdout` -eq 3
+  test $(grep -c '2\.test' stdout) -eq 3
   grep '^PASS: 3\.test 1 - blah blah blah$' stdout
   grep '^# 3\.test: Some diagnostic$' stdout
-  test `$FGREP -c '3.test' stdout` -eq 2
+  test $(grep -c '3\.test' stdout) -eq 2
 
   # Failure.
 
-  # Use 'echo' here, since Solaris 10 /bin/sh would try to optimize
-  # a ':' away after the first iteration, even if it is redirected.
-  echo dummy > not-skip
-  echo dummy > bail-out
-  $run_make check >stdout && { cat stdout; Exit 1; }
+  : > not-skip
+  : > bail-out
+  # Use append mode here to avoid dropping output.  See automake bug#11413.
+  : >stdout
+  $run_make check >>stdout && { cat stdout; exit 1; }
   cat stdout
   count_test_results total=7 pass=4 fail=1 xpass=0 xfail=1 skip=0 error=1
   grep '^PASS: 1\.test 1 - mu$' stdout
   grep '^FAIL: 1\.test 2 zardoz$' stdout
-  test `$FGREP -c '1.test' stdout` -eq 2
+  test $(grep -c '1\.test' stdout) -eq 2
   grep '^PASS: 2\.test 1$' stdout
   grep '^XFAIL: 2\.test 2 # TODO not implemented$' stdout
   grep '^PASS: 2\.test 3$' stdout
-  test `$FGREP -c '2.test' stdout` -eq 3
+  test $(grep -c '2\.test' stdout) -eq 3
   grep '^PASS: 3\.test 1 - blah blah blah$' stdout
   grep '^# 3\.test: Some diagnostic$' stdout
   grep '^ERROR: 3\.test - Bail out! Kernel Panic$' stdout
-  test `$FGREP -c '3.test' stdout` -eq 3
+  test $(grep -c '3\.test' stdout) -eq 3
 
   cd $srcdir
 

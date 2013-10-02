@@ -16,18 +16,18 @@
 
 # Related to PR 204.
 # C sources derived from nodist_ lex sources should not be distributed.
-# See also related test 'lex-nodist.test'.
-# The tests 'yacc-nodist.test' and 'yacc-pr204.test' does similar checks
+# See also related test 'lex-nodist.sh'.
+# The tests 'yacc-nodist.sh' and 'yacc-pr204.sh' does similar checks
 # for yacc-generated .c and .h files.
 
-required=lex
-. ./defs || Exit 1
+required='cc lex'
+. test-init.sh
 
 cat >> configure.ac <<'EOF'
 AM_MAINTAINER_MODE
 AC_PROG_CC
 dnl We use AC_PROG_LEX deliberately.
-dnl Sister 'lex-nodist.test' should use 'AM_PROG_LEX' instead.
+dnl Sister 'lex-nodist.sh' should use 'AM_PROG_LEX' instead.
 AC_PROG_LEX
 AC_OUTPUT
 EOF
@@ -82,8 +82,7 @@ $sleep
 touch lexer.l lexer2.l
 $sleep
 $MAKE lexer.c lexer2.c
-stat lexer.c lexer.l lexer2.c lexer2.l || : # For debugging.
-test `ls -t lexer.c lexer.l | sed 1q` = lexer.c
-test `ls -t lexer2.c lexer2.l | sed 1q` = lexer2.c
+is_newest lexer.c lexer.l
+is_newest lexer2.c lexer2.l
 
 :

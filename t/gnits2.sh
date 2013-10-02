@@ -17,7 +17,7 @@
 # Test to ensure std-options checking is correct.
 
 required='cc native'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -91,20 +91,20 @@ chmod +x sub/scriptnok.sh
 : > THANKS
 
 # The following file should not be distributed.
-# (alpha.test checks the case where it must be distributed.)
+# (alpha.sh checks the case where it must be distributed.)
 : > README-alpha
 
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 
-grep README-alpha Makefile.in && Exit 1
+grep README-alpha Makefile.in && exit 1
 
 mkdir build
 cd build
 
 # Use --program-prefix to make sure the std-options check honors it.
-../configure "--prefix=`pwd`/../inst-dir" --program-prefix=p
+../configure "--prefix=$(pwd)/../inst-dir" --program-prefix=p
 $MAKE all
 $MAKE test-install
 $MAKE -k installcheck 2>stderr || : # Never trust the exit status of make -k.

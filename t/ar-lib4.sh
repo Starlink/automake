@@ -17,7 +17,7 @@
 # Test if lib_LTLIBRARIES requests AM_PROG_AR.
 
 required=libtoolize
-. ./defs || Exit 1
+. test-init.sh
 
 cp configure.ac X
 

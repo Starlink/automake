@@ -17,8 +17,8 @@
 # Test to make sure bison + bison's skeleton works.
 # For Automake bug#7648 and PR automake/491.
 
-required=bison
-. ./defs || Exit 1
+required='cc bison'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -30,16 +30,20 @@ cat > Makefile.am << 'END'
 bin_PROGRAMS = zardoz
 zardoz_SOURCES = zardoz.y foo.c
 AM_YFLAGS = -d --skeleton glr.c
+BUILT_SOURCES = zardoz.h
 END
 
 # Parser.
 cat > zardoz.y << 'END'
 %{
-int yylex () { return 0; }
-void yyerror (const char *s) { return; }
+int yylex ();
+void yyerror (const char *s);
 %}
 %%
 foobar : 'f' 'o' 'o' 'b' 'a' 'r' {};
+%%
+int yylex () { return 0; }
+void yyerror (const char *s) { return; }
 END
 
 cat > foo.c << 'END'
@@ -67,6 +71,6 @@ $MAKE
 
 # Check that distribution is self-contained, and do not require
 # bison to be built.
-env YACC=false DISTCHECK_CONFIGURE_FLAGS='YACC=false' $MAKE -e distcheck
+yl_distcheck YACC=false DISTCHECK_CONFIGURE_FLAGS='YACC=false'
 
 :

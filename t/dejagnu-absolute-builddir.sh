@@ -18,7 +18,7 @@
 # to an absolute path.
 
 required=runtest
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT

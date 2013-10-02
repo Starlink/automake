@@ -18,10 +18,9 @@
 #  - don't spuriously recognize lines that are "almost" TAP lines as
 #    real TAP lines
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 echo 1..5 > all.test
 
@@ -37,9 +36,9 @@ END
 
 # According to documentation of Test::Harness::TAP(3):
 #
-#  ``Lines written to standard output matching /^(not )?ok\b/
+#    Lines written to standard output matching /^(not )?ok\b/
 #    must be interpreted as test lines. All other lines must
-#    not be considered test output.''
+#    not be considered test output.
 
 cat >> all.test <<END
  ok
@@ -84,7 +83,7 @@ set -x # Reset shell xtraces.
 
 # The prove(1) utility doesn't bail out on these, so our driver
 # shouldn't either.
-# See comments in 'tap-bailout-leading-space.test' for an explanation
+# See comments in 'tap-bailout-leading-space.sh' for an explanation
 # of why we don't have a whitespace-prepended "Bail out!" line here.
 cat >> all.test <<'END'
 bailout
@@ -99,14 +98,14 @@ Bail out
 # Bail out!
 END
 
-cat all.test # For debugging.
 
-# Minor sanity check.
-test `grep -c '^ok1$' all.test` -eq 1 \
-  && test `grep -c '^not ok1$' all.test` -eq 1 \
+# Debugging info and minor sanity check.
+cat all.test \
+  && test $(grep -c '^ok1$' all.test) -eq 1 \
+  && test $(grep -c '^not ok1$' all.test) -eq 1 \
   || framework_failure_ "creating all.test"
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=5 pass=5 fail=0 xpass=0 xfail=0 skip=0 error=0

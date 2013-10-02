@@ -17,7 +17,7 @@
 # Automake should stop the creation of Makefile.in files at the first
 # encountered error due to a required auxiliary file not found.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AM_PATH_PYTHON
@@ -44,10 +44,10 @@ ls -l Makefile.in */Makefile.in || : # For debugging.
 # too strict semantics here, so don't check for it.  But the later
 # files shouldn't exist.
 test -f sub1/Makefile.in
-test ! -f sub2/Makefile.in
-test ! -f sub3/Makefile.in
-test ! -f sub4/Makefile.in
-test ! -f sub5/Makefile.in
+test ! -e sub2/Makefile.in
+test ! -e sub3/Makefile.in
+test ! -e sub4/Makefile.in
+test ! -e sub5/Makefile.in
 
 rm -f Makefile.in */Makefile.in
 
@@ -59,7 +59,7 @@ ls -l Makefile.in */Makefile.in || : # For debugging.
 test -f sub1/Makefile.in
 test -f sub2/Makefile.in
 test -f sub3/Makefile.in
-test ! -f sub4/Makefile.in
-test ! -f sub5/Makefile.in
+test ! -e sub4/Makefile.in
+test ! -e sub5/Makefile.in
 
 :

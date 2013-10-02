@@ -17,8 +17,7 @@
 # Check that we can use indirections when overriding TESTS and
 # TEST_LOGS from the command line.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -61,7 +60,7 @@ END
 
 do_check ()
 {
-  env "$@" $MAKE -e check >stdout || { cat stdout; Exit 1; }
+  env "$@" $MAKE -e check >stdout || { cat stdout; exit 1; }
   cat stdout
   grep '^PASS:' stdout | LC_ALL=C sort > got-out
   cat got-out

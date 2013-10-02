@@ -18,10 +18,9 @@
 #  - even after a "Bail out!" directive, all input is still copied in
 #    the log file
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test <<END
 First line
@@ -32,7 +31,7 @@ non-TAP line after bailout
 ok 1 - TAP result after bailout
 END
 
-$MAKE check && { cat all.log; Exit 1; }
+$MAKE check && { cat all.log; exit 1; }
 cat all.log
 
 for rx in \

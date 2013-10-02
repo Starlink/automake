@@ -20,14 +20,14 @@
 # directory was set to '.' by AC_CONFIG_AUX_DIR.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 i=0
 for auxdir in build-aux ''; do
 
   echo "*** Testing with auxdir '$auxdir' ***"
 
-  i=`expr $i + 1`
+  i=$(($i + 1))
   mkdir T$i.d
   cd T$i.d
 
@@ -59,9 +59,9 @@ END
 END
 
   mkdir subdir
-  echo > subdir/Makefile.am # 'echo', not ':', for Solaris /bin/sh.
+  : > subdir/Makefile.am
 
-  test -z "$auxdir" || mkdir "$auxdir" || Exit 99
+  test -z "$auxdir" || mkdir "$auxdir" || exit 99
 
   if test -z "$auxdir"; then
     auxdir=.
@@ -84,7 +84,7 @@ END
   $AUTOMAKE
   ./configure
   $MAKE test
-  $EGREP '(foo\.txt|bar\.sh|zardoz)' subdir/Makefile.in && Exit 1
+  $EGREP '(foo\.txt|bar\.sh|zardoz)' subdir/Makefile.in && exit 1
 
   $MAKE distcheck
 

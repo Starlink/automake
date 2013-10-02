@@ -17,10 +17,9 @@
 # Custom test drivers: check that the test name passed to the test
 # driver has any VPATH prefix stripped.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-ocwd=`pwd` || fatal_ "cannot get current working directory"
+ocwd=$(pwd) || fatal_ "cannot get current working directory"
 
 mkdir src build
 mv install-sh missing configure.ac src

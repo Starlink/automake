@@ -14,7 +14,6 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-## DIST_COMMON comes first so that README can be the very first file.
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 if %?TOPDIR_P%
@@ -90,32 +89,6 @@ if  %?CK-NEWS%
 	esac
 endif  %?CK-NEWS%
 endif %?TOPDIR_P%
-##
-## 'missing help2man' may have created some bogus man pages.  Ensure they
-## are not distributed.
-##
-if %?INSTALL-MAN%
-if %?HAVE-MANS%
-	@list='$(MANS)'; if test -n "$$list"; then \
-	  list=`for p in $$list; do \
-	    if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
-## Note that we check existing man pages here only.  If there are man pages
-## which are not distributed, and may be generated only conditionally, then
-## we should not error out because of them.  This could be refined to take
-## into account only dist_*_MANS, but then we'd be missing out on those
-## the user distributes with EXTRA_DIST.
-	    if test -f "$$d$$p"; then echo "$$d$$p"; else :; fi; done`; \
-	  if test -n "$$list" && \
-	    grep 'ab help2man is required to generate this page' $$list >/dev/null; then \
-	    echo "error: found man pages containing the 'missing help2man' replacement text:" >&2; \
-	    grep -l 'ab help2man is required to generate this page' $$list | sed 's/^/         /' >&2; \
-	    echo "       to fix them, install help2man, remove and regenerate the man pages;" >&2; \
-	    echo "       typically 'make maintainer-clean' will remove them" >&2; \
-	    exit 1; \
-	  else :; fi; \
-	else :; fi
-endif %?HAVE-MANS%
-endif %?INSTALL-MAN%
 ##
 ## Only for the top dir.
 ##
@@ -449,9 +422,9 @@ distcheck: dist
 ## Make the new source tree read-only.  Distributions ought to work in
 ## this case.  However, make the top-level directory writable so we
 ## can make our new subdirs.
-	chmod -R a-w $(distdir); chmod a+w $(distdir)
-	mkdir $(distdir)/_build
-	mkdir $(distdir)/_inst
+	chmod -R a-w $(distdir)
+	chmod u+w $(distdir)
+	mkdir $(distdir)/_build $(distdir)/_inst
 ## Undo the write access.
 	chmod a-w $(distdir)
 ## With GNU make, the following command will be executed even with "make -n",

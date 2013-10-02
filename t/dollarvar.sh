@@ -22,7 +22,7 @@
 # containing a '$' on the left hand side of an assignment are not
 # portable in practice, even though POSIX allows them.  :-/
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >Makefile.am <<'EOF'
 x = 1
@@ -35,6 +35,7 @@ blo = $(foo${x})
 EOF
 
 $ACLOCAL
+
 AUTOMAKE_fails -Wportability
 grep 'Makefile.am:2' stderr
 grep 'Makefile.am:3' stderr
@@ -43,21 +44,13 @@ grep 'Makefile.am:5' stderr
 grep 'Makefile.am:6' stderr
 grep 'Makefile.am:7' stderr
 
-# On the other hand, if we allow 'silent-rules' mode, then we need to
-# allow recursive variable expansion, too.
-
-# This should work with the AM_SILENT_RULES macro.
-$sleep
-echo 'AM_SILENT_RULES' >> configure.ac
-
-$ACLOCAL --force
-AUTOMAKE_fails -Wportability
+AUTOMAKE_fails -Wportability -Wno-portability-recursive
 grep 'Makefile.am:2' stderr
 grep 'Makefile.am:3' stderr
 grep 'Makefile.am:4' stderr
 grep 'Makefile.am:5' stderr
-grep 'Makefile.am:6' stderr && Exit 1
-grep 'Makefile.am:7' stderr && Exit 1
+grep 'Makefile.am:6' stderr && exit 1
+grep 'Makefile.am:7' stderr && exit 1
 
 
 :

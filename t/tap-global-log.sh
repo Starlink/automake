@@ -17,10 +17,9 @@
 # TAP support:
 #  - which log files get copied in the global log?
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > ok.test << 'END'
 1..5
@@ -103,10 +102,10 @@ cat > skipall.test << 'END'
 END
 
 # We don't care about the exit status of "make check" here.
-TESTS="`echo *.test`" $MAKE -e check || :
+TESTS="$(echo *.test)" $MAKE -e check || :
 cat test-suite.log
 
-grep ':.*ok|not seen' test-suite.log && Exit 1
+grep ':.*ok|not seen' test-suite.log && exit 1
 
 for s in skip todo fail xpass bail error; do
   $FGREP "::$s::" test-suite.log
@@ -114,9 +113,11 @@ done
 
 grep '^1\.\.0 # SKIP all$' test-suite.log
 
-case `cat test-suite.log` in
-  *"`cat hodgepodge`"*) ;;
-  *) Exit 1;;
+test_suite_contents=$(cat test-suite.log)
+hodgepodge_contents=$(cat hodgepodge)
+case $test_suite_contents in
+  *"$hodgepodge_contents"*) ;;
+  *) exit 1;;
 esac
 
 :

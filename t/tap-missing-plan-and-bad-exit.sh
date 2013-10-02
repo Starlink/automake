@@ -19,8 +19,7 @@
 #    plan, then the driver reports both "missing plan" and "exited with
 #    non-zero status" errors.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > foo.test <<END
 #!/bin/sh
@@ -31,9 +30,9 @@ echo TESTS = foo.test > Makefile.am
 
 chmod a+x foo.test
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 count_test_results total=2 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=2
 

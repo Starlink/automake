@@ -16,8 +16,7 @@
 
 # Auxiliary test to set up common data used by many tests on TAP support.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << END
 AC_OUTPUT

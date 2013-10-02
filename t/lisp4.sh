@@ -18,7 +18,7 @@
 # Report from Simon Josefsson.
 
 required=emacs
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'EOF'
 lisp_LISP = am-one.el am-two.el am-three.el
@@ -32,7 +32,6 @@ test:
 	test ! -f am-one.elc
 	test ! -f am-two.elc
 	test ! -f am-three.elc
-	test ! -f elc-stamp
 
 install-test: install
 	test -f "$(lispdir)/am-one.el"
@@ -60,7 +59,9 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-./configure --prefix "`pwd`"
+cwd=$(pwd) || fatal_ "getting current working directory"
+
+./configure --prefix "$cwd"
 $MAKE
 $MAKE test
 $MAKE install-test
@@ -70,7 +71,7 @@ $MAKE not-installed
 # Fake the absence of emacs.
 # *.el files should not be installed, but "make install" and
 # "make uninstall" should continue to work.
-./configure EMACS=no --prefix "`pwd`"
+./configure EMACS=no --prefix "$cwd"
 $MAKE
 $MAKE test
 $MAKE install

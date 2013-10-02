@@ -17,7 +17,7 @@
 # ACLOCAL_PATH and '--install' interactions.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT
@@ -26,7 +26,7 @@ END
 
 mkdir acdir pdir ldir
 
-ACLOCAL="$ACLOCAL --system-acdir=`pwd`/acdir"
+ACLOCAL="$ACLOCAL --system-acdir=$(pwd)/acdir"
 ACLOCAL_PATH=./pdir; export ACLOCAL_PATH
 
 cat > acdir/foo.m4 << 'END'
@@ -39,10 +39,10 @@ END
 
 # The '--install' option should never cause anything to be installed
 # in a directory specified in ACLOCAL_PATH.
-$ACLOCAL --install 2>stderr && { cat stderr >&2; Exit 1; }
+$ACLOCAL --install 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
-grep ' no -I was supplied' stderr
-test ! -f pdir/foo.m4
+grep 'impossible without -I .* nor AC_CONFIG_MACRO_DIR' stderr
+test ! -e pdir/foo.m4
 
 # The '--install' option should cause a required macro found in a
 # directory specified in ACLOCAL_PATH to be installed locally.

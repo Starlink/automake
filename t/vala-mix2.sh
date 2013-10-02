@@ -17,19 +17,21 @@
 # Vala sources, C and C++ sources and C and C++ headers in the same
 # program.  Functional test.  See automake bug#10894.
 
-required='valac cc c++ GNUmake'
-. ./defs || Exit 1
+required='valac cc c++ pkg-config GNUmake'
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_VALAC([0.7.3])
+PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.4])
 AC_OUTPUT
 END
 
 cat > Makefile.am <<'END'
 bin_PROGRAMS = zardoz
-AM_VALAFLAGS = --profile=posix
+AM_CFLAGS = $(GOBJECT_CFLAGS)
+zardoz_LDADD = $(GOBJECT_LIBS)
 zardoz_SOURCES = zardoz.vala foo.h bar.c baz.c zen.hh master.cxx
 END
 
@@ -89,13 +91,13 @@ have_generated_files
 
 # Remake rules are not uselessly triggered.
 $MAKE -q
-$MAKE -n | $FGREP vala.stamp && Exit 1
+$MAKE -n | $FGREP vala.stamp && exit 1
 
 # But are triggered when they should.
 for file in zardoz.vala foo.h bar.c baz.c zen.hh master.cxx; do
   $sleep
   echo '& choke me !' >> $file
-  $MAKE && Exit 1
+  $MAKE && exit 1
   $sleep
   sed '$d' $file > t
   mv -f t $file
@@ -115,6 +117,6 @@ have_generated_files
 # behaviour w.r.t. intermediate C files is still unclear, and
 # better left undefined for the moment).
 $MAKE maintainer-clean
-ls *vala*.stamp | grep . && Exit 1
+ls *vala*.stamp | grep . && exit 1
 
 :

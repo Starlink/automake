@@ -36,7 +36,7 @@
 # This test checks (0), (1), and (2).  See sister tests for further coverage.
 
 required=perl-threads
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT([parallel-am], [1.0])
@@ -83,7 +83,7 @@ $ACLOCAL
 unset AUTOMAKE_JOBS || :
 AUTOMAKE_run --add-missing
 mv stderr expected
-Makefile_ins=`find . -name Makefile.in`
+Makefile_ins=$(find . -name Makefile.in)
 for file in $Makefile_ins; do
   mv $file $file.exp
 done

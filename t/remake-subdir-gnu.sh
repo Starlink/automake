@@ -17,11 +17,11 @@
 # Check that remake rules works from subdirectories, even using
 # 'GNUmakefile' as makefiles name.  This obviously requires GNU
 # make.
-# See also the other similar tests 'remake-subdir*.test', and the
-# related test 'aclocal5.test'
+# See also the other similar tests 'remake-subdir*.sh', and the
+# related test 'aclocal5.sh'
 
 required=GNUmake
-. ./defs || Exit 1
+. test-init.sh
 
 magic1='::MagicString::One::'
 magic2='__MagicString__Two__'
@@ -74,7 +74,7 @@ cd ..
 debug_info
 $FGREP $magic2 sub/GNUmakefile
 $FGREP $magic2 sub/GNUmakefile.in
-$FGREP $magic1 sub/GNUmakefile sub/GNUmakefile.in && Exit 1
-$FGREP $magic2 GNUmakefile GNUmakefile.in && Exit 1
+$FGREP $magic1 sub/GNUmakefile sub/GNUmakefile.in && exit 1
+$FGREP $magic2 GNUmakefile GNUmakefile.in && exit 1
 
 :

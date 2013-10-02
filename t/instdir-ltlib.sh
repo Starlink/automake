@@ -19,7 +19,7 @@
 # This test exercises the libtool code paths.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_PROG_CC
@@ -59,8 +59,9 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
-destdir=`pwd`/dest
+cwd=$(pwd) || fatal_ "getting current working directory"
+instdir=$cwd/inst
+destdir=$cwd/dest
 mkdir build
 cd build
 ../configure --prefix="$instdir" PYTHON="echo" \
@@ -71,17 +72,17 @@ $MAKE
 bindir= libdir= pyexecdir=
 export bindir libdir pyexecdir
 $MAKE -e install
-test ! -d "$instdir"
+test ! -e "$instdir"
 $MAKE -e install DESTDIR="$destdir"
-test ! -d "$instdir"
-test ! -d "$destdir"
-$MAKE -e uninstall > stdout || { cat stdout; Exit 1; }
+test ! -e "$instdir"
+test ! -e "$destdir"
+$MAKE -e uninstall > stdout || { cat stdout; exit 1; }
 cat stdout
 # Creative quoting below to please maintainer-check.
-grep 'rm'' ' stdout && Exit 1
-$MAKE -e uninstall DESTDIR="$destdir" > stdout || { cat stdout; Exit 1; }
+grep 'rm'' ' stdout && exit 1
+$MAKE -e uninstall DESTDIR="$destdir" > stdout || { cat stdout; exit 1; }
 cat stdout
 # Creative quoting below to please maintainer-check.
-grep 'rm'' ' stdout && Exit 1
+grep 'rm'' ' stdout && exit 1
 
 :

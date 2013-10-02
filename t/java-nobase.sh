@@ -17,7 +17,7 @@
 # Test support of 'nobase_' with the 'JAVA' primary.
 
 required=javac
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_OUTPUT
@@ -56,7 +56,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
-./configure --prefix="`pwd`"/_inst
+./configure --prefix="$(pwd)"/_inst
 $MAKE check
 $MAKE install
 $MAKE test-install

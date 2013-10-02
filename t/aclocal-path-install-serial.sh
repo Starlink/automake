@@ -18,7 +18,7 @@
 # are involved.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT
@@ -51,13 +51,13 @@ win ()
   $AUTOCONF
   $FGREP "::$ok:"  m4/foo.m4
   $FGREP "::$ok::" configure
-  $FGREP "::$ko::" m4/foo.m4 configure && Exit 1
+  $FGREP "::$ko::" m4/foo.m4 configure && exit 1
   :
 }
 
 mkdir sdir pdir m4
 
-ACLOCAL="$ACLOCAL --system-acdir=`pwd`/sdir"
+ACLOCAL="$ACLOCAL --system-acdir=$(pwd)/sdir"
 ACLOCAL_PATH=./pdir; export ACLOCAL_PATH
 
 cat > sdir/foo.m4 << 'END'

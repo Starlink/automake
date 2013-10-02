@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check that the "all" target triggers rebuilt of outdated Makefiles.
-# See also sister test 'remake-all-2.test'.
+# See also sister test 'remake-all-2.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkfile=Makefile
 
@@ -45,7 +45,7 @@ $EGREP "^all-am:.* $mkfile( |$)" $mkfile.in sub/$mkfile.in
 $AUTOCONF
 ./configure
 
-$FGREP "$magic1" mkfile.in && Exit 1 # Sanity check.
+$FGREP "$magic1" mkfile.in && exit 1 # Sanity check.
 
 # Two code paths in configure.am:
 

@@ -18,10 +18,9 @@
 #  - A "Bail out!" directive causes the driver to ignore any TAP
 #    result or error in the rest of the following TAP stream.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 # Various errors that can all be squashed into a single test script.
 cat > foo.test << 'END'
@@ -54,7 +53,7 @@ ok 3
 END
 
 TESTS='foo.test bar.test baz.test' $MAKE -e check >stdout \
-  && { cat stdout; Exit 1; }
+  && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=5 pass=1 fail=0 xpass=0 xfail=0 skip=1 error=3
@@ -65,10 +64,10 @@ grep '^SKIP: bar\.test'               stdout
 grep '^ERROR: baz\.test - Bail out!$' stdout
 grep '^PASS: baz\.test 1$'            stdout
 
-$FGREP 'Not seen' stdout && Exit 1
+$FGREP 'Not seen' stdout && exit 1
 
-test `$FGREP -c ': foo.test' stdout` -eq 1
-test `$FGREP -c ': bar.test' stdout` -eq 2
-test `$FGREP -c ': baz.test' stdout` -eq 2
+test $($FGREP -c ': foo.test' stdout) -eq 1
+test $($FGREP -c ': bar.test' stdout) -eq 2
+test $($FGREP -c ': baz.test' stdout) -eq 2
 
 :

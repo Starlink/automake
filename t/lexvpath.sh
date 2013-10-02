@@ -20,10 +20,10 @@
 # 'make' and 'make distdir' and check whether the version of 'lexer.c'
 # to be distributed is up to date.
 
-# Please keep this in sync with sister test 'yaccvapth.test'.
+# Please keep this in sync with sister test 'yaccvapth.sh'.
 
 required='cc lex'
-. ./defs || Exit 1
+. test-init.sh
 
 cat > lexoutroot.in << 'END'
 LEX_OUTPUT_ROOT='@LEX_OUTPUT_ROOT@'

@@ -18,7 +18,7 @@
 # PR/300
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -48,33 +48,33 @@ $AUTOMAKE --copy --add-missing
 # or distributions possibly overriding '${libdir}' in their $CONFIG_SITE
 # file (for example, defining it to '${prefix}/lib64' on 64-bit systems,
 # as is the case with openSUSE 12.1).  See automake bug#10426.
-cwd=`pwd` || Exit 99
+cwd=$(pwd) || fatal_ "getting current working directory"
 ./configure --prefix "$cwd/inst" --libdir "$cwd/inst/lib"
 
 # A rule in the Makefile should create subdir.
-test ! -d subdir
-$MAKE >stdout || { cat stdout; Exit 1; }
+test ! -e subdir
+$MAKE >stdout || { cat stdout; exit 1; }
 cat stdout
 test -d subdir
 
 grep 'liba.la .*-rpath .*lib' stdout
-grep 'liba.la .*-rpath .*lib/subdir' stdout && Exit 1
+grep 'liba.la .*-rpath .*lib/subdir' stdout && exit 1
 grep 'libb.la .*-rpath .*lib/subdir' stdout
 
 test -f subdir/liba.la
 test -f subdir/libb.la
 
-$MAKE install 2>stderr || { cat stderr >&2; Exit 1; }
+$MAKE install 2>stderr || { cat stderr >&2; exit 1; }
 cat stderr >&2
-grep 'remember.*--finish' stderr && Exit 1
+grep 'remember.*--finish' stderr && exit 1
 
 test -f inst/lib/liba.la
 test -f inst/lib/subdir/libb.la
 
 $MAKE uninstall
 
-test -f inst/lib/liba.la && Exit 1
-test -f inst/lib/subdir/libb.la && Exit 1
+test -f inst/lib/liba.la && exit 1
+test -f inst/lib/subdir/libb.la && exit 1
 
 $MAKE install-strip
 

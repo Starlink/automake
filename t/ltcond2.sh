@@ -17,7 +17,7 @@
 # Test for bug in conditionals.
 
 required='cc native libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -56,25 +56,19 @@ check-local:
 END
 
 cat > hello-linux.c <<'END'
-const char* str (void)
-{
-  return "hello-linux";
-}
+const char* str = "hello-linux";
 END
 
 cat > hello-generic.c <<'END'
-const char* str (void)
-{
-  return "hello-generic";
-}
+const char* str = "hello-generic";
 END
 
 cat > hello-common.c <<'END'
 #include <stdio.h>
-const char* str (void);
+extern const char* str;
 void print (void)
 {
-  puts (str ());
+  puts (str);
 }
 END
 

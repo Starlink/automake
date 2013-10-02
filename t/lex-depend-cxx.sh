@@ -17,8 +17,8 @@
 # Test to make sure dependencies work with Lex/C++.
 # Test synthesized from PR automake/6.
 
-required=lex
-. ./defs || Exit 1
+required='c++ lex'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -40,9 +40,8 @@ test-deps-exist:
 
 .PHONY: test-obj-updated
 test-obj-updated: joe.$(OBJEXT) moe.$(OBJEXT)
-	stat older my-hdr.hxx joe.$(OBJEXT) moe.$(OBJEXT) || :
-	test `ls -t older joe.$(OBJEXT) | sed 1q` = joe.$(OBJEXT)
-	test `ls -t older moe.$(OBJEXT) | sed 1q` = moe.$(OBJEXT)
+	is_newest joe.$(OBJEXT) my-hdr.hxx
+	is_newest moe.$(OBJEXT) my-hdr.hxx
 END
 
 cat > joe.ll << 'END'
@@ -61,7 +60,6 @@ int yywrap (void)
 }
 int main (int argc, char **argv)
 {
-  printf("Hello, World!\n");
   return 0;
 }
 END
@@ -69,8 +67,7 @@ END
 cp joe.ll moe.l++
 
 cat > my-hdr.hxx <<'END'
-// This header contains deliberetly invalid C (but valid C++)
-#include <cstdio>
+// This header contains deliberately invalid C (but valid C++).
 using namespace std;
 END
 
@@ -88,7 +85,6 @@ $AUTOCONF
 $MAKE test-deps-exist
 $MAKE
 
-: > older
 $sleep
 touch my-hdr.hxx
 $MAKE test-obj-updated

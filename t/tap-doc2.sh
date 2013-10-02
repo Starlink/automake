@@ -19,8 +19,7 @@
 # with the Automake test harness".
 
 am_create_testdir=empty
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am <<'END'
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
@@ -32,7 +31,7 @@ END
 cat > configure.ac <<'END'
 AC_INIT([GNU Try Tap], [1.0], [bug-automake@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([foreign parallel-tests -Wall -Werror])
+AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 AC_CONFIG_FILES([Makefile])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])
 AC_PROG_AWK
@@ -74,7 +73,7 @@ mkdir build-aux
 cp "$am_scriptdir"/tap-driver.sh build-aux \
   || framework_failure_ "fetching the perl TAP driver"
 
-(export AUTOMAKE ACLOCAL AUTOCONF && $AUTORECONF -vi) || Exit 1
+(export AUTOMAKE ACLOCAL AUTOCONF && $AUTORECONF -vi) || exit 1
 
 ./configure --help # Sanity check.
 ./configure || skip_ "configure failed"
@@ -84,7 +83,7 @@ case $MAKE in *\ -j*) skip_ "can't work easily with concurrent make";; esac
 # Prevent Sun Distributed Make from trying to run in parallel.
 DMAKE_MODE=serial; export DMAKE_MODE
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 cat > exp <<'END'
@@ -110,7 +109,7 @@ grep '^Please report to bug-automake@gnu\.org$' stdout
 env \
   TESTS='foo.test baz.test' \
   TEST_LOG_DRIVER_FLAGS='--comments --ignore-exit' \
-  $MAKE -e check >stdout || { cat stdout; Exit 1; }
+  $MAKE -e check >stdout || { cat stdout; exit 1; }
 
 cat > exp <<'END'
 PASS: foo.test 1 - Swallows fly

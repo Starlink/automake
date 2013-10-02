@@ -16,9 +16,9 @@
 
 # Check that the "all" target triggers rebuilt of outdated makefiles.
 # This handle the case in which the makefiles are not called 'Makefile'.
-# See also sister test 'remake-all-1.test'.
+# See also sister test 'remake-all-1.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkfile=foobar
 
@@ -53,7 +53,7 @@ $EGREP "^all-am:.* $mkfile( |$)" $mkfile.in sub/$mkfile.in
 $AUTOCONF
 ./configure
 
-$FGREP "$magic1" mkfile.in && Exit 1 # Sanity check.
+$FGREP "$magic1" mkfile.in && exit 1 # Sanity check.
 
 # Two code paths in configure.am:
 

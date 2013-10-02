@@ -16,7 +16,8 @@
 
 # Test Automake style tests.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([dir/Makefile])
@@ -43,22 +44,20 @@ echo.sh:
 CLEANFILES = echo.sh
 END
 
-if test x"$am_parallel_tests" = x"yes"; then
-  cp "$am_scriptdir/test-driver" .
-fi
+test x"$am_serial_tests" = x"yes" || cp "$am_scriptdir/test-driver" .
 
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 ./configure
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 grep '^PASS: subrun\.sh *$' stdout
-grep 'PASS.*echo\.sh' stdout && Exit 1
+grep 'PASS.*echo\.sh' stdout && exit 1
 
 # 'check' should depend directly on 'check-am' (similar tests are
-# in check.test and check3.test).
+# in check.sh and check3.sh).
 $EGREP '^check:.* check-recursive( |$)' Makefile.in
 $EGREP '^check:.* check-am( |$)' dir/Makefile.in
 

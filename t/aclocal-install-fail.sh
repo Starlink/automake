@@ -19,7 +19,7 @@
 
 am_create_testdir=empty
 required=ro-dir
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -38,22 +38,22 @@ mkdir unwritable-dir
 chmod a-w unwritable-dir
 
 $ACLOCAL -I a-regular-file --install 2>stderr \
-  && { cat stderr >&2; Exit 1; }
+  && { cat stderr >&2; exit 1; }
 cat stderr >&2
 $EGREP '(mkdir:|directory ).*a-regular-file' stderr
-test ! -f aclocal.m4
+test ! -e aclocal.m4
 
 $ACLOCAL --install -I unwritable-dir/sub 2>stderr \
-  && { cat stderr >&2; Exit 1; }
+  && { cat stderr >&2; exit 1; }
 cat stderr >&2
 $EGREP '(mkdir:|directory ).*unwritable-dir/sub' stderr
-test ! -f aclocal.m4
+test ! -e aclocal.m4
 
 $ACLOCAL -I unwritable-dir --install 2>stderr \
-  && { cat stderr >&2; Exit 1; }
+  && { cat stderr >&2; exit 1; }
 cat stderr >&2
 $EGREP '(cp:|copy ).*unwritable-dir' stderr
-test ! -f aclocal.m4
+test ! -e aclocal.m4
 
 # Sanity check.
 mkdir m4

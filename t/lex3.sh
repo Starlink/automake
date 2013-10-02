@@ -19,7 +19,7 @@
 # From Matthew D. Langston.
 
 required='cc lex'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -66,9 +66,9 @@ $AUTOMAKE -a
 
 # Program should build and run.
 $MAKE
-if cross_compiling; then :; else
+if ! cross_compiling; then
   echo GOOD | ./foo
-  echo BAD | ./foo && Exit 1
+  echo BAD | ./foo && exit 1
   : For shells with busted 'set -e'.
 fi
 
@@ -86,6 +86,6 @@ $MAKE distclean
 test -f foo.c
 ./configure # Re-create 'Makefile'.
 $MAKE maintainer-clean
-test ! -f foo.c
+test ! -e foo.c
 
 :

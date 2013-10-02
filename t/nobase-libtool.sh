@@ -15,11 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make sure nobase_* works for libtool libraries and programs as well.
-# This is just the libtool equivalent of nobase.test, split
-# up for greater exposure of nobase.test.
+# This is just the libtool equivalent of 'nobase.sh', split up to allow
+# greater exposure of that test.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'EOF'
 AC_PROG_CC
@@ -54,8 +54,7 @@ EOF
 mkdir sub
 
 cat >source.c <<'EOF'
-int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
   return 0;
 }
@@ -68,14 +67,14 @@ libtoolize
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a --copy
-./configure --prefix "`pwd`/inst" --program-prefix=p
+./configure --prefix "$(pwd)/inst" --program-prefix=p
 
 $MAKE
 $MAKE test-install-data
 $MAKE test-install-exec
 $MAKE uninstall
 
-test `find inst/foo -type f -print | wc -l` = 0
+test $(find inst/foo -type f -print | wc -l) -eq 0
 
 $MAKE install-strip
 
@@ -85,11 +84,11 @@ $MAKE uninstall
 $MAKE distclean
 mkdir build
 cd build
-../configure --prefix "`pwd`/inst" --program-prefix=p
+../configure --prefix "$(pwd)/inst" --program-prefix=p
 $MAKE
 $MAKE test-install-data
 $MAKE test-install-exec
 $MAKE uninstall
-test `find inst/foo -type f -print | wc -l` = 0
+test $(find inst/foo -type f -print | wc -l) -eq 0
 
 :

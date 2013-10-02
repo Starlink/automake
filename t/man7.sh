@@ -16,7 +16,7 @@
 
 # Check for a bug in maintainer-clean w.r.t. generated manpages.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 dist_man_MANS = $(srcdir)/foo.1 bar.1
@@ -42,8 +42,8 @@ test -f bar.1
 test -f ../foo.1
 
 $MAKE maintainer-clean
-test ! -f bar.1
-test ! -f ../foo.1
+test ! -e bar.1
+test ! -e ../foo.1
 
 cd ..
 ./configure
@@ -53,7 +53,7 @@ test -f bar.1
 test -f foo.1
 
 $MAKE maintainer-clean
-test ! -f bar.1
-test ! -f foo.1
+test ! -e bar.1
+test ! -e foo.1
 
 :

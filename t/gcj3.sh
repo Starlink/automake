@@ -16,7 +16,7 @@
 
 # Make sure dependency tracking works for java.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 _AM_DEPENDENCIES([GCJ])
@@ -31,7 +31,6 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-num=`grep depcomp Makefile.in | wc -l`
-test $num -gt 1
+test $($FGREP -c depcomp Makefile.in) -gt 1
 
 :

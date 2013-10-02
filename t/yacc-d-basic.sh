@@ -16,10 +16,10 @@
 
 # Tests Yacc support with yacc-generated headers
 # (i.e., '-d' in *YFLAGS).
-# Keep in sync with sister test 'yacc-d-cxx.test'.
+# Keep in sync with sister test 'yacc-d-cxx.sh'.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -54,7 +54,16 @@ void yyerror (char *s) {}
 x : 'x' {};
 %%
 END
-cp foo/parse.y bar/parse.y
+# Using ylwrap, we actually generate y.tab.[ch].  Unfortunately, we
+# forgot to rename #include "y.tab.h" into #include "parse.h" during
+# the conversion from y.tab.c to parse.c.  This was OK when Bison was
+# not issuing such an #include (up to 2.6).
+#
+# To make sure that we perform this conversion even with version of
+# Bison that do not generate this include, in bar/parse.y, use y.tab.h
+# instead of parse.h, and check the ylwrap does replace "y.tab.h" with
+# "parse.h".
+sed -e 's/parse\.h/y.tab.h/' <foo/parse.y >bar/parse.y
 
 cat > foo/main.c << 'END'
 #include "parse.h"
@@ -75,7 +84,7 @@ $ACLOCAL
 $AUTOCONF
 
 $AUTOMAKE -a
-$FGREP parse.h foo/Makefile.in bar/Makefile.in baz/Makefile.in && Exit 1
+$FGREP parse.h foo/Makefile.in bar/Makefile.in baz/Makefile.in && exit 1
 
 cat >> foo/Makefile.am <<END
 BUILT_SOURCES = parse.h
@@ -100,12 +109,21 @@ $AUTOMAKE baz/Makefile
 
 $MAKE
 
-test -f foo/parse.c
-test -f foo/parse.h
-test -f bar/parse.c
-test -f bar/parse.h
-test -f baz/zardoz-parse.c
-test -f baz/zardoz-parse.h
+generated="
+  foo/parse.c
+  foo/parse.h
+  bar/parse.c
+  bar/parse.h
+  baz/zardoz-parse.c
+  baz/zardoz-parse.h
+"
+
+for i in $generated; do
+  test -f $i
+done
+
+# There must remain no obsolete header guard.
+grep Y_TAB_H $generated && exit 1
 
 # The generated C source and header files must be shipped.
 for dir in foo bar; do
@@ -123,12 +141,9 @@ cd ..
 
 $MAKE distdir
 ls -l $distdir
-test -f $distdir/foo/parse.c
-test -f $distdir/foo/parse.h
-test -f $distdir/bar/parse.c
-test -f $distdir/bar/parse.h
-test -f $distdir/baz/zardoz-parse.c
-test -f $distdir/baz/zardoz-parse.h
+for i in $generated; do
+  test -f $distdir/$i
+done
 
 # Sanity check the distribution.
 yl_distcheck
@@ -136,19 +151,13 @@ yl_distcheck
 # While we are at it, make sure that 'parse.c' and 'parse.h' are erased
 # by maintainer-clean, and not by distclean.
 $MAKE distclean
-test -f foo/parse.c
-test -f foo/parse.h
-test -f bar/parse.c
-test -f bar/parse.h
-test -f baz/zardoz-parse.c
-test -f baz/zardoz-parse.h
+for i in $generated; do
+  test -f $i
+done
 ./configure # Re-create 'Makefile'.
 $MAKE maintainer-clean
-test ! -f foo/parse.c
-test ! -f foo/parse.h
-test ! -f bar/parse.c
-test ! -f bar/parse.h
-test ! -f baz/zardoz-parse.c
-test ! -f baz/zardoz-parse.h
+for i in $generated; do
+  test ! -e $i
+done
 
 :

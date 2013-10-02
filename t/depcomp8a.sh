@@ -16,11 +16,11 @@
 
 # Test for regressions in computation of names of .Po files for
 # automatic dependency tracking.
-# Keep this in sync with sister test 'depcomp8b.test', which checks the
+# Keep this in sync with sister test 'depcomp8b.sh', which checks the
 # same thing for libtool objects.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -37,12 +37,15 @@ mkdir sub
 cat > foo.c << 'END'
 int main (void)
 {
-  extern int bar;
-  return bar;
+  extern int bar (void);
+  return bar ();
 }
 END
 cat > sub/bar.c << 'END'
-extern int bar = 0;
+int bar (void)
+{
+  return 0;
+}
 END
 
 $ACLOCAL
@@ -50,7 +53,7 @@ $AUTOMAKE -a
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*\./\$(DEPDIR)/bar\.P' Makefile.in
-grep 'include.*/\./\$(DEPDIR)' Makefile.in && Exit 1
+grep 'include.*/\./\$(DEPDIR)' Makefile.in && exit 1
 
 $AUTOCONF
 # Don't reject slower dependency extractors, for better coverage.
@@ -70,7 +73,7 @@ $AUTOMAKE -a
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*[^a-zA-Z0-9_/]sub/\$(DEPDIR)/bar\.P' Makefile.in
-$EGREP 'include.*/(\.|sub)/\$\(DEPDIR\)' Makefile.in && Exit 1
+$EGREP 'include.*/(\.|sub)/\$\(DEPDIR\)' Makefile.in && exit 1
 
 $AUTOCONF
 # Don't reject slower dependency extractors, for better coverage.

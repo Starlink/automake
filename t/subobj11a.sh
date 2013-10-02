@@ -23,11 +23,11 @@
 # (even if the file 'foo.mk' exists). The error disappear by collapsing
 # the repeated slash '/' characters into a single one.
 #
-# See also sister "grepping" test 'subobj11b.test', and related test
-# 'subobj11c.test'.
+# See also sister "grepping" test 'subobj11b.sh', and related test
+# 'subobj11c.sh'.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -57,12 +57,12 @@ $AUTOMAKE -a
 
 ./configure --enable-dependency-tracking
 
-depdir=`sed -n 's/^ *DEPDIR *= *//p' Makefile`
+depdir=$(sed -n 's/^ *DEPDIR *= *//p' Makefile)
 if test x"$depdir" != x; then
   depdir=src/$depdir
 else
   echo "$me: cannot extract value of DEPDIR from Makefile" >&2
-  Exit 1
+  exit 1
 fi
 
 ls -l "$depdir"

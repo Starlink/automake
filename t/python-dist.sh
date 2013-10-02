@@ -17,7 +17,7 @@
 # Test distribution of *_PYTHON files.
 
 # This test does not require python.
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_PATH_PYTHON([], [:], [:])
@@ -73,6 +73,6 @@ $AUTOMAKE
 
 $MAKE disttest
 # It's not distributed, hence it shouldn't be needlessly generated.
-test ! -f my-nodist.py
+test ! -e my-nodist.py
 
 :

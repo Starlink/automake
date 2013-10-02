@@ -18,8 +18,7 @@
 #  - "Bail out!" magic and TAP parse errors are not disabled nor turned
 #    into simple failures by the definition DISABLE_HARD_ERRORS.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 DISABLE_HARD_ERRORS = yes
@@ -27,7 +26,7 @@ TEST_LOG_COMPILER = cat
 TESTS = bail.test few.test noplan.test
 END
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > bail.test <<END
 1..1
@@ -42,7 +41,7 @@ cat > noplan.test <<END
 # nothing here
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=3 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=3

@@ -17,10 +17,9 @@
 # TAP support: a malformed TAP plan is not recognized.  The checks in
 # here should be consistent with the behaviour of the 'prove' utility.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > a.test <<END
 1..1 foo
@@ -46,9 +45,9 @@ cat > e.test <<END
 0..0
 END
 
-tests_list=`echo *.test`
+tests_list=$(echo *.test)
 
-TESTS="$tests_list" $MAKE -e check >stdout && { cat stdout; Exit 1; }
+TESTS="$tests_list" $MAKE -e check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=9 pass=2 fail=0 xpass=0 xfail=2 skip=0 error=5

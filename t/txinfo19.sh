@@ -17,7 +17,7 @@
 # Test support for DJGPP's .iNN info files.
 
 required=makeinfo
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -38,7 +38,7 @@ $ACLOCAL
 $AUTOMAKE --add-missing
 $AUTOCONF
 
-./configure "--infodir=`pwd`/_inst"
+./configure "--infodir=$(pwd)/_inst"
 $MAKE
 
 # Make sure .iNN files are installed.
@@ -50,8 +50,8 @@ test -f _inst/main.i21
 
 # They should be uninstalled too.
 $MAKE uninstall
-test ! -f _inst/main.i1
-test ! -f _inst/main.i21
+test ! -e _inst/main.i1
+test ! -e _inst/main.i21
 
 # Make sure rebuild rules erase old .iNN files when they run makeinfo.
 $sleep
@@ -59,14 +59,14 @@ touch main.texi
 test -f main.i1
 test -f main.i21
 $MAKE
-test ! -f main.i1
-test ! -f main.i21
+test ! -e main.i1
+test ! -e main.i21
 
 # Finally, we also want them erased by maintainer-clean.
 : > main.i7
 : > main.i39
 $MAKE maintainer-clean
-test ! -f main.i7
-test ! -f main.i39
+test ! -e main.i7
+test ! -e main.i39
 
 :

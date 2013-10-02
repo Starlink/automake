@@ -15,11 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check support for AC_CONFIG_LIBOBJ_DIR vs LIBOBJS.
-# (pr401b.test and pr401c.test do the same for LTLIBOBJS and ALLOCA)
+# (pr401b.sh and pr401c.sh do the same for LTLIBOBJS and ALLOCA)
 
-am_parallel_tests=no
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir lib src
 
@@ -83,7 +82,7 @@ cp "$am_scriptdir/ar-lib" . || fatal_ "fetching auxiliary script 'ar-lib'"
 
 $ACLOCAL
 $AUTOCONF
-$AUTOMAKE
+$AUTOMAKE -a
 ./configure
 $MAKE distcheck
 
@@ -101,7 +100,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 ./configure
-test ! -d lib/lib
+test ! -e lib/lib
 $MAKE distcheck
 
 ## -------------------------------------------- ##
@@ -145,8 +144,8 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 ./configure
-test ! -d src/lib
-test ! -d 'src/$(top_builddir)'
+test ! -e src/lib
+test ! -e 'src/$(top_builddir)'
 $MAKE
 $MAKE check
 $MAKE distclean

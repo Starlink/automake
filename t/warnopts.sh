@@ -16,7 +16,7 @@
 
 # Make sure that we can enable or disable warnings on a per-file basis.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<END
 AC_CONFIG_FILES([sub/Makefile])
@@ -49,10 +49,10 @@ AUTOMAKE_fails
 #   sub/Makefile.am:2: warning: 'INCLUDES' is the old name for 'AM_CPPFLAGS'
 grep '^Makefile.am:.*foo_SOURCES' stderr
 grep '^sub/Makefile.am:.*INCLUDES' stderr
-grep '^sub/Makefile.am:.*foo_SOURCES' stderr && Exit 1
-grep '^Makefile.am:.*INCLUDES' stderr && Exit 1
+grep '^sub/Makefile.am:.*foo_SOURCES' stderr && exit 1
+grep '^Makefile.am:.*INCLUDES' stderr && exit 1
 # Only three lines of warnings.
-test `grep -v 'warnings are treated as errors' stderr | wc -l` = 3
+test $(grep -v 'warnings are treated as errors' stderr | wc -l) -eq 3
 
 # On fast machines the autom4te.cache created during the above run of
 # $AUTOMAKE is likely to have the same time stamp as the configure.ac
@@ -71,3 +71,5 @@ AC_OUTPUT
 END
 $ACLOCAL
 $AUTOMAKE
+
+:

@@ -17,14 +17,16 @@
 # Test for bug in 'make dist'
 # From Pavel Roskin.
 
-. ./defs || Exit 1
+am_create_testdir=empty
+. test-init.sh
 
-cat > configure.ac << 'END'
-AC_INIT
+cat > configure.ac << END
+AC_INIT([$me], [1.0])
 dnl Prevent automake from looking in .. and ../..
-AC_CONFIG_AUX_DIR(.)
-AM_INIT_AUTOMAKE(foo, 0.1)
-AC_OUTPUT(Makefile)
+AC_CONFIG_AUX_DIR([.])
+AM_INIT_AUTOMAKE
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
@@ -44,7 +46,7 @@ test ! -r Makefile.am || skip_ "cannot drop file read permissions"
 
 # 'dist' should fail because we can't copy Makefile.am.
 if $MAKE dist; then
-  Exit 1
+  exit 1
 else
-  Exit 0
+  exit 0
 fi

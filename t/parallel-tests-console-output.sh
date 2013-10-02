@@ -17,8 +17,7 @@
 # parallel-tests: some checks on console output about testsuite
 # progress.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -93,7 +92,7 @@ for vpath in : false; do
     srcdir=.
   fi
   $srcdir/configure
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
   LC_ALL=C grep '^[A-Z][A-Z]*:' stdout > got
   cat got

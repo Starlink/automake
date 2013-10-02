@@ -17,10 +17,10 @@
 # Test to make sure config.h works in a subdir.
 # Report from Alexandre Oliva.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
-AM_CONFIG_HEADER([include/config.h])
+AC_CONFIG_HEADERS([include/config.h])
 AC_OUTPUT
 END
 

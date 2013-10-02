@@ -16,9 +16,9 @@
 
 # Make sure that our private macro 'AM_DEP_TRACK' adds proper text to
 # the configure help screen.
-# Keep this in sync with sister test 'help-depend2.test'
+# Keep this in sync with sister test 'help-depend2.sh'
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])

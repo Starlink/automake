@@ -17,8 +17,8 @@
 # Make sure depcomp does not needlessly update headers for yacc rules.
 # Report from Paolo Bonzini.
 
-required=yacc
-. ./defs || Exit 1
+required='cc yacc'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

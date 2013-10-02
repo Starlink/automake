@@ -15,16 +15,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Superficial test to check that dejagnu tests and automake-style
-# tests can coexist.  See also related deeper test 'check12.test'.
+# tests can coexist.  See also related deeper test 'check12.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 AUTOMAKE_OPTIONS = dejagnu
 TESTS = frob.test
 END
 
-test x"$am_parallel_tests" != x"yes" || : > test-driver
+test x"$am_serial_tests" = x"yes" || : > test-driver
 
 $ACLOCAL
 $AUTOMAKE

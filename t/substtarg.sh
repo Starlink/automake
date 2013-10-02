@@ -17,7 +17,7 @@
 # Test that substitutions in variables work.
 # From Lars J. Aas.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_SOURCE([fakelib.c])
@@ -46,5 +46,6 @@ $ACLOCAL
 AUTOMAKE_fails
 grep 'overrid.*libfake@SUBST@.a' stderr
 $AUTOMAKE -Wno-override
-num=`grep '^libfake@SUBST@.a:' Makefile.in | wc -l`
-test $num -eq 1
+test $(grep -c '^libfake@SUBST@.a:' Makefile.in) -eq 1
+
+:

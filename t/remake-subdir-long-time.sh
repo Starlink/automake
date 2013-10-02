@@ -21,7 +21,7 @@
 # an explicit delay in the build process.
 # Suggestion by Ralf Wildenhues.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -38,7 +38,7 @@ mkdir sub
 # Both aclocal and automake are expected to run one and just one time.
 # Create and use wrappers that will verify that.
 
-ocwd=`pwd` || fatal_ "cannot get current working directory"
+ocwd=$(pwd) || fatal_ "cannot get current working directory"
 
 mkdir bin
 

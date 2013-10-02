@@ -17,7 +17,7 @@
 # Make sure AC_DEFUN is handled correctly.  This test isn't named very
 # well.  Report from Jim Meyering.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 jm_TEST

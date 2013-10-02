@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Custom test drivers and parallel-tests harness: check the documented
+# Custom test drivers and parallel test harness: check the documented
 # semantics for deciding when the content of a test log file should be
 # copied in the global test-suite.log file.  Currently, this is done
 # with the use of the reStructuredText field ':copy-in-global-log:' in
 # the associated '.trs' files.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -142,6 +141,6 @@ grep '^seen corn 1$' test-suite.log
 grep '^seen corn 2$' test-suite.log
 grep '^seen corn 31$' test-suite.log
 grep '^seen corn 32$' test-suite.log
-$FGREP 'not seen' test-suite.log && Exit 1
+$FGREP 'not seen' test-suite.log && exit 1
 
 :

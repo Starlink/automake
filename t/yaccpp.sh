@@ -15,11 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure Yacc + C++ is not obviously broken.
-# See also related tests 'yacc-cxx.test' and 'yacc-d-cxx.test',
+# See also related tests 'yacc-cxx.sh' and 'yacc-d-cxx.sh',
 # which does much more in-depth checks (but requires an actual
 # Yacc program and a working C++ compiler).
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -39,7 +39,7 @@ $AUTOMAKE -a
 
 $EGREP '(\.[ch]|foo|bar|baz|qux)' Makefile.in # For debugging.
 
-$EGREP '(foo|bar|baz|qux)\.h' Makefile.in && Exit 1
+$EGREP '(foo|bar|baz|qux)\.h' Makefile.in && exit 1
 
 sed -e 's/^/ /' -e 's/$/ /' Makefile.in >mk
 
@@ -70,12 +70,12 @@ $EGREP '(^| )foo\.h\+\+(:| .*:)' Makefile.in
 $EGREP '(^| )bar\.hpp(:| .*:)'   Makefile.in
 $EGREP '(^| )baz\.hh(:| .*:)'    Makefile.in
 
-grep ' foo\.h[ :]' mk && Exit 1
-grep ' bar\.h[ :]' mk && Exit 1
-grep ' baz\.h[ :]' mk && Exit 1
+grep ' foo\.h[ :]' mk && exit 1
+grep ' bar\.h[ :]' mk && exit 1
+grep ' baz\.h[ :]' mk && exit 1
 
 $FGREP ' qux-qux.cxx ' mk
 $EGREP '(^| )qux-qux\.cxx(:| .*:)' Makefile.in
-grep 'qux\.h.*:' Makefile.in && Exit 1
+grep 'qux\.h.*:' Makefile.in && exit 1
 
 :

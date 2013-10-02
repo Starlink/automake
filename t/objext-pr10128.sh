@@ -17,7 +17,7 @@
 # Test for automake bug#10128: $(OBJEXT) redefinition causes
 # $(foo_OBJECTS) to be defined as empty.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -52,7 +52,7 @@ touch foo.lisp mu1.lisp mu2.lisp
 $MAKE all
 cat foo
 cat zardoz
-test "`cat foo`"    = "Linked foo from foo.fasl"
-test "`cat zardoz`" = "Linked zardoz from mu1.fasl mu2.fasl"
+test "$(cat foo)"    = "Linked foo from foo.fasl"
+test "$(cat zardoz)" = "Linked zardoz from mu1.fasl mu2.fasl"
 
 :

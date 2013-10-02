@@ -15,19 +15,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # TAP support: some unusual forms for valid TAP input.
-# See also related test 'tap-fancy2.test'.
+# See also related test 'tap-fancy2.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 #
 # From manpage Test::Harness::TAP(3):
 #
-# ``Lines written to standard output matching /^(not )?ok\b/ must be
+#   Lines written to standard output matching /^(not )?ok\b/ must be
 #   interpreted as test lines. All other lines must not be considered
-#   test output.''
+#   test output.
 #
 # Unfortunately, the exact format of TODO and SKIP directives is not as
 # clearly described in that manpage; but a simple reverse-engineering of
@@ -69,7 +68,7 @@ not ok!#TODO?
 ok~#TODO
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=21 pass=6 fail=6 xfail=4 xpass=1 skip=4 error=0
@@ -92,7 +91,7 @@ ok $weirdchars # SKIP
 Bail out! $weirdchars
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=6 pass=1 fail=1 xfail=1 xpass=1 skip=1 error=1
@@ -119,7 +118,7 @@ ok # SKIP $bs
 Bail out! $bs
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=6 pass=1 fail=1 xfail=1 xpass=1 skip=1 error=1

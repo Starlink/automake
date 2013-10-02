@@ -17,7 +17,7 @@
 # Non-existent directories in ACLOCAL_PATH are ok.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT
@@ -27,7 +27,7 @@ END
 mkdir mdir
 echo 'AC_DEFUN([AM_FOO], [am--foo])' > mdir/foo.m4
 
-ACLOCAL_PATH=./nonesuch:./mdir:`pwd`/nonesuch2:nonesuch3 $ACLOCAL
+ACLOCAL_PATH=./nonesuch:./mdir:$(pwd)/nonesuch2:nonesuch3 $ACLOCAL
 $AUTOCONF
 $FGREP 'am--foo' configure
 

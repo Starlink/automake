@@ -15,11 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Check support for AC_CONFIG_LIBOBJ_DIR vs LTLIBOBJS.
-# (pr401.test and pr401c.test do the same for LIBOBJS and ALLOCA)
+# (pr401.sh and pr401c.sh do the same for LIBOBJS and ALLOCA)
 
-am_parallel_tests=no
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir lib src
 
@@ -102,7 +101,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 ./configure
-test ! -d lib/lib
+test ! -e lib/lib
 $MAKE distcheck
 
 ## -------------------------------------------- ##
@@ -145,8 +144,8 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 ./configure
-test ! -d src/lib
-test ! -d 'src/$(top_builddir)'
+test ! -e src/lib
+test ! -e 'src/$(top_builddir)'
 $MAKE
 $MAKE check
 $MAKE distclean

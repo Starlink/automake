@@ -16,11 +16,11 @@
 
 # Check that $(LFLAGS) takes precedence over both $(AM_LFLAGS) and
 # $(foo_LFLAGS).
-# Please keep this in sync with the sister tests lflags2.test, yflags.test
-# and yflags2.test.
+# Please keep this in sync with the sister tests lflags2.sh, yflags.sh
+# and yflags2.sh.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >fake-lex <<'END'
 #!/bin/sh
@@ -54,8 +54,8 @@ END
 $ACLOCAL
 $AUTOMAKE -a
 
-grep '\$(LFLAGS).*\$(bar_LFLAGS)' Makefile.in && Exit 1
-grep '\$(LFLAGS).*\$(AM_LFLAGS)' Makefile.in && Exit 1
+grep '\$(LFLAGS).*\$(bar_LFLAGS)' Makefile.in && exit 1
+grep '\$(LFLAGS).*\$(AM_LFLAGS)' Makefile.in && exit 1
 
 : > foo.l
 : > bar.l

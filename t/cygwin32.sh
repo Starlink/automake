@@ -16,7 +16,7 @@
 
 # Test basic Cygwin32 functionality.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -32,7 +32,7 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-grep '^CYGWIN' Makefile.in && Exit 1
+grep '^CYGWIN' Makefile.in && exit 1
 grep 'EXEEXT' Makefile.in
 
 :

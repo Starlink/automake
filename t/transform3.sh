@@ -18,7 +18,7 @@
 # stuff (in particular, pgklibdir, pkgdatadir and pkglibexecdir).
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<'END'
 AC_INIT([foo], [1.0])
@@ -78,12 +78,12 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 
-./configure --program-prefix=gnu- --prefix "`pwd`/inst"
+./configure --program-prefix=gnu- --prefix "$(pwd)/inst"
 
 $MAKE test-install
 
 $MAKE uninstall
-test `find inst -type f -print | wc -l` = 0
+test $(find inst -type f -print | wc -l) -eq 0
 
 # Opportunistically test for installdirs.
 rm -rf inst

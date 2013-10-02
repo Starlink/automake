@@ -17,7 +17,7 @@
 # Test for this bug: when a Makefile.am builds nothing, no
 # install-exec target is generated.
 
-. ./defs || Exit 1
+. test-init.sh
 
 : > Makefile.am
 

@@ -17,7 +17,7 @@
 # Check for AM_LDFLAGS = -module
 # Report from Kevin P. Fleming.
 required=libtool
-. ./defs || Exit 1
+. test-init.sh
 
 : > README
 : > NEWS

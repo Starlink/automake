@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011 Free Software Foundation, Inc.
+# Copyright (C) 2011-2012 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check verbose messages by `aclocal --install'.
+# Check verbose messages by 'aclocal --install'.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
@@ -37,7 +37,7 @@ mkdir foodir
 : > foodir/bar.m4
 
 $ACLOCAL --system-acdir=sys-acdir --install --verbose -I foodir 2>stderr \
- || { cat stderr >&2; Exit 1; }
+ || { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep ' installing .*sys-acdir/bar\.m4.* to .*foodir/bar\.m4' stderr
 grep ' installing .*sys-acdir/quux\.m4.* to .*foodir/quux\.m4' stderr

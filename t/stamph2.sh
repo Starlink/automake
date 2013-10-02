@@ -15,13 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make sure stamp-h* files are created where we expect
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << END
-AM_CONFIG_HEADER([1.h
-                  2.h:config.hin
-                  3.h:sdir1/config1.hin])
-# AM_CONFIG_HEADER and AC_CONFIG_HEADERS should be synonyms.
+AC_CONFIG_HEADERS([1.h
+                   2.h:config.hin
+                   3.h:sdir1/config1.hin])
 AC_CONFIG_HEADERS([sdir1/4.h
                    sdir1/5.h:config.hin
                    sdir1/6.h:sdir1/config1.hin
@@ -58,12 +57,12 @@ rm -f stamp-h*
 rm -f sdir1/stamp-h*
 
 ./config.status sdir1/7.h 2.h sdir1/4.h
-test ! -f stamp-h1
+test ! -e stamp-h1
 test -f stamp-h2
-test ! -f stamp-h3
+test ! -e stamp-h3
 test -f sdir1/stamp-h4
-test ! -f sdir1/stamp-h5
-test ! -f sdir1/stamp-h6
+test ! -e sdir1/stamp-h5
+test ! -e sdir1/stamp-h6
 test -f sdir1/stamp-h7
 
 :

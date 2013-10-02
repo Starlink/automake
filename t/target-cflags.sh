@@ -18,7 +18,7 @@
 # Assar Westerlund <assar@sics.se>
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -60,7 +60,7 @@ mkdir build
 cd build
 ../configure
 $MAKE
-if cross_compiling; then :; else
+if ! cross_compiling; then
   ./foo
   ./bar
 fi
@@ -68,7 +68,7 @@ cd ..
 
 ./configure
 $MAKE
-if cross_compiling; then :; else
+if ! cross_compiling; then
   ./foo
   ./bar
 fi

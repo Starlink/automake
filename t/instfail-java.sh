@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # The install rule should honor failures of the install program.
-# Some of these are already caught by instmany.test.
+# Some of these are already caught by 'instmany.sh'.
 
-# This is the java sister test of instfail.test.
+# This is the java sister test of 'instfail.sh'.
 
 required=javac
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_OUTPUT
@@ -39,7 +39,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
+instdir=$(pwd)/inst || fatal_ "getting current working directory"
 ./configure --prefix="$instdir"
 $MAKE
 
@@ -50,7 +50,7 @@ for file in java1.class
 do
   chmod a-r $file
   test ! -r $file || skip_ "cannot drop file read permissions"
-  $MAKE install-data && Exit 1
+  $MAKE install-data && exit 1
   chmod u+r $file
 done
 

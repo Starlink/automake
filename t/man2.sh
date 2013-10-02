@@ -17,7 +17,7 @@
 # Make sure that man pages listed in man_MANS are installed and
 # renamed as documented.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_OUTPUT
@@ -36,18 +36,20 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
+cwd=$(pwd) || fatal_ "getting current working directory"
+
 # Let's play with $DESTDIR too, it shouldn't hurt.
 ./configure --prefix='' --mandir=/man
-$MAKE DESTDIR="`pwd`/_inst" install
+$MAKE DESTDIR="$cwd/_inst" install
 
-test -f ./_inst/man/man2/foo.2
-test -f ./_inst/man/man4/foo.4
-test -f ./_inst/man/man4/bar.4
+test -f _inst/man/man2/foo.2
+test -f _inst/man/man4/foo.4
+test -f _inst/man/man4/bar.4
 
-$MAKE DESTDIR="`pwd`/_inst" uninstall
+$MAKE DESTDIR="$cwd/_inst" uninstall
 
-test ! -f ./_inst/man/man2/foo.2
-test ! -f ./_inst/man/man4/foo.4
-test ! -f ./_inst/man/man4/bar.4
+test ! -e _inst/man/man2/foo.2
+test ! -e _inst/man/man4/foo.4
+test ! -e _inst/man/man4/bar.4
 
 :

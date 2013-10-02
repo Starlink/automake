@@ -16,9 +16,9 @@
 
 # Check for bug in variable concatenation with '+=': an extra backslash
 # is erroneously retained in the final value.
-# See also sister test pluseq11b.test.
+# See also sister test 'pluseq11b.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AC_OUTPUT
@@ -43,7 +43,7 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-grep '^ *FOO *=.*\\.' Makefile.in && Exit 1
+grep '^ *FOO *=.*\\.' Makefile.in && exit 1
 
 $AUTOCONF
 ./configure

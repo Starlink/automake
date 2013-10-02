@@ -17,8 +17,7 @@
 # Check parallel-tests features: normal and special exit statuses
 # in the test scripts.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -26,15 +25,15 @@ END
 
 # $failure_statuses should be defined to the list of all integers between
 # 1 and 255 (inclusive), excluded 77 and 99.
-failure_statuses=`seq_ 1 255 | $EGREP -v '^(77|99)$' | tr "$nl" ' '`
+failure_statuses=$(seq_ 1 255 | $EGREP -v '^(77|99)$' | tr "$nl" ' ')
 # For debugging.
 echo "failure_statuses: $failure_statuses"
 # Sanity check.
-test `for st in $failure_statuses; do echo $st; done | wc -l` -eq 253 \
+test $(for st in $failure_statuses; do echo $st; done | wc -l) -eq 253 \
   || fatal_ "initializing list of exit statuses for simple failures"
 
 cat > Makefile.am <<END
-LOG_COMPILER = ./do-exit
+LOG_COMPILER = $AM_TEST_RUNNER_SHELL ./do-exit
 fail_tests = $failure_statuses
 TESTS = 0 77 99 $failure_statuses
 \$(TESTS):
@@ -45,7 +44,7 @@ cat > do-exit <<'END'
 echo "$0: $1"
 case $1 in
   [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) st=$1;;
-  */[0-9]|*/[0-9][0-9]|*/[0-9][0-9][0-9]) st=`echo x"$1" | sed 's|.*/||'`;;
+  */[0-9]|*/[0-9][0-9]|*/[0-9][0-9][0-9]) st=${1##*/};;
   *) st=99;;
 esac
 exit $st
@@ -78,7 +77,7 @@ st=1
 $MAKE check >stdout && st=0
 cat stdout
 cat test-suite.log
-test $st -gt 0 || Exit 1
+test $st -gt 0 || exit 1
 LC_ALL=C grep '^[A-Z][A-Z]*:' stdout | LC_ALL=C sort > got-fail
 diff exp-fail got-fail
 
@@ -86,7 +85,7 @@ st=1
 XFAIL_TESTS="$failure_statuses 99" $MAKE -e check >stdout && st=0
 cat stdout
 cat test-suite.log
-test $st -gt 0 || Exit 1
+test $st -gt 0 || exit 1
 LC_ALL=C grep '^[A-Z][A-Z]*:' stdout | LC_ALL=C sort > got-xfail-1
 diff exp-xfail-1 got-xfail-1
 
@@ -95,7 +94,7 @@ XFAIL_TESTS="$failure_statuses" TESTS="0 77 $failure_statuses" \
   $MAKE -e check >stdout || st=$?
 cat stdout
 cat test-suite.log
-test $st -eq 0 || Exit 1
+test $st -eq 0 || exit 1
 LC_ALL=C grep '^[A-Z][A-Z]*:' stdout | LC_ALL=C sort > got-xfail-2
 diff exp-xfail-2 got-xfail-2
 

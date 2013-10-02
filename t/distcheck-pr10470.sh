@@ -19,8 +19,7 @@
 # by a process (e.g., that is its "current working directory").
 # See automake bug#10470.
 
-am_parallel_tests=no
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir foo.d
 sh -c "cd foo.d && sleep '4'" &
@@ -50,7 +49,7 @@ $AUTOMAKE
 ./configure
 
 # We can build the distribution.
-$MAKE distcheck >output 2>&1 || { cat output; Exit 1; }
+$MAKE distcheck >output 2>&1 || { cat output; exit 1; }
 cat output
 # Sanity check: verify that our code has hit a problem removing
 # the distdir, but has recovered from it.

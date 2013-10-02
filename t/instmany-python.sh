@@ -16,15 +16,15 @@
 
 # Installing many files should not exceed the command line length limit.
 
-# This is the python sister test of instmany.test, see there for details.
+# This is the python sister test of 'instmany.sh', see there for details.
 
 required='python'
-. ./defs || Exit 1
+. test-init.sh
 
 limit=2500
 subdir=long_subdir_name_with_many_characters
 nfiles=81
-list=`seq_ 1 $nfiles`
+list=$(seq_ 1 $nfiles)
 
 sed "s|@limit@|$limit|g" >myinstall.in <<'END'
 #! /bin/sh
@@ -91,7 +91,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE --add-missing
 
-instdir=`pwd`/inst
+instdir=$(pwd)/inst
 mkdir build
 cd build
 ../configure --prefix="$instdir"
@@ -101,11 +101,11 @@ $MAKE install
 # Multiple uninstall should work, too.
 $MAKE uninstall
 $MAKE uninstall
-test `find "$instdir" -type f -print | wc -l` = 0
+test $(find "$instdir" -type f -print | wc -l) -eq 0
 
 # Try whether we don't exceed the low limit.
 INSTALL='$(SHELL) $(top_builddir)/myinstall' $MAKE -e install
-env save_PATH="$PATH" PATH="`pwd`/..$PATH_SEPARATOR$PATH" $MAKE uninstall
+env save_PATH="$PATH" PATH="$(pwd)/..$PATH_SEPARATOR$PATH" $MAKE uninstall
 
 cd $subdir
 srcdir=../../$subdir
@@ -116,14 +116,14 @@ for file in python3.py python$nfiles.py
 do
   chmod a-r $srcdir/$file
   test ! -r $srcdir/$file || skip_ "cannot drop file read permissions"
-  $MAKE install && Exit 1
+  $MAKE install && exit 1
   chmod u+r $srcdir/$file
 done
 
 for file in npython3.py npython$nfiles.py
 do
   chmod a-r $srcdir/$file
-  $MAKE install && Exit 1
+  $MAKE install && exit 1
   chmod u+r $srcdir/$file
 done
 

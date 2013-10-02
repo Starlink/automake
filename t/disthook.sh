@@ -16,7 +16,7 @@
 
 # Check that 'dist-hook' works.  See automake bug#10878.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -71,17 +71,14 @@ chmod a-x execute
 $MAKE distdir
 ls -l $distdir $distdir/doc
 cd $distdir
-test "`cat write`" = "all is ok"
-test ! -f removed
-test ! -r removed
+test "$(cat write)" = "all is ok"
+test ! -e removed
 test -f doc/README
 test -f doc/RELEASE-DATE
-test ! -f doc/HACING
-test ! -r doc/HACING
+test ! -e doc/HACING
 ./execute
 ./execute | grep 'I run successfully'
 cd ..
-
 
 $MAKE distcheck
 test -f distcheck-run

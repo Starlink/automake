@@ -16,8 +16,7 @@
 
 # Auxiliary script for tests on TAP support: checking testsuite summary.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 br='============================================================================'
 
@@ -30,7 +29,7 @@ fetch_tap_driver
 
 cat > configure.ac <<END
 AC_INIT([GNU AutoTAP], [5.12], [bug-automake@gnu.org])
-AM_INIT_AUTOMAKE([parallel-tests])
+AM_INIT_AUTOMAKE
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
@@ -56,18 +55,20 @@ do_check ()
   cat all.test
   st=0
   if test $use_colors = yes; then
-    make_cmd="env TERM=ansi AM_COLOR_TESTS=always $MAKE -e"
+    # Forced colorization should take place also with non-ANSI terminals;
+    # hence the "TERM=dumb" definition.
+    make_cmd="env TERM=dumb AM_COLOR_TESTS=always $MAKE -e"
   else
     make_cmd=$MAKE
   fi
   $make_cmd check > stdout || st=$?
   cat stdout
   if test $expect_failure = yes; then
-    test $st -gt 0 || Exit 1
+    test $st -gt 0 || exit 1
   else
-    test $st -eq 0 || Exit 1
+    test $st -eq 0 || exit 1
   fi
-  $PERL "$am_testauxdir"/extract-testsuite-summary.pl stdout >summary.got \
+  $PERL "$am_testaux_srcdir"/extract-testsuite-summary.pl stdout >summary.got \
     || fatal_ "cannot extract testsuite summary"
   cat summary.exp
   cat summary.got
@@ -77,18 +78,17 @@ do_check ()
   else
     compare=diff
   fi
-  $compare summary.exp summary.got || Exit 1
+  $compare summary.exp summary.got || exit 1
 }
 
 if test $use_colors = yes; then
-  red='[0;31m'
-  grn='[0;32m'
-  lgn='[1;32m'
-  blu='[1;34m'
-  mgn='[0;35m'
-  brg='[1m'
-  std='[m'
-  echo AUTOMAKE_OPTIONS = color-tests >> Makefile.am
+  red="$esc[0;31m"
+  grn="$esc[0;32m"
+  lgn="$esc[1;32m"
+  blu="$esc[1;34m"
+  mgn="$esc[0;35m"
+  brg="$esc[1m"
+  std="$esc[m"
 else
   red= grn= lgn= blu= mgn= brg= std=
 fi
@@ -310,7 +310,7 @@ done > tap
 
 # Lots of non-failures (300 per kind).
 (cat tap && cat tap && cat tap) > all.test
-test `wc -l <all.test` -eq 900 || Exit 99 # Sanity check.
+test $(wc -l <all.test) -eq 900 || exit 99 # Sanity check.
 echo 1..900 >> all.test # Test plan.
 do_check --pass <<END
 $success_header
@@ -326,7 +326,7 @@ END
 
 # 1 failure and lots of non-failures means failure.
 (cat tap && echo "not ok" && cat tap) > all.test
-test `wc -l <all.test` -eq 601 || Exit 99 # Sanity check.
+test $(wc -l <all.test) -eq 601 || exit 99 # Sanity check.
 echo 1..601 >> all.test # Test plan.
 do_check --fail <<END
 $failure_header
@@ -342,7 +342,7 @@ END
 
 # 1 error and lots of non-failures means failure.
 (cat tap && sed 30q tap && echo 'Bail out!') > all.test
-test `wc -l <all.test` -eq 331 || Exit 99 # Sanity check.
+test $(wc -l <all.test) -eq 331 || exit 99 # Sanity check.
 echo 1..331 >> all.test # Test plan.
 do_check --fail <<END
 $failure_header

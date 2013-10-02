@@ -18,10 +18,9 @@
 #  - test scripts with the test plan at the beginning
 #  - test scripts with the test plan at the end
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > top.test <<END
 1..3
@@ -43,7 +42,7 @@ END
 
 for tap_flags in "" "--comments"; do
   env TEST_LOG_DRIVER_FLAGS="$tap_flags" TESTS='top.test bot.test' \
-    $MAKE -e check >stdout || { cat stdout; Exit 1; }
+    $MAKE -e check >stdout || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=7 pass=5 xfail=1 skip=1 fail=0 xpass=0 error=0
 done

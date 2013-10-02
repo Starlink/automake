@@ -18,8 +18,12 @@
 #  - If $(TEST_SUITE_LOG) is in $(TEST_LOGS), we get a diagnosed
 #    error, not a make hang or a system freeze.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
+
+# We don't want localized error messages from make, since we'll have
+# to grep them.  See automake bug#11452.
+LANG=C LANGUAGE=C LC_ALL=C
+export LANG LANGUAGE LC_ALL
 
 # The tricky part of this test is to avoid that make hangs or even
 # freezes the system in case infinite recursion (which is the bug we
@@ -98,9 +102,9 @@ do_check ()
   log=$1; shift
   env "$@" $MAKE -e check >output 2>&1 || st=$?
   cat output
-  $FGREP '::OOPS::' output && Exit 1 # Possible infinite recursion.
+  $FGREP '::OOPS::' output && exit 1 # Possible infinite recursion.
   # Check that at least we don't create a botched global log file.
-  test ! -f "$log"
+  test ! -e "$log"
   if using_gmake; then
     grep "[Cc]ircular.*dependency" output | $FGREP "$log"
     test $st -gt 0
@@ -124,7 +128,7 @@ do_check ()
       err_seen=yes
       break
     done
-    test $err_seen = yes || Exit 1
+    test $err_seen = yes || exit 1
   fi
 }
 

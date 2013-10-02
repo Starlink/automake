@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure Automake supports implicit rules with dot-less
-# extensions.  Se also related "grepping" test suffix6.test.
+# extensions.  Se also related "grepping" test 'suffix6.sh'.
 
 required=GNUmake # Other makes might not grok dot-less suffix rules.
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 # $(LINK) is not defined automatically by Automake, since the *_SOURCES

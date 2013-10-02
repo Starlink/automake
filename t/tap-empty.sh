@@ -18,10 +18,9 @@
 #  - empty TAP input
 #  - blank TAP input
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 # Empty TAP input.
 : > empty.test
@@ -46,7 +45,7 @@ END
 
 for input in empty blank white white2; do
   cp $input.test all.test
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
   count_test_results total=1 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=1
   grep '^ERROR: all\.test - missing test plan$' stdout

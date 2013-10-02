@@ -16,9 +16,10 @@
 
 # Simple Tests support: redirection of file descriptors with
 # AM_TESTS_FD_REDIRECT.
-# See also related test 'parallel-tests-fd-redirect.test'.
+# See also related test 'parallel-tests-fd-redirect.sh'.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -50,15 +51,15 @@ do_check ()
   cat stdout
   cat stderr >&2
   cat four
-  test x"$am_parallel_tests" != x"yes" || cat foo.log
+  test x"$am_serial_tests" = x"yes" || cat foo.log
   test $st -eq 0
   grep '[ /]foo\.test: foofoofoo$' stdout
   grep '[ /]foo\.test: barbarbar$' stderr
-  grep 'this line' four && Exit 1
+  grep 'this line' four && exit 1
   grep '^3333$' four
   grep '^this line will not be removed$' five
   grep '^ok ok ok$' five
-  $EGREP '(foofoofoo|barbarbar|3333|ok ok ok|this line)' foo.log && Exit 1
+  $EGREP '(foofoofoo|barbarbar|3333|ok ok ok|this line)' foo.log && exit 1
   :
 }
 

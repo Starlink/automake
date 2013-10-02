@@ -19,8 +19,7 @@
 # This test is complex and tricky, but that's acceptable since we are
 # testing semantics that are potentially complex and tricky.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_OUTPUT
@@ -31,9 +30,8 @@ TESTS = foo.test bar.test baz.test
 TEST_LOG_COMPILER = $(SHELL)
 END
 
-# Creative quoting below to please maintainer-check.
-echo exit '$TEST_STATUS' > foo.test
-echo exit '$TEST_STATUS' > bar.test
+echo 'exit $TEST_STATUS' > foo.test
+echo 'exit $TEST_STATUS' > bar.test
 : > baz.test
 
 TEST_STATUS=0; export TEST_STATUS
@@ -55,25 +53,25 @@ $MAKE check
 rm -f foo.trs bar.trs baz.trs
 $MAKE foo.trs
 test -f foo.trs
-test ! -f bar.trs
-test ! -f baz.trs
+test ! -e bar.trs
+test ! -e baz.trs
 
 : Recreate by hand, several at the same time.
 rm -f foo.trs bar.trs baz.trs
 $MAKE foo.trs bar.trs
 test -f foo.trs
 test -f bar.trs
-test ! -f baz.trs
+test ! -e baz.trs
 
 : Recreate by hand, with a failing test.
 rm -f foo.trs bar.trs
-TEST_STATUS=1 $MAKE bar.trs baz.trs >stdout || { cat stdout; Exit 1; }
+TEST_STATUS=1 $MAKE bar.trs baz.trs >stdout || { cat stdout; exit 1; }
 cat stdout
-test ! -f foo.trs
+test ! -e foo.trs
 test -f bar.trs
 test -f baz.trs
 grep '^FAIL: bar\.test' stdout
-$EGREP '^(baz|foo)\.test' stdout && Exit 1
+$EGREP '^(baz|foo)\.test' stdout && exit 1
 
 : Recreate with a sweeping "make check", and ensure that also up-to-date
 : '.trs' files are remade.
@@ -88,7 +86,7 @@ is_newest baz.trs stamp
 : ensure that also up-to-date '.trs' files are remade -- this time we
 : grep the "make check" output verify that.
 rm -f foo.trs bar.trs
-TEST_STATUS=1 $MAKE check >stdout && { cat stdout; Exit 1; }
+TEST_STATUS=1 $MAKE check >stdout && { cat stdout; exit 1; }
 test -f foo.trs
 test -f bar.trs
 grep '^FAIL: foo\.test' stdout
@@ -99,27 +97,27 @@ grep '^PASS: baz\.test' stdout
 rm -f foo.trs bar.trs baz.trs
 TESTS=foo.test $MAKE -e check
 test -f foo.trs
-test ! -f bar.trs
-test ! -f baz.trs
+test ! -e bar.trs
+test ! -e baz.trs
 
 : Recreate with a "make check" with redefined TEST_LOGS.
 rm -f foo.trs bar.trs baz.trs
 TEST_LOGS=bar.log $MAKE -e check
-test ! -f foo.trs
+test ! -e foo.trs
 test -f bar.trs
-test ! -f baz.trs
+test ! -e baz.trs
 
 : Interactions with "make recheck" are OK.
 rm -f foo.trs bar.trs baz.log baz.trs
-$MAKE recheck >stdout || { cat stdout; Exit 1; }
+$MAKE recheck >stdout || { cat stdout; exit 1; }
 cat stdout
 test -f foo.trs
 test -f bar.trs
-test ! -f baz.trs
-test ! -f baz.log
+test ! -e baz.trs
+test ! -e baz.log
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
-grep 'baz\.test' stdout && Exit 1
+grep 'baz\.test' stdout && exit 1
 count_test_results total=2 pass=2 fail=0 xpass=0 xfail=0 skip=0 error=0
 
 : Setup for the next check.
@@ -132,11 +130,11 @@ test -f baz.trs
 : '.trs' files are *not* remade.
 update_stamp
 rm -f foo.trs bar.trs test-suite.log
-$MAKE test-suite.log >stdout || { cat stdout; Exit 1; }
+$MAKE test-suite.log >stdout || { cat stdout; exit 1; }
 cat stdout
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
-grep 'baz\.test' stdout && Exit 1
+grep 'baz\.test' stdout && exit 1
 stat *.trs *.log stamp || : # For debugging.
 # Check that make has updated what it needed to, but no more.
 test -f foo.trs
@@ -154,7 +152,7 @@ test -f baz.trs
 rm -f foo.trs
 update_stamp
 touch bar.test
-RECHECK_LOGS= $MAKE -e check >stdout || { cat stdout; Exit 1; }
+RECHECK_LOGS= $MAKE -e check >stdout || { cat stdout; exit 1; }
 cat stdout
 # Check that make has updated what it needed to, but no more.
 test -f foo.trs
@@ -162,6 +160,6 @@ is_newest bar.trs bar.test
 is_newest stamp baz.trs
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
-grep 'baz\.test' stdout && Exit 1
+grep 'baz\.test' stdout && exit 1
 
 :

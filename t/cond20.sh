@@ -17,7 +17,7 @@
 # Regression test for recursion handling in substitution references to
 # conditional variables.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC

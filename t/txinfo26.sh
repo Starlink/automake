@@ -18,7 +18,7 @@
 # PR/408
 
 required='makeinfo'
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -46,22 +46,25 @@ $AUTOCONF
 $MAKE
 $MAKE distclean
 
-case `pwd` in
-  *\ * | *\	*)
-    skip_ "this test might fail in a directory containing white spaces";;
-esac
+abscwd=$(pwd) || fatal_ "getting current working directory"
 
 mkdir build
 cd build
-../configure "--srcdir=`pwd`/.." "--prefix=`pwd`/_inst" "--infodir=`pwd`/_inst/info"
+../configure --srcdir="$abscwd" \
+             --prefix="$abscwd/build/_inst" \
+	     --infodir="$abscwd/build/_inst/info"
+
 $MAKE install
+
 test -f ../main.info
-test ! -f ./main.info
+test ! -e ./main.info
 test -f _inst/info/main.info
 
 $MAKE uninstall
-test ! -f _inst/info/main.info
+test ! -e _inst/info/main.info
 test -f ../main.info
 
 # Multiple uninstall should not fail.
 $MAKE uninstall
+
+:

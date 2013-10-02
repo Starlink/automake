@@ -16,7 +16,7 @@
 
 # Make sure README-alpha is distributed when appropriate.  Report from
 # Jim Meyering.
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT([alpha], [1.0a])
@@ -60,10 +60,10 @@ $AUTOMAKE
 ./configure
 
 # "make distdir" should fail because NEWS does not mention 1.0a
-$MAKE check 2>stderr && { cat stderr >&2; Exit 1; }
+$MAKE check 2>stderr && { cat stderr >&2; exit 1; }
 cat stderr >&2
 grep 'NEWS not updated' stderr
-test ! -f works
+test ! -e works
 
 echo 'alpha 1.0a released' > NEWS
 $MAKE check

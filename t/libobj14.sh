@@ -19,7 +19,7 @@
 # that uses it.
 # Report from Bill Davidson.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'EOF'
 AC_PROG_CC

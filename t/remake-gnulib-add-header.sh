@@ -22,7 +22,7 @@
 # for more info).
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_CONFIG_HEADERS([config.h])
@@ -89,7 +89,7 @@ $AUTOCONF
 
 $MAKE
 ls -l
-test ! -f stdio.h
+test ! -e stdio.h
 # Also try our build rules in a VPATH build.
 $MAKE distcheck
 

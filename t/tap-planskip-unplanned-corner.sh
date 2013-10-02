@@ -18,10 +18,9 @@
 #  - test results seen in a TAP stream that has a "plan with SKIP" are
 #    flagged as errors, even if all of them are "SKIP" results.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > foo.test <<END
 1..0 # SKIP
@@ -33,7 +32,7 @@ ok 1 # SKIP
 1..0 # SKIP
 END
 
-TESTS='foo.test bar.test' $MAKE -e check >stdout && { cat stdout; Exit 1; }
+TESTS='foo.test bar.test' $MAKE -e check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=5 pass=0 fail=0 xpass=0 xfail=0 skip=2 error=3

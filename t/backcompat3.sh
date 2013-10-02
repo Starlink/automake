@@ -18,9 +18,11 @@
 # AM_INIT_AUTOMAKE are both given two or more arguments.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 empty=''
+
+AUTOMAKE="$AUTOMAKE -Wno-obsolete"
 
 cat > Makefile.am <<'END'
 ## Leading ':;' here required to work around bugs of (at least) bash 3.2
@@ -40,14 +42,14 @@ END
 
 ### Run 1 ###
 
-cat > configure.in <<END
+cat > configure.ac <<END
 AC_INIT([ac_name], [ac_version])
 AM_INIT_AUTOMAKE([am_name], [am_version])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
 
-cat configure.in
+cat configure.ac
 
 $ACLOCAL
 $AUTOCONF
@@ -73,22 +75,15 @@ diff exp got
 
 ### Run 2 ###
 
-cat > configure.in <<'END'
-dnl: 'AC_INIT' in Autoconf <= 2.63 doesn't have an URL argument.
-dnl: Luckily, 'AC_AUTOCONF_VERSION' and 'm4_version_prereq' are
-dnl: both present in autoconf 2.62, which we require; so that we
-dnl: can at least use the following workaround.
-m4_version_prereq([2.64],
-    [AC_INIT([ac_name], [ac_version], [ac_bugreport], [ac_tarname],
-             [ac_url])],
-    [AC_INIT([ac_name], [ac_version], [ac_bugreport], [ac_tarname])
-     AC_SUBST([PACKAGE_URL], [ac_url])])
+cat > configure.ac <<'END'
+AC_INIT([ac_name], [ac_version], [ac_bugreport], [ac_tarname],
+        [ac_url])],
 AM_INIT_AUTOMAKE([am_name], [am_version])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
 
-cat configure.in
+cat configure.ac
 
 $ACLOCAL
 $AUTOCONF
@@ -114,14 +109,14 @@ diff exp got
 
 ### Run 3 ###
 
-cat > configure.in <<END
+cat > configure.ac <<END
 AC_INIT([ac_name], [ac_version])
 AM_INIT_AUTOMAKE([am_name], [am_version], [am_foo_quux])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 END
 
-cat configure.in
+cat configure.ac
 
 $ACLOCAL
 $AUTOCONF
@@ -144,7 +139,7 @@ $MAKE got
 
 diff exp got
 
-$FGREP am_foo_quux Makefile.in Makefile configure config.status && Exit 1
+$FGREP am_foo_quux Makefile.in Makefile configure config.status && exit 1
 
 
 ### Done ###

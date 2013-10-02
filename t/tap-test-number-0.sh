@@ -18,8 +18,7 @@
 #  - a test result numbered as 0 is to be considered out-of-order
 # This is consistent with the behaviour of the 'prove' utility.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 if test $am_tap_implementation = perl; then
   $PERL -MTAP::Parser -e 1 \
@@ -44,7 +43,7 @@ if test $am_tap_implementation = perl; then
   fi
 fi
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > a.test <<END
 1..1
@@ -72,7 +71,7 @@ ok 0 # TODO
 END
 
 TESTS='a.test b.test c.test d.test e.test' $MAKE -e check >stdout \
-  && { cat stdout; Exit 1; }
+  && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=5 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=5

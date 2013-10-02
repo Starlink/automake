@@ -18,7 +18,7 @@
 # Using different extensions for the same language should not
 # output the build rules several times.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<EOF
 AC_PROG_CXX
@@ -63,4 +63,4 @@ cat rules
 #|  #r-i.o: i.cxx
 
 # Bail out if we find a duplicate.
-$PERL -ne 'if (exists $a{$_}) { exit 1 } else { $a{$_} = 1 }' < rules
+$PERL -ne 'if (exists $a{$_}) { exit (1) } else { $a{$_} = 1 }' < rules

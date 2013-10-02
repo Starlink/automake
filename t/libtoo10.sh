@@ -18,7 +18,7 @@
 # Report from Guillermo Ontañón.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_PROG_AR
@@ -53,8 +53,10 @@ $AUTOCONF
 ./configure
 $MAKE all check
 $MAKE clean
-test ! -d src/.libs
-test ! -d src/_libs
-test ! -d check/.libs
-test ! -d check/_libs
+test ! -e src/.libs
+test ! -e src/_libs
+test ! -e check/.libs
+test ! -e check/_libs
 $MAKE distcheck
+
+:

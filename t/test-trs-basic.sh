@@ -18,8 +18,7 @@
 #  - creation and removal of '.trs' auxiliary files
 #  - check some internals regarding the use of '.trs' files.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_OUTPUT
@@ -69,11 +68,11 @@ for vpath in : false; do
   $srcdir/configure
 
   $MAKE tb
-  test x"`cat tb`" = x"foo bar sub/zardoz"
+  test x"$(cat tb)" = x"foo bar sub/zardoz"
   rm -f tb
   # Please don't change the order of the stuff in TESTS, below.
   TESTS='foo.test foo2.sh foo-log foolog.test a.log.b.sh 0.exe' $MAKE -e tb
-  test x"`cat tb`" = x"foo foo2 foo-log foolog a.log.b 0.exe"
+  test x"$(cat tb)" = x"foo foo2 foo-log foolog a.log.b 0.exe"
   rm -f tb
 
   cd $srcdir
@@ -93,22 +92,22 @@ test -f foo.trs
 test -f bar.trs
 test -f sub/zardoz.trs
 $MAKE clean
-test ! -f foo.trs
-test ! -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e foo.trs
+test ! -e bar.trs
+test ! -e sub/zardoz.trs
 # Unrelated '.trs' files shouldn't be removed.
 test -f unrelated.trs
 test -f sub/foo.trs
 
 # The files should be properly created in case of testsuite failure too.
-FOO_STATUS=1 $MAKE check && Exit 1
+FOO_STATUS=1 $MAKE check && exit 1
 test -f foo.trs
 test -f bar.trs
 test -f sub/zardoz.trs
 $MAKE mostlyclean
-test ! -f foo.trs
-test ! -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e foo.trs
+test ! -e bar.trs
+test ! -e sub/zardoz.trs
 # Unrelated '.trs' files shouldn't be removed.
 test -f unrelated.trs
 test -f sub/foo.trs
@@ -119,18 +118,18 @@ test -f sub/foo.trs
 
 TESTS=foo.test $MAKE -e check
 test -f foo.trs
-test ! -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e bar.trs
+test ! -e sub/zardoz.trs
 $MAKE clean
-test ! -f foo.trs
+test ! -e foo.trs
 TESTS='foo.test bar.sh' $MAKE -e check
 test -f foo.trs
 test -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e sub/zardoz.trs
 # "make clean" shouldn't remove '.trs' files for tests not in $(TESTS).
 TESTS=bar.sh $MAKE -e clean
 test -f foo.trs
-test ! -f bar.trs
+test ! -e bar.trs
 
 $MAKE clean
 
@@ -139,20 +138,20 @@ $MAKE clean
 #
 
 TEST_LOGS=sub/zardoz.log $MAKE -e check
-test ! -f foo.trs
-test ! -f bar.trs
+test ! -e foo.trs
+test ! -e bar.trs
 test -f sub/zardoz.trs
 $MAKE clean
-test ! -f sub/zardoz.trs
+test ! -e sub/zardoz.trs
 TEST_LOGS='foo.log bar.log' $MAKE -e check
 test -f foo.trs
 test -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e sub/zardoz.trs
 # "make clean" shouldn't remove '.trs' files for tests whose log
 # is not in $(TEST_LOGS).
 TEST_LOGS=foo.log $MAKE -e clean
-test ! -f foo.trs
+test ! -e foo.trs
 test -f bar.trs
-test ! -f sub/zardoz.trs
+test ! -e sub/zardoz.trs
 
 :

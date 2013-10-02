@@ -19,7 +19,7 @@
 # Also, ensure that 'make -n dist' and 'make -n distcheck' show what
 # would happen, at least when using GNU make.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir sub
 
@@ -47,16 +47,16 @@ $AUTOCONF
 $AUTOMAKE
 ./configure
 
-$sleep
 echo stamp > stampfile
 $sleep
 for target in dist distcheck; do
   $MAKE -n $target
   if using_gmake; then
-    $MAKE -n $target | grep stamp-sub-dist-hook || Exit 1
+    $MAKE -n $target | grep stamp-sub-dist-hook || exit 1
   fi
   $MAKE test-no-distdir
-  test `ls -1t | sed 1q` = stampfile
+  # No file has been actually touched or created.
+  is_newest stampfile $(find . -type f) sub
 done
 
-Exit 0
+:

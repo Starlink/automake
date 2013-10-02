@@ -18,7 +18,7 @@
 # are used, even when dependency tracking is disabled.
 
 required='cc lex'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<\END
 AC_PROG_CC

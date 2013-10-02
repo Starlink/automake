@@ -18,7 +18,7 @@
 # *.java files when there are none.
 # Report from Johannes Nicolai (PR/441).
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AM_CONDITIONAL([WHO_CARES], [false])
@@ -42,15 +42,14 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
 
-cwd=`pwd` || Exit 1
-./configure --prefix="$cwd/_inst"
+./configure --prefix="$(pwd)/_inst"
 $MAKE
 $MAKE install
 ls -l .
-find . -name '*.class' | grep . && Exit 1
+find . -name '*.class' | grep . && exit 1
 # If we have nothing to install, we shouldn't create any installation
 # directory.  Related to automake bug#11030.
-test ! -d _inst
+test ! -e _inst
 $MAKE uninstall
 $MAKE distcheck
 

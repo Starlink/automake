@@ -18,13 +18,12 @@
 # that allow multiple testcases in a single test script.  In particular,
 # check that this still works when we override $(TESTS) and $(TEST_LOGS)
 # at make runtime.
-# See also related tests 'test-driver-custom-multitest-recheck.test' and
-# 'parallel-tests-recheck-override.test'.
+# See also related tests 'test-driver-custom-multitest-recheck.sh' and
+# 'parallel-tests-recheck-override.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-cp "$am_testauxdir"/trivial-test-driver . \
+cp "$am_testaux_srcdir"/trivial-test-driver . \
   || fatal_ "failed to fetch auxiliary script trivial-test-driver"
 
 cat >> configure.ac << 'END'
@@ -84,7 +83,7 @@ for vpath in : false; do
   $srcdir/configure
 
   : Run the tests for the first time.
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
   # All the test scripts should have run.
   test -f a.run
@@ -96,64 +95,66 @@ for vpath in : false; do
 
   : An empty '$(TESTS)' or '$(TEST_LOGS)' means that no test should be run.
   for var in TESTS TEST_LOGS; do
-    env "$var=" $MAKE -e recheck >stdout || { cat stdout; Exit 1; }
+    env "$var=" $MAKE -e recheck >stdout || { cat stdout; exit 1; }
     cat stdout
     count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
-    test ! -r a.run
-    test ! -r b.run
-    test ! -r c.run
+    test ! -e a.run
+    test ! -e b.run
+    test ! -e c.run
   done
   unset var
 
   : a.test was successful the first time, no need to re-run it.
+  using_gmake || $sleep # Required by BSD make.
   env TESTS=a.test $MAKE -e recheck >stdout \
-    || { cat stdout; Exit 1; }
+    || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
 
   : b.test failed, it should be re-run.  And make it pass this time.
+  using_gmake || $sleep # Required by BSD make.
   echo OK > b.ok
   TEST_LOGS=b.log $MAKE -e recheck >stdout \
-    || { cat stdout; Exit 1; }
+    || { cat stdout; exit 1; }
   cat stdout
-  test ! -r a.run
+  test ! -e a.run
   test -f b.run
-  test ! -r c.run
+  test ! -e c.run
   count_test_results total=2 pass=0 fail=0 xpass=0 xfail=1 skip=1 error=0
 
   rm -f *.run
 
   : No need to re-run a.test or b.test anymore.
+  using_gmake || $sleep # Required by BSD make.
   TEST_LOGS=b.log $MAKE -e recheck >stdout \
-    || { cat stdout; Exit 1; }
+    || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
+  using_gmake || $sleep # Required by BSD make.
   TESTS='a.test b.test' $MAKE -e recheck >stdout \
-    || { cat stdout; Exit 1; }
+    || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
 
   : No need to re-run a.test anymore, but c.test should be rerun,
   : as it contained an XPASS.  And this time, make it fail with
   : an hard error.
-  # Use 'echo' here, since Solaris 10 /bin/sh would try to optimize
-  # a ':' away after the first iteration, even if it is redirected.
   echo dummy > c.err
   env TEST_LOGS='a.log c.log' $MAKE -e recheck >stdout \
-    && { cat stdout; Exit 1; }
+    && { cat stdout; exit 1; }
   cat stdout
   count_test_results total=1 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=1
-  test ! -r a.run
-  test ! -r b.run
+  test ! -e a.run
+  test ! -e b.run
   test -f c.run
 
   rm -f *.run *.err
@@ -161,25 +162,27 @@ for vpath in : false; do
   : c.test contained and hard error the last time, so it should be re-run.
   : This time, make it pass
   # Use 'echo', not ':'; see comments above for why.
+  using_gmake || $sleep # Required by BSD make.
   echo dummy > c.ok
   env TESTS='c.test a.test' $MAKE -e recheck >stdout \
-    || { cat stdout; Exit 1; }
+    || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=1 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=0
-  test ! -r a.run
-  test ! -r b.run
+  test ! -e a.run
+  test ! -e b.run
   test -f c.run
 
   rm -f *.run *.err *.ok
 
   : Nothing should be rerun anymore, as all tests have been eventually
   : successful.
-  $MAKE recheck >stdout || { cat stdout; Exit 1; }
+  using_gmake || $sleep # Required by BSD make.
+  $MAKE recheck >stdout || { cat stdout; exit 1; }
   cat stdout
   count_test_results total=0 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=0
-  test ! -r a.run
-  test ! -r b.run
-  test ! -r c.run
+  test ! -e a.run
+  test ! -e b.run
+  test ! -e c.run
 
   cd $srcdir
 

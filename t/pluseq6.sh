@@ -16,7 +16,7 @@
 
 # Test that '+=' works with standard header-vars.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_SUBST([ZZZ])
@@ -30,9 +30,9 @@ END
 
 $ACLOCAL
 $AUTOMAKE
-$FGREP '@mandir@ foo' Makefile.in
 
-num=`grep '^mandir =' Makefile.in | wc -l`
-test $num -eq 1
+$FGREP 'mandir' Makefile.in # For debugging.
+$FGREP '@mandir@ foo' Makefile.in
+test $(grep -c '^mandir =' Makefile.in) -eq 1
 
 :

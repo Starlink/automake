@@ -16,10 +16,10 @@
 
 # Check that $(YFLAGS) takes precedence over both $(AM_YFLAGS) and
 # $(foo_YFLAGS).
-# Please keep this in sync with the sister tests yflags2.test, lflags.test
-# and lflags2.test.
+# Please keep this in sync with the sister tests yflags2.sh, lflags.sh
+# and lflags2.sh.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >fake-yacc <<'END'
 #!/bin/sh
@@ -51,8 +51,8 @@ END
 $ACLOCAL
 $AUTOMAKE -a
 
-grep '\$(YFLAGS).*\$(bar_YFLAGS)' Makefile.in && Exit 1
-grep '\$(YFLAGS).*\$(AM_YFLAGS)' Makefile.in && Exit 1
+grep '\$(YFLAGS).*\$(bar_YFLAGS)' Makefile.in && exit 1
+grep '\$(YFLAGS).*\$(AM_YFLAGS)' Makefile.in && exit 1
 
 : > foo.y
 : > bar.y

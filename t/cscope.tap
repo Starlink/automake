@@ -16,11 +16,11 @@
 
 # Test cscope functionality.
 
-. ./defs || Exit 1
+. test-init.sh
 
 plan_ 18
 
-ocwd=`pwd` || fatal_ "getting top-level directory"
+ocwd=$(pwd) || fatal_ "getting top-level directory"
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([sub/Makefile])
@@ -65,8 +65,9 @@ $ACLOCAL || fatal_ "aclocal failed"
 $AUTOCONF || fatal_ "autoconf failed"
 $AUTOMAKE -i -a || fatal_ "automake -i -a failed"
 
-# Sun cscope is interactive without redirection.
-if cscope --version </dev/null; then
+# Sun cscope is interactive without redirection; also, it might not
+# support the '-q' option, which is required by our generated recipes.
+if cscope -q --version </dev/null; then
   have_cscope=yes
 else
   have_cscope=no
@@ -82,10 +83,10 @@ test_cleanup ()
     # VPATH build.
     $MAKE distcleancheck
   fi \
-    && test ! -f cscope.files \
-    && test ! -f cscope.out \
-    && test ! -f cscope.in.out \
-    && test ! -f cscope.po.out \
+    && test ! -e cscope.files \
+    && test ! -e cscope.out \
+    && test ! -e cscope.in.out \
+    && test ! -e cscope.po.out \
     || r='not ok'
   result_ "$r" "[$pfx] make distcheck"
 }
@@ -99,7 +100,7 @@ test_cscope ()
   if test $have_cscope = no; then
     # For later tests.
     touch cscope.files cscope.out cscope.in.out cscope.po.out
-    skip_row_ 3 -r "no cscope program avaiable"
+    skip_row_ 3 -r "no proper cscope program available"
     return 0
   fi
 
@@ -155,7 +156,7 @@ if using_gmake; then
 
 else
 
-  skip_row_ 12 -r "cscope in VPATH required GNU make"
+  skip_row_ 12 -r "cscope in VPATH requires GNU make"
 
 fi
 

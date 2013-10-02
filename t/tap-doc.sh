@@ -17,8 +17,7 @@
 # Check that an example given in the documentation really works.
 # See section "Simple Tests" subsection "Script-based Testsuites".
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 fetch_tap_driver
 
@@ -71,7 +70,7 @@ $AUTOMAKE -a
 
 ./configure
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 cat > exp <<'END'

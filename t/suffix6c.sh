@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Test to make sure that '.o' and '.obj' are handled like '.$(OBJEXT)'.
-# See also related "grepping" test suffix6.test.
+# See also related "grepping" test 'suffix6.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 # $(LINK) is not defined automatically by Automake, since the *_SOURCES

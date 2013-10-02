@@ -18,7 +18,7 @@
 # in different directories.  PR/285.
 
 required='libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AM_CONDITIONAL([COND1], [true])
@@ -42,4 +42,6 @@ libtoolize
 $ACLOCAL
 $AUTOMAKE --add-missing
 # am_liba_la_rpath is defined twice, and used once
-test 3 = `grep 'am_liba_la_rpath' Makefile.in | wc -l`
+test 3 -eq $(grep -c 'am_liba_la_rpath' Makefile.in)
+
+:

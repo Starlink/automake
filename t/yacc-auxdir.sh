@@ -17,7 +17,7 @@
 # Test to make sure ylwrap is put in right location.
 # Report from Tim Van Holder.
 
-. ./defs || Exit 1
+. test-init.sh
 
 mkdir aux1 sub
 
@@ -47,8 +47,8 @@ END
 $ACLOCAL
 $AUTOMAKE -a
 test -f aux1/ylwrap
-test ! -f ylwrap
-test ! -f sub/ylwrap
+test ! -e ylwrap
+test ! -e sub/ylwrap
 grep -i 'ylwrap' Makefile.in sub/Makefile.in # For debugging.
 $FGREP '$(top_srcdir)/aux1/ylwrap' Makefile.in
 $FGREP '$(top_srcdir)/aux1/ylwrap' sub/Makefile.in

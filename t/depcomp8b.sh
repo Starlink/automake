@@ -16,11 +16,11 @@
 
 # Test for regressions in computation of names of .Plo files for
 # automatic dependency tracking.
-# Keep this in sync with sister test 'depcomp8a.test', which checks the
+# Keep this in sync with sister test 'depcomp8a.sh', which checks the
 # same thing for non-libtool objects.
 
 required='cc libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -36,8 +36,8 @@ libzardoz_la_SOURCES = foo.c sub/bar.c
 END
 
 mkdir sub
-echo 'extern int foo = 0;' > foo.c
-echo 'extern int bar = 0;' > sub/bar.c
+echo 'int foo (void) { return 0; }' > foo.c
+echo 'int bar (void) { return 0; }' > sub/bar.c
 
 libtoolize
 
@@ -46,7 +46,7 @@ $AUTOMAKE -a
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*\./\$(DEPDIR)/bar\.P' Makefile.in
-grep 'include.*/\./\$(DEPDIR)' Makefile.in && Exit 1
+grep 'include.*/\./\$(DEPDIR)' Makefile.in && exit 1
 
 $AUTOCONF
 # Don't reject slower dependency extractors, for better coverage.
@@ -65,7 +65,7 @@ $AUTOMAKE -a
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*[^a-zA-Z0-9_/]sub/\$(DEPDIR)/bar\.P' Makefile.in
-$EGREP 'include.*/(\.|sub)/\$\(DEPDIR\)' Makefile.in && Exit 1
+$EGREP 'include.*/(\.|sub)/\$\(DEPDIR\)' Makefile.in && exit 1
 
 $AUTOCONF
 # Don't reject slower dependency extractors, for better coverage.

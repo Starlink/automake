@@ -18,14 +18,13 @@
 #  - all input (valid TAP lines, invalid TAP lines, non-TAP lines)
 #    are passed through in the log file
 #  - TAP errors are reported in the log file too
-# See also related test 'tap-passthrough-exit.test'.
+# See also related test 'tap-passthrough-exit.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 weirdchars=\''"\$@!&()[]<>#;,:.^?*/'
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 #
 # Only successful tests.
@@ -47,7 +46,7 @@ ok # SKIP who cares?
 $weirdchars
 END
 
-TESTS=ok.test $MAKE -e check || { cat ok.log; Exit 1; }
+TESTS=ok.test $MAKE -e check || { cat ok.log; exit 1; }
 cat ok.log
 
 for rx in \
@@ -124,7 +123,7 @@ cat ko.log
 cat bail.log
 cat skip.log
 cat err.log
-test $st -gt 0 || Exit 1
+test $st -gt 0 || exit 1
 
 grep '^1\.\.1$' tiny.log
 grep '^ok$' tiny.log

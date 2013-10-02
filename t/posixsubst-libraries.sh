@@ -16,10 +16,10 @@
 
 # Test that POSIX variable expansion '$(var:str=rpl)' works when used
 # with the LIBRARIES primary in a "simple" way.
-# Keep this in sync with sister test 'posixsubst-ltlibraries.test'.
+# Keep this in sync with sister test 'posixsubst-ltlibraries.sh'.
 
 required=cc
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -54,7 +54,7 @@ $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
 
-cwd=`pwd` || Exit 1
+cwd=$(pwd) || fatal_ "getting current working directory"
 ./configure --prefix="$cwd/_inst"
 $MAKE
 test -f libfoo2.c

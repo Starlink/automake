@@ -27,21 +27,23 @@ xtests := $(shell \
    fi; \
    for d in $$dirs; do \
      for s in tap sh; do \
-       ls $$d/t/*.$$s $$d/t/ax/*.$$s 2>/dev/null; \
+       ls $$d/t/ax/*.$$s $$d/t/*.$$s $$d/contrib/t/*.$$s 2>/dev/null; \
      done; \
    done | sort)
 
-xdefs = $(srcdir)/defs $(srcdir)/defs-static.in
+xdefs = \
+  $(srcdir)/t/ax/am-test-lib.sh \
+  $(srcdir)/t/ax/test-lib.sh \
+  $(srcdir)/t/ax/test-defs.in
 
 ams := $(shell find $(srcdir) -name '*.dir' -prune -o -name '*.am' -print)
 
 # Some simple checks, and then ordinary check.  These are only really
 # guaranteed to work on my machine.
 syntax_check_rules = \
-sc_test_names \
-sc_diff_automake_in_automake \
-sc_diff_aclocal_in_automake \
-sc_perl_syntax \
+$(sc_tests_plain_check_rules) \
+sc_diff_automake \
+sc_diff_aclocal \
 sc_no_brace_variable_expansions \
 sc_rm_minus_f \
 sc_no_for_variable_in_macro \
@@ -55,142 +57,65 @@ sc_perl_at_uscore_in_scalar_context \
 sc_perl_local \
 sc_AMDEP_TRUE_in_automake_in \
 sc_tests_make_without_am_makeflags \
+$(sc_obsolete_requirements_rules) \
+sc_tests_no_source_defs \
 sc_tests_obsolete_variables \
-sc_tests_plain_make \
-sc_tests_plain_autoconf \
-sc_tests_plain_autoupdate \
-sc_tests_plain_automake \
-sc_tests_plain_autom4te \
-sc_tests_plain_autoheader \
-sc_tests_plain_autoreconf \
 sc_tests_here_document_format \
-sc_tests_Exit_not_exit \
+sc_tests_command_subst \
+sc_tests_exit_not_Exit \
 sc_tests_automake_fails \
-sc_tests_plain_aclocal \
-sc_tests_plain_perl \
 sc_tests_required_after_defs \
 sc_tests_overriding_macros_on_cmdline \
 sc_tests_plain_sleep \
-sc_tests_plain_egrep_fgrep \
+sc_tests_ls_t \
+sc_tests_executable \
+sc_m4_am_plain_egrep_fgrep \
 sc_tests_no_configure_in \
 sc_tests_PATH_SEPARATOR \
 sc_tests_logs_duplicate_prefixes \
 sc_tests_makefile_variable_order \
-sc_mkdir_p \
 sc_perl_at_substs \
 sc_unquoted_DESTDIR \
 sc_tabs_in_texi \
 sc_at_in_texi
 
-$(syntax_check_rules): automake aclocal
-maintainer-check: $(syntax_check_rules)
-.PHONY: maintainer-check $(syntax_check_rules)
-
-## Check that the list of tests given in the Makefile is equal to the
-## list of all test scripts in the Automake testsuite.
-maintainer-check: maintainer-check-list-of-tests
-
-## Look for test whose names can cause spurious failures when used as
-## first argument to AC_INIT (chiefly because they might contain an
-## m4/m4sugar builtin or macro name).
-m4_builtins = \
-  __gnu__ \
-  __unix__ \
-  bpatsubst \
-  bregexp \
-  builtin \
-  changecom \
-  changequote \
-  changeword \
-  debugfile \
-  debugmode \
-  decr \
-  define \
-  defn \
-  divert \
-  divnum \
-  dnl \
-  dumpdef \
-  errprint \
-  esyscmd \
-  eval \
-  format \
-  ifdef \
-  ifelse \
-  include \
-  incr \
-  index \
-  indir \
-  len \
-  m4exit \
-  m4wrap \
-  maketemp \
-  mkstemp \
-  patsubst \
-  popdef \
-  pushdef \
-  regexp \
-  shift \
-  sinclude \
-  substr \
-  symbols \
-  syscmd \
-  sysval \
-  traceoff \
-  traceon \
-  translit \
-  undefine \
-  undivert
-sc_test_names:
-	@m4_builtin_rx=`echo $(m4_builtins) | sed 's/ /|/g'`; \
-	 m4_macro_rx="\\<($$m4_builtin_rx)\\>|\\<_?(A[CUMHS]|m4)_"; \
-	 if { \
-	   for t in $(xtests); do echo $$t; done \
-	     | LC_ALL=C grep -E "$$m4_macro_rx"; \
-	 }; then \
-	   echo "the names of the tests above can be problematic" 1>&2; \
-	   echo "Avoid test names that contain names of m4 macros" 1>&2; \
-	   exit 1; \
-	 fi
-
 ## These check avoids accidental configure substitutions in the source.
-## There are exactly 9 lines that should be modified from automake.in to
-## automake, and 10 lines that should be modified from aclocal.in to
-## aclocal; these wors out to 32 and 34 lines of diffs, respectively.
-sc_diff_automake_in_automake:
-	@if test `diff $(srcdir)/automake.in automake | wc -l` -ne 32; then \
-	  echo "found too many diffs between automake.in and automake" 1>&2; \
-	  diff -c $(srcdir)/automake.in automake; \
-	  exit 1; \
-	fi
-sc_diff_aclocal_in_aclocal:
-	@if test `diff $(srcdir)/aclocal.in aclocal | wc -l` -ne 34; then \
-	  echo "found too many diffs between aclocal.in and aclocal" 1>&2; \
-	  diff -c $(srcdir)/aclocal.in aclocal; \
-	  exit 1; \
-	fi
+## There are exactly 8 lines that should be modified from automake.in to
+## automake, and 9 lines that should be modified from aclocal.in to
+## aclocal.
+automake_diff_no = 8
+aclocal_diff_no = 9
+sc_diff_automake sc_diff_aclocal: sc_diff_% :
+	@set +e; tmp=$*-diffs.tmp; \
+	 diff -u $(srcdir)/$*.in $* > $$tmp; test $$? -eq 1 || exit 1; \
+	 added=`grep -v '^+++ ' $$tmp | grep -c '^+'` || exit 1; \
+	 removed=`grep -v '^--- ' $$tmp | grep -c '^-'` || exit 1; \
+	 test $$added,$$removed = $($*_diff_no),$($*_diff_no) \
+	  || { \
+	    echo "Found unexpected diffs between $*.in and $*"; \
+	    echo "Lines added:   $$added"  ; \
+	    echo "Lines removed: $$removed"; \
+	    cat $$tmp >&2; \
+	    exit 1; \
+	  } >&1; \
+	rm -f $$tmp
 
-## Syntax check with default Perl (on my machine, Perl 5).
-sc_perl_syntax:
-	@perllibdir="./lib$(PATH_SEPARATOR)$(srcdir)/lib" $(PERL) -c -w automake
-	@perllibdir="./lib$(PATH_SEPARATOR)$(srcdir)/lib" $(PERL) -c -w aclocal
-
-## expect no instances of '${...}'.  However, $${...} is ok, since that
+## Expect no instances of '${...}'.  However, $${...} is ok, since that
 ## is a shell construct, not a Makefile construct.
 sc_no_brace_variable_expansions:
-	@if grep -F '$${' $(ams) | grep -F -v '$$$$'; then \
+	@if grep -v '^ *#' $(ams) | grep -F '$${' | grep -F -v '$$$$'; then \
 	  echo "Found too many uses of '\$${' in the lines above." 1>&2; \
-	  exit 1;				\
+	  exit 1; \
 	else :; fi
 
 ## Make sure 'rm' is called with '-f'.
 sc_rm_minus_f:
 	@if grep -v '^#' $(ams) $(xtests) \
-	   | grep -v '/spy-rm\.tap:' \
+	   | grep -vE '/(spy-rm\.tap|subobj-clean.*-pr10697\.sh):' \
 	   | grep -E '\<rm ([^-]|\-[^f ]*\>)'; \
 	then \
 	  echo "Suspicious 'rm' invocation." 1>&2; \
-	  exit 1;				\
+	  exit 1; \
 	else :; fi
 
 ## Never use something like "for file in $(FILES)", this doesn't work
@@ -294,10 +219,12 @@ sc_tests_make_without_am_makeflags:
 sc_tests_obsolete_variables:
 	@vars=" \
 	  using_tap \
-	  parallel_tests \
+	  am_using_tap \
 	  test_prefer_config_shell \
 	  original_AUTOMAKE \
 	  original_ACLOCAL \
+	  parallel_tests \
+	  am_parallel_tests \
 	"; \
 	seen=""; \
 	for v in $$vars; do \
@@ -307,104 +234,116 @@ sc_tests_obsolete_variables:
 	done; \
 	if test -n "$$seen"; then \
 	  for v in $$seen; do \
-	    echo "Variable '$$v' is obsolete, use 'am_$$v' instead." 1>&2; \
+	    case $$v in \
+	      parallel_tests|am_parallel_tests) v2=am_serial_tests;; \
+	      *) v2=am_$$v;; \
+	    esac; \
+	    echo "Variable '$$v' is obsolete, use '$$v2' instead." 1>&2; \
 	  done; \
 	  exit 1; \
 	else :; fi
 
-## Tests should never call make directly.
-sc_tests_plain_make:
-	@if grep -v '^#' $(xtests) | $(EGREP) ':[ 	]*make( |$$)'; then \
-	  echo 'Do not run "make" in the above tests.  Use "$$MAKE" instead.' 1>&2; \
+## Look out for obsolete requirements specified in the test cases.
+sc_obsolete_requirements_rules = sc_no_texi2dvi-o sc_no_makeinfo-html
+modern-requirement.texi2dvi-o = texi2dvi
+modern-requirement.makeinfo-html = makeinfo
+
+$(sc_obsolete_requirements_rules): sc_no_% :
+	@if grep -E 'required=.*\b$*\b' $(xtests); then \
+	  echo "Requirement '$*' is obsolete and shouldn't" \
+	       "be used anymore." >&2; \
+	  echo "You should use '$(modern-requirement.$*)' instead." >&2; \
 	  exit 1; \
 	fi
 
-## Tests should never call autoconf directly.
-sc_tests_plain_autoconf:
-	@if grep -v '^#' $(xtests) | grep ':[	]*autoconf\>'; then \
-	  echo 'Do not run "autoconf" in the above tests.  Use "$$AUTOCONF" instead.' 1>&2; \
-	  exit 1; \
-	fi
+## Tests should never call some programs directly, but only through the
+## corresponding variable (e.g., '$MAKE', not 'make').  This will allow
+## the programs to be overridden at configure time (for less brittleness)
+## or by the user at make time (to allow better testsuite coverage).
+sc_tests_plain_check_rules = \
+  sc_tests_plain_egrep \
+  sc_tests_plain_fgrep \
+  sc_tests_plain_make \
+  sc_tests_plain_perl \
+  sc_tests_plain_automake \
+  sc_tests_plain_aclocal \
+  sc_tests_plain_autoconf \
+  sc_tests_plain_autoupdate \
+  sc_tests_plain_autom4te \
+  sc_tests_plain_autoheader \
+  sc_tests_plain_autoreconf
 
-## Tests should never call autoupdate directly.
-sc_tests_plain_autoupdate:
-	@if grep -v '^#' $(xtests) | grep ':[	]*autoupdate\>'; then \
-	  echo 'Do not run "autoupdate" in the above tests.  Use "$$AUTOUPDATE" instead.' 1>&2; \
-	  exit 1; \
-	fi
+toupper = $(shell echo $(1) | LC_ALL=C tr '[a-z]' '[A-Z]')
 
-## Tests should never call automake directly.
-sc_tests_plain_automake:
-	@if grep -v '^#' $(xtests) | grep -E ':[	]*automake\>([^:]|$$)'; then \
-	  echo 'Do not run "automake" in the above tests.  Use "$$AUTOMAKE" instead.' 1>&2;  \
-	  exit 1; \
-	fi
-
-## Tests should never call autoheader directly.
-sc_tests_plain_autoheader:
-	@if grep -v '^#' $(xtests) | grep ':[	]*autoheader\>'; then \
-	  echo 'Do not run "autoheader" in the above tests.  Use "$$AUTOHEADER" instead.' 1>&2;  \
-	  exit 1; \
-	fi
-
-## Tests should never call autoreconf directly.
-sc_tests_plain_autoreconf:
-	@if grep -v '^#' $(xtests) | grep ':[	]*autoreconf\>'; then \
-	  echo 'Do not run "autoreconf" in the above tests.  Use "$$AUTORECONF" instead.' 1>&2;  \
-	  exit 1; \
-	fi
-
-## Tests should never call autom4te directly.
-sc_tests_plain_autom4te:
-	@if grep -v '^#' $(xtests) | grep ':[	]*autom4te\>'; then \
-	  echo 'Do not run "autom4te" in the above tests.  Use "$$AUTOM4TE" instead.' 1>&2;  \
-	  exit 1; \
+$(sc_tests_plain_check_rules): sc_tests_plain_% :
+	@# The leading ':' in the grep below is what is printed by the
+	@# preceding 'grep -v' after the file name.
+	@# It works here as a poor man's substitute for beginning-of-line
+	@# marker.
+	@if grep -v '^[ 	]*#' $(xtests) \
+	   | $(EGREP) '(:|\bif|\bnot|[;!{\|\(]|&&|\|\|)[ 	]*?$*\b'; \
+	 then \
+	   echo 'Do not run "$*" in the above tests.' \
+	        'Use "$$$(call toupper,$*)" instead.' 1>&2; \
+	   exit 1; \
 	fi
 
 ## Tests should only use END and EOF for here documents
 ## (so that the next test is effective).
 sc_tests_here_document_format:
-	@if grep '<<' $(xtests) | grep -Ev '\b(END|EOF)\b|\bstd::cout <<'; then \
+	@if grep '<<' $(xtests) | grep -Ev '\b(END|EOF)\b|\bcout <<'; then \
 	  echo 'Use here documents with "END" and "EOF" only, for greppability.' 1>&2; \
 	  exit 1; \
 	fi
 
-## Tests should never call exit directly, but use Exit.
-## This is so that the exit status is transported correctly across the 0 trap.
-## Ignore comments, testsuite self tests, and one perl line in ext2.sh.
-sc_tests_Exit_not_exit:
-	@found=false; for file in $(xtests); do \
-	  case $$file in */self-check-*) continue;; esac; \
-	  res=`sed -n -e '/^#/d; /^\$$PERL/d' -e '/<<.*END/,/^END/b' \
-		      -e '/<<.*EOF/,/^EOF/b' -e '/exit [$$0-9]/p' $$file`; \
+## Our test case should use the $(...) POSIX form for command substitution,
+## rather than the older `...` form.
+## The point of ignoring text on here-documents is that we want to exempt
+## Makefile.am rules, configure.ac code and helper shell script created and
+## used by out shell scripts, because Autoconf (as of version 2.69) does not
+## yet ensure that $CONFIG_SHELL will be set to a proper POSIX shell.
+sc_tests_command_subst:
+	@found=false; \
+	scan () { \
+	  sed -n -e '/^#/d' \
+	         -e '/<<.*END/,/^END/b' -e '/<<.*EOF/,/^EOF/b' \
+	         -e 's/\\`/\\{backtick}/' \
+	         -e "s/[^\\]'\([^']*\`[^']*\)*'/'{quoted-text}'/g" \
+	         -e '/`/p' $$*; \
+	}; \
+	for file in $(xtests); do \
+	  res=`scan $$file`; \
 	  if test -n "$$res"; then \
 	    echo "$$file:$$res"; \
 	    found=true; \
 	  fi; \
 	done; \
 	if $$found; then \
-	  echo 'Do not call plain "exit", use "Exit" instead, in above tests.' 1>&2; \
+	  echo 'Use $$(...), not `...`, for command substitutions.' >&2; \
+	  exit 1; \
+	fi
+
+## Tests should no longer call 'Exit', just 'exit'.  That's because we
+## now have in place a better workaround to ensure the exit status is
+## transported correctly across the exit trap.
+sc_tests_exit_not_Exit:
+	@if grep 'Exit' $(xtests) $(xdefs) | grep -Ev '^[^:]+: *#' | grep .; then \
+	  echo "Use 'exit', not 'Exit'; it's obsolete now." 1>&2; \
+	  exit 1; \
+	fi
+
+## Guard against obsolescent uses of ./defs in tests.  Now,
+## 'test-init.sh' should be used instead.
+sc_tests_no_source_defs:
+	@if grep -E '\. .*defs($$| )' $(xtests); then \
+	  echo "Source 'test-init.sh', not './defs'." 1>&2; \
 	  exit 1; \
 	fi
 
 ## Use AUTOMAKE_fails when appropriate
 sc_tests_automake_fails:
-	@if grep -v '^#' $(xtests) | grep '\$$AUTOMAKE.*&&.*[eE]xit'; then \
+	@if grep -v '^#' $(xtests) | grep '\$$AUTOMAKE.*&&.*exit'; then \
 	  echo 'Use AUTOMAKE_fails + grep to catch automake failures in the above tests.' 1>&2;  \
-	  exit 1; \
-	fi
-
-## Tests should never call aclocal directly.
-sc_tests_plain_aclocal:
-	@if grep -v '^#' $(xtests) | grep ':[	]*aclocal\>'; then \
-	  echo 'Do not run "aclocal" in the above tests.  Use "$$ACLOCAL" instead.' 1>&2;  \
-	  exit 1; \
-	fi
-
-## Tests should never call perl directly.
-sc_tests_plain_perl:
-	@if grep -v '^#' $(xtests) | grep ':[	]*perl\>'; then \
-	  echo 'Do not run "perl" in the above tests.  Use "$$PERL" instead.' 1>&2; \
 	  exit 1; \
 	fi
 
@@ -438,16 +377,16 @@ sc_tests_overriding_macros_on_cmdline:
 # code paths.
 	@tests=`for t in $(xtests); do \
 	          case $$t in */make-dryrun.sh);; *) echo $$t;; esac; \
-		done`; \
+	        done`; \
 	if sed -e 's/ || .*//' -e 's/ && .*//' \
 	        -e 's/ DESTDIR=[^ ]*/ /' -e 's/ SHELL=[^ ]*/ /' \
 	        -e 's/ V=[^ ]*/ /' -e 's/ DISABLE_HARD_ERRORS=[^ ]*/ /' \
 	        -e "s/ DISTCHECK_CONFIGURE_FLAGS='[^']*'/ /" \
-		-e 's/ DISTCHECK_CONFIGURE_FLAGS="[^"]*"/ /' \
-		-e 's/ DISTCHECK_CONFIGURE_FLAGS=[^ ]/ /' \
+	        -e 's/ DISTCHECK_CONFIGURE_FLAGS="[^"]*"/ /' \
+	        -e 's/ DISTCHECK_CONFIGURE_FLAGS=[^ ]/ /' \
 	        -e "s/ exp='[^']*'/ /" \
-		-e 's/ exp="[^"]*"/ /' \
-		-e 's/ exp=[^ ]/ /' \
+	        -e 's/ exp="[^"]*"/ /' \
+	        -e 's/ exp=[^ ]/ /' \
 	      $$tests | grep '\$$MAKE .*='; then \
 	  echo 'Rewrite "$$MAKE foo=bar" as "foo=bar $$MAKE -e" in the above lines,' 1>&2; \
 	  echo 'it is more portable.' 1>&2; \
@@ -459,6 +398,29 @@ sc_tests_overriding_macros_on_cmdline:
 	  exit 1; \
 	fi
 
+## Prefer use of our 'is_newest' auxiliary script over the more hacky
+## idiom "test $(ls -1t new old | sed 1q) = new", which is both more
+## cumbersome and more fragile.
+sc_tests_ls_t:
+	@if LC_ALL=C grep -E '\bls(\s+-[a-zA-Z0-9]+)*\s+-[a-zA-Z0-9]*t' \
+	    $(xtests); then \
+	  echo "Use 'is_newest' rather than hacks based on 'ls -t'" 1>&2; \
+	  exit 1; \
+	fi
+
+## Test scripts must be executable.
+sc_tests_executable:
+	@st=0; \
+	for f in $(xtests); do \
+	  case $$f in \
+	    t/ax/*|./t/ax/*|$(srcdir)/t/ax/*);; \
+	    *) test -x $$f || { echo "$$f: not executable" >&2; st=1; }; \
+	  esac; \
+	done; \
+	test $$st -eq 0 || echo '$@: some test scripts are not executable' >&2; \
+	exit $$st;
+
+
 ## Never use 'sleep 1' to create files with different timestamps.
 ## Use '$sleep' instead.  Some filesystems (e.g., Windows) have only
 ## a 2sec resolution.
@@ -469,13 +431,10 @@ sc_tests_plain_sleep:
 	fi
 
 ## fgrep and egrep are not required by POSIX.
-sc_tests_plain_egrep_fgrep:
-	@if grep -E '\b[ef]grep\b' $(xtests) ; then \
-	  echo 'Do not use egrep or fgrep in test cases.  Use $$FGREP or $$EGREP.' 1>&2; \
-	  exit 1; \
-	fi
+sc_m4_am_plain_egrep_fgrep:
 	@if grep -E '\b[ef]grep\b' $(ams) $(srcdir)/m4/*.m4; then \
-	  echo 'Do not use egrep or fgrep in the above files, they are not portable.' 1>&2; \
+	  echo 'Do not use egrep or fgrep in the above files,' \
+	       'they are not portable.' 1>&2; \
 	  exit 1; \
 	fi
 
@@ -545,12 +504,6 @@ sc_tests_PATH_SEPARATOR:
 	  exit 1; \
 	fi
 
-sc_mkdir_p:
-	@if grep 'mkdir_p' $(srcdir)/automake.in $(ams) $(xtests); then \
-	  echo 'Do not use mkdir_p in the above files, use MKDIR_P.' 1>&2; \
-	  exit 1; \
-	fi
-
 ## Try to make sure all @...@ substitutions are covered by our
 ## substitution rule.
 sc_perl_at_substs:
@@ -581,3 +534,11 @@ sc_at_in_texi:
 	  echo 'Unescaped @.' 1>&2; \
 	  exit 1; \
 	fi
+
+$(syntax_check_rules): automake aclocal
+maintainer-check: $(syntax_check_rules)
+.PHONY: maintainer-check $(syntax_check_rules)
+
+## Check that the list of tests given in the Makefile is equal to the
+## list of all test scripts in the Automake testsuite.
+maintainer-check: maintainer-check-list-of-tests

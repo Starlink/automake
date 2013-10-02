@@ -18,10 +18,9 @@
 #  - a "not ok # SKIP" line should count as a failure, for consistency
 #    with the prove(1) utility.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > all.test <<'END'
 1..4
@@ -31,7 +30,7 @@ not ok - foo # SKIP
 not ok 4 - bar # SKIP
 END
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=4 pass=0 fail=4 skip=0 xpass=0 xfail=0 error=0

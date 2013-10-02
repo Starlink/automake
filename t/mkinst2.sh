@@ -16,7 +16,7 @@
 
 # Test to make sure no-installman suppresses man dir creation.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -30,7 +30,11 @@ END
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure --prefix "`pwd`/sub"
+./configure --prefix "$(pwd)/sub"
 
 $MAKE installdirs
-test ! -d sub/man
+test ! -e sub/man
+$MAKE install
+test ! -e sub/man
+
+:

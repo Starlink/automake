@@ -17,8 +17,7 @@
 # Check parallel harness features:
 #  - recovery from unreadable '.trs' files, in various scenarios
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<END
 AC_OUTPUT
@@ -41,8 +40,7 @@ $AUTOMAKE -a
 ./configure
 
 : > t
-chmod a-r t
-test ! -r t || Exit 77
+chmod a-r t && test ! -r t || skip_ "you can still read unreadable files"
 rm -f t
 
 : Create the required log files.
@@ -71,7 +69,7 @@ test -r bar.trs
 : Again, but using "make recheck" this time.
 rm -f foo.trs
 chmod a-r bar.trs
-$MAKE recheck >stdout || { cat stdout; Exit 1; }
+$MAKE recheck >stdout || { cat stdout; exit 1; }
 cat stdout
 test -f foo.trs
 test -r foo.trs
@@ -79,26 +77,16 @@ test -f bar.trs
 test -r bar.trs
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
-
-: More complex interactions with "make recheck" are OK.
-chmod a-r bar.log bar.trs
-$MAKE recheck >stdout || { cat stdout; Exit 1; }
-cat stdout
-test -f bar.trs
-test -r bar.trs
-grep '^PASS: bar\.test' stdout
-grep 'foo\.test' stdout && Exit 1
-count_test_results total=1 pass=1 fail=0 xpass=0 xfail=0 skip=0 error=0
 
 : Recreate by remaking the global test log.
 chmod a-r foo.trs
 rm -f test-suite.log
-$MAKE test-suite.log >stdout || { cat stdout; Exit 1; }
+$MAKE test-suite.log >stdout || { cat stdout; exit 1; }
 cat stdout
 test -f foo.trs
 test -r foo.trs
 grep '^PASS: foo\.test' stdout
-grep 'bar\.test' stdout && Exit 1
+grep 'bar\.test' stdout && exit 1
 # Also test that have only run before should be counted in the final
 # testsuite summary.
 grep '^# TOTAL:  *2$' stdout
@@ -106,7 +94,7 @@ grep '^# TOTAL:  *2$' stdout
 : Setup for the next check.
 : > baz.test
 sed 's/^TESTS =.*/& baz.test/' Makefile > t
-diff t Makefile && Exit 99
+diff t Makefile && exit 99
 mv -f t Makefile
 $MAKE check
 test -f foo.trs
@@ -119,13 +107,13 @@ $sleep
 touch stamp
 $sleep
 touch bar.test
-RECHECK_LOGS= $MAKE -e check >stdout || { cat stdout; Exit 1; }
+RECHECK_LOGS= $MAKE -e check >stdout || { cat stdout; exit 1; }
 cat stdout
 test -r foo.trs
 is_newest bar.trs bar.test
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
-grep 'baz\.test' stdout && Exit 1
+grep 'baz\.test' stdout && exit 1
 # Also test that have only run before should be counted in the final
 # testsuite summary.
 grep '^# TOTAL:  *3$' stdout

@@ -19,21 +19,20 @@
 #  - multiple test plans
 #  - missing test plan
 #  - misplaced test plan (tests run after a late plan)
-# Checks about unplanned tests are performed in 'tap-unplanned.test'
-# and 'tap-skip-whole-badcount.test'.  More checks about corner-cases
-# in TAP plans are performed in 'tap-plan-corner.test'.
+# Checks about unplanned tests are performed in 'tap-unplanned.sh'
+# and 'tap-skip-whole-badcount.sh'.  More checks about corner-cases
+# in TAP plans are performed in 'tap-plan-corner.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 my_check ()
 {
   cat > all.test
   test -n "$err" || fatal_ "\$err not set before calling my_check"
   cat all.test # For debugging.
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
   count_test_results "$@"
   grep "^ERROR: all\\.test $err$" stdout

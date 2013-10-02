@@ -16,10 +16,10 @@
 
 # Check that remake rules works from subdirectories, even with non-GNU
 # make implementations.
-# See also the other similar tests 'remake-subdir*.test', and the
-# related test 'aclocal5.test'.
+# See also the other similar tests 'remake-subdir*.sh', and the
+# related test 'aclocal5.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 if using_gmake; then
   remake=$MAKE
@@ -75,7 +75,7 @@ cd ..
 debug_info
 $FGREP $magic2 sub/Makefile
 $FGREP $magic2 sub/Makefile.in
-$FGREP $magic1 sub/Makefile sub/Makefile.in && Exit 1
-$FGREP $magic2 Makefile Makefile.in && Exit 1
+$FGREP $magic1 sub/Makefile sub/Makefile.in && exit 1
+$FGREP $magic2 Makefile Makefile.in && exit 1
 
 :

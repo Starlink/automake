@@ -19,7 +19,7 @@
 # Report from Harlan Stenn.
 
 required='libtoolize'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<'END'
 AM_CONDITIONAL([COND1], [true])

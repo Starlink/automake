@@ -17,37 +17,39 @@
 # Test missing when running a tool's --version.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 get_shell_script missing
 
 # b7cb8259 assumed not to exist.
 
-./missing b7cb8259 --version 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep . stderr && Exit 1
-./missing b7cb8259 --grep 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep WARNING stderr
+run_cmd ()
+{
+  st=0; "$@" >stdout 2>stderr || st=$?
+  cat stdout
+  cat stderr >&2
+  return $st
+}
 
-./missing --run b7cb8259 --version && Exit 1
-./missing --run b7cb8259 --grep 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep WARNING stderr
+run_cmd ./missing b7cb8259 --version && exit 1
+grep WARNING stderr && exit 1
+run_cmd ./missing b7cb8259 --grep && exit 1
+
+if test x"$am_test_prefer_config_shell" != x"yes"; then
+  # The /bin/sh from Solaris 10 is a spectacular failure.  After a failure
+  # due to a "command not found", it sets '$?' to '1'.
+  if (st=0; /bin/sh -c 'no--such--command' || st=$?; test $st -eq 127); then
+    grep 'WARNING:.*missing on your system' stderr
+  fi
+fi
 
 # missing itself it known to exist :)
 
-./missing ./missing --version 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep . stderr && Exit 1
-./missing ./missing --grep 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep WARNING stderr
+run_cmd ./missing ./missing --version || exit 1
+grep 'missing .*(GNU [aA]utomake)' stdout
+test -s stderr && exit 1
+run_cmd ./missing ./missing --grep && exit 1
+grep WARNING stderr && exit 1
+grep "missing:.* unknown '--grep'" stderr
 
-./missing --run ./missing --version 2>stderr || { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep . stderr && Exit 1
-./missing --run ./missing --grep 2>stderr && { cat stderr >&2; Exit 1; }
-cat stderr >&2
-grep WARNING stderr && Exit 1
-grep Unknown stderr
+:

@@ -17,7 +17,7 @@
 # Check basic ACLOCAL_PATH support.
 
 am_create_testdir=empty
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << 'END'
 AC_INIT
@@ -40,15 +40,15 @@ cat > mdir3/baz.m4 << 'END'
 AC_DEFUN([AM_BAZ_MACRO], [am--baz])
 END
 
-ACLOCAL_PATH=mdir1:./mdir2:`pwd`/mdir3 $ACLOCAL
+ACLOCAL_PATH=mdir1:./mdir2:$(pwd)/mdir3 $ACLOCAL
 $AUTOCONF
 
 # there should be no m4_include in aclocal.m4, even though ACLOCAL_PATH
 # contains 'mdir1' and './mdir2' as relative directories.  Only -I
 # directories should be subject to file inclusion.
-$FGREP m4_include aclocal.m4 && Exit 1
+$FGREP m4_include aclocal.m4 && exit 1
 
-$EGREP 'AM_(FOO|BAR|BAZ)_MACRO' configure && Exit 1
+$EGREP 'AM_(FOO|BAR|BAZ)_MACRO' configure && exit 1
 $FGREP 'am--foo' configure
 $FGREP 'am--bar' configure
 $FGREP 'am--baz' configure

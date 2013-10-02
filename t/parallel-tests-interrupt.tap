@@ -14,13 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Check that the parallel-tests driver removed incomplete log files
+# Check that the parallel testsuite harness removes incomplete log files
 # when interrupt upon some signal.  This test is definitely too hacky,
 # but we couldn't find a better way to deal with inter-processes
 # signals and the whole process-synchronization mess.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 plan_ 16
 
@@ -31,7 +30,7 @@ END
 cat > Makefile.am << 'END'
 TESTS = foo.test
 ## Provide more debugging info.
-TEST_LOG_COMPILER = $(SHELL) -x
+TEST_LOG_COMPILER = $(SHELL) -ex
 ## Required by foo.test; see below.
 AM_TESTS_FD_REDIRECT = 9>&1
 END

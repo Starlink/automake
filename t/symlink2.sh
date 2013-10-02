@@ -16,7 +16,7 @@
 
 # Test to make sure that 'automake -a' redirects dangling symlinks.
 
-. ./defs || Exit 1
+. test-init.sh
 
 rm -f install-sh
 ln -s Zardoz install-sh || skip_ "cannot create broken symlinks"
@@ -27,6 +27,6 @@ $ACLOCAL
 $AUTOMAKE --add-missing
 
 test -f install-sh
-test ! -r Zardoz
+test ! -e Zardoz
 
 :

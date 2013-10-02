@@ -17,8 +17,8 @@
 # Test to make sure bison + bison's C++ skeleton + C++ works.
 # For Automake bug#7648 and PR automake/491.
 
-required=bison
-. ./defs || Exit 1
+required='c++ bison'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -40,10 +40,15 @@ END
 cat > zardoz.yy << 'END'
 %skeleton "lalr1.cc"
 %defines
+%locations
 
+%union
+{
+  int ival;
+};
 %{
-#define YYSTYPE int
-int yylex(YYSTYPE* yylval_param);
+int yylex (yy::parser::semantic_type *yylval,
+           yy::parser::location_type *yylloc);
 %}
 
 %%
@@ -51,22 +56,21 @@ start :        /* empty */
 %%
 
 int
-yylex(YYSTYPE*)
+yylex (yy::parser::semantic_type *yylval,
+       yy::parser::location_type *yylloc)
 {
-    return 0;
+  return 0;
 }
 
 void
-yy::parser::error(const yy::parser::location_type&, const std::string& m)
+yy::parser::error(const yy::parser::location_type&, const std::string&)
 {
-    return;
+  return;
 }
 END
 
 cat > foo.cc << 'END'
 #include "zardoz.hh"
-
-using namespace std;
 
 int
 main(int argc, char** argv)
@@ -93,6 +97,6 @@ $MAKE
 
 # Check that distribution is self-contained, and do not require
 # bison to be built.
-env YACC=false DISTCHECK_CONFIGURE_FLAGS='YACC=false' $MAKE -e distcheck
+yl_distcheck YACC=false DISTCHECK_CONFIGURE_FLAGS='YACC=false'
 
 :

@@ -17,7 +17,8 @@
 # Check that the testsuite driver can find test in the srcdir as
 # well as in builddir, and that is prefers those in the builddir.
 
-. ./defs || Exit 1
+# For gen-testsuite-part: ==> try-with-serial-tests <==
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -51,40 +52,41 @@ exit 0
 END
 chmod a+x bar.test
 
-$MAKE check >out 2>&1 || { cat out; Exit1; }
+$MAKE check >out 2>&1 || { cat out; exit 1; }
 cat out
-# The simple-tests driver does not strip VPATH components from
-# the name of the test, but the parallel-tests driver should.
-if test x"$am_parallel_tests" = x"yes"; then
-  grep '\.\./foo' out && Exit 1
-  grep '^PASS: foo.test *$' out
+# The serial test driver does not strip VPATH components from
+# the name of the test, but the parallel driver should.
+if test x"$am_serial_tests" = x"yes"; then
+  grep '^PASS: .*foo\.test *$' out
 else
-  grep '^PASS: .*foo.test *$' out
+  grep '\.\./foo' out && exit 1
+  grep '^PASS: foo\.test *$' out
 fi
-grep '^PASS: bar.test *$' out
+grep '^PASS: bar\.test *$' out
 
 rm -f test-suite.log foo.log bar.log
 
-FOO_EXIT_STATUS=1 $MAKE check >out 2>&1 && { cat out; Exit1; }
+FOO_EXIT_STATUS=1 $MAKE check >out 2>&1 && { cat out; exit 1; }
 cat out
-# See comments above.
-if test x"$am_parallel_tests" = x"yes"; then
-  grep '\.\./foo' out && Exit 1
-  grep '^FAIL: foo.test *$' out
+# The serial test driver does not strip VPATH components from
+# the name of the test, but the parallel driver should.
+if test x"$am_serial_tests" = x"yes"; then
+  grep '^FAIL: .*foo\.test *$' out
 else
-  grep '^FAIL: .*foo.test *$' out
+  grep '\.\./foo' out && exit 1
+  grep '^FAIL: foo\.test *$' out
 fi
-grep '^PASS: bar.test *$' out
+grep '^PASS: bar\.test *$' out
 
 rm -f test-suite.log foo.log bar.log
 
 # Check that if the same test is present in srcdir and builddir,
 # the one in builddir is preferred.
 cp bar.test foo.test
-FOO_EXIT_STATUS=1 $MAKE check >out 2>&1 || { cat out; Exit1; }
+FOO_EXIT_STATUS=1 $MAKE check >out 2>&1 || { cat out; exit 1; }
 cat out
-grep '^PASS: foo.test *$' out
-grep '^PASS: bar.test *$' out
+grep '^PASS: foo\.test *$' out
+grep '^PASS: bar\.test *$' out
 
 # The tests in the builddir must be preferred also by "make dist".
 FOO_EXIT_STATUS=1 $MAKE distcheck

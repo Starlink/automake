@@ -26,8 +26,8 @@ dnl  installation locations rather than the "starlink-automake" it
 dnl  would otherwise construct.
 AC_INIT([Starlink Automake], [1.12-starlink], [starlink@jiscmail.ac.uk], automake)
 
-AC_PREREQ([2.68])
-dnl AC_INIT([GNU Automake], [1.12], [bug-automake@gnu.org])
+AC_PREREQ([2.69])
+dnl AC_INIT([GNU Automake], [1.13], [bug-automake@gnu.org])
 
 AC_CONFIG_SRCDIR([automake.in])
 AC_CONFIG_AUX_DIR([lib])
@@ -55,8 +55,13 @@ AC_SUBST([am_AUTOUPDATE], ["${AUTOUPDATE-autoupdate}"])
 dnl We call AC_PROG_CC in an unusual way, and only for use in our
 dnl testsuite, so also use 'no-dependencies' and 'no-define' among
 dnl the automake options to avoid bloating and potential problems.
-AM_INIT_AUTOMAKE([1.10a dist-xz filename-length-max=99 color-tests
-		  parallel-tests silent-rules no-define no-dependencies])
+AM_INIT_AUTOMAKE([dist-xz filename-length-max=99 color-tests
+                  no-define no-dependencies])
+
+## Keep this on a line of its own, since it must be found and processed
+## by the 'update-copyright' rule in our Makefile.
+RELEASE_YEAR=2012
+AC_SUBST([RELEASE_YEAR])
 
 # The API version is the base version.  We must guarantee
 # compatibility for all releases with the same API version.
@@ -74,10 +79,14 @@ AC_SUBST([amdir], ["\${pkgvdatadir}/am"])
 AC_SUBST([automake_acdir], ["\${datadir}/aclocal-$APIVERSION"])
 AC_SUBST([system_acdir], ["\${datadir}/aclocal"])
 
-# $AUTOMAKE and $ACLOCAL are always run after a "cd $top_srcdir",
-# hence '.' is really what we want for perllibdir, libdir, and acdir.
-ACLOCAL="perllibdir=\"`pwd`/lib$PATH_SEPARATOR./lib\" \"`pwd`/aclocal\" --acdir=m4 -I m4"
-AUTOMAKE="perllibdir=\"`pwd`/lib$PATH_SEPARATOR./lib\" \"`pwd`/automake\" --libdir=lib"
+# Our build system is bootstrapped with the bleeding-edge versions of
+# aclocal and automake, hence the remake rules must use those versions
+# as well.  The extra quoting is to cater to cases when the build
+# directory contains whitespace or shell metacharacters.
+ACLOCAL="\"`pwd`/t/wrap/aclocal-$APIVERSION\""
+AUTOMAKE="\"`pwd`/t/wrap/automake-$APIVERSION\""
+
+AC_PROG_LN_S
 
 AC_PATH_PROG([PERL], [perl])
 if test -z "$PERL"; then
@@ -100,11 +109,11 @@ AC_CACHE_CHECK([whether $PERL supports ithreads], [am_cv_prog_PERL_ithreads],
     use Config;
     if ($Config{useithreads})
       {
-	require threads;
-	import threads;
-	require Thread::Queue;
-	import Thread::Queue;
-	exit 0;
+        require threads;
+        import threads;
+        require Thread::Queue;
+        import Thread::Queue;
+        exit 0;
       }
     exit 1;' >&AS_MESSAGE_LOG_FD 2>&1
 then
@@ -146,7 +155,7 @@ AC_CHECK_PROGS([LEX], [lex flex], [false])
 # following tests, but some users were unable to figure out that their
 # installation was broken since --version appeared to work.
 
-required_autoconf_version=2.62
+required_autoconf_version=2.65
 AC_CACHE_CHECK([whether autoconf is installed], [am_cv_autoconf_installed],
 [if AM_RUN_LOG([$am_AUTOCONF --version]);
 then
@@ -216,25 +225,204 @@ case $build in
 esac
 AC_SUBST([MODIFICATION_DELAY])
 
-# Test for things needed by the test suite.
+## ------------------------------------------- ##
+##  Test for things needed by the test suite.  ##
+## ------------------------------------------- ##
+
 AC_PROG_EGREP
 AC_PROG_FGREP
 
-AC_CACHE_CHECK([whether $SHELL has working 'set -e' with exit trap],
-[am_cv_sh_errexit_works],
-[if $SHELL -ec "trap 'exit \$?' 0; (exit 77); exit 77"; test $? = 77
-then
-  am_cv_sh_errexit_works=yes
+dnl FIXME: could we extract this in a simpler way through autoconf
+dnl FIXME: idioms or internals?
+AC_DEFUN(
+  [_AM_INIT_BOURNE_COMPATIBLE_VAR],
+  [am_bourne_compatible="AS_ESCAPE(_m4_expand([AS_BOURNE_COMPATIBLE]))"])
+
+dnl
+dnl Arguments to this macro:
+dnl
+dnl   $1 - shell to test
+dnl   $2 - description of the tested feature
+dnl   $3 - shell code used to check the feature; to indicate success,
+dnl        it can either exit with status 77, or have the last command
+dnl        returning with exit status of zero
+dnl   $4 - shell code to execute if the check on the shell is successful
+dnl        (defaults to nothing)
+dnl   $5 - shell code to execute if the check on the shell is not
+dnl        successful (defaults to nothing)
+dnl
+AC_DEFUN([_AM_CHECK_SHELL_FEATURE],
+  [AC_REQUIRE([_AM_INIT_BOURNE_COMPATIBLE_VAR])
+  AC_MSG_CHECKING([whether $1 $2])
+  if { $1 -c "$am_bourne_compatible
+AS_ESCAPE([$3])
+test \$? -eq 0 || exit 1
+# Use 77 to indicate success (rather than 0), in case some shell
+# acts like Solaris 10's /bin/sh, exiting successfully on some
+# syntax errors.
+exit 77" >&AS_MESSAGE_LOG_FD 2>&1; test $? -eq 77; }
+  then
+    AC_MSG_RESULT([yes])
+    $4
+  else
+    AC_MSG_RESULT([no])
+    $5
+  fi])
+
+# AM_CHECK_CANDIDATE_TEST_SHELL(SHELL-PATH)
+# -----------------------------------------
+#
+# Check if the given shell is good enough to run our test scripts.
+# Inspired to gnulib's 'tests/init.sh'.
+#
+# We require POSIX and XSI features (e.g., '$(...)' for command
+# substitutions, '$((...))' for shell arithmetic, and support for
+# '${var#...}' and '${var%...}' parameter expansions).
+#
+# We require that the shell can correctly trap EXIT when 'set -e' is in
+# effect (OSF1/Tru64 sh failed to do so, see commit v1.10b-52-g9fe8259).
+#
+# We want to able to define shell aliases with the same name of shell
+# builtins.
+#
+# We also prefer shells that, when 'set -x' is in effect, do not also
+# redirect traces upon stderr redirections.  For example,
+#  $ set -x; echo x 2>file
+# would emit "+ echo x" into file with older zsh versions.  Similarly,
+#   $ set -x; P=1 true 2>file
+# would emit "P=1" into file with /usr/xpg4/bin/sh from Solaris 10 and
+# /bin/sh from SunOS 5.11 and OpenBSD 4.7.
+#
+# Finally, we look for weird bugs and portability problems mentioned in
+# the Autoconf manual, and reject shells that suffers from them. (TODO)
+#
+# Use '$am_score' to indicate the degree of acceptability of the shell.
+# A score of "10" means that the shell is good enough for our needs;
+# a score of "9" means that the shell has some minor bugs or limitation,
+# but is still (barely) acceptable for our uses.  Any other score means
+# that the shell is broken or unfit.
+#
+AC_DEFUN([_AM_CHECK_CANDIDATE_SHELL],
+  [am_score=10
+  while :; do
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports \$(cmd)],
+      [test "$(echo x)" = x],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports \$((expr))],
+      [test $((1 + 2 * 3)) = 7],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports \${@%:@var}],
+      [zero='' one='x' twelve=' foobar baz!' \
+        && test ${@%:@zero} -eq 0 \
+        && test ${@%:@one} -eq 1 \
+        && test ${@%:@twelve} -eq 12],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports \${var@%:@glob} and \${var%glob}],
+      [v=a/b/c \
+        && test ${v@%:@*/} = b/c \
+        && test ${v@%:@@%:@*/} = c \
+        && test ${v%/*} = a/b \
+        && test ${v%%/*} = a],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [preserves exit traps with "set -e"],
+      [set -e; trap 'exit $?' 0; (exit 77); exit 77],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [can define exit traps in a shell function],
+      [fail=0 && foo() { trap 'fail=1' 0; } && foo && test $fail = 0],
+      [], [am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [corrupts stderr with "set -x"],
+      [(set -x; P=1 true 2>&3) 3>&1 2>/dev/null | grep P=1],
+      [am_score=9], [])
+
+    echo 'return 34' > conftest-return.sh
+    echo 'ok=no' >> conftest-return.sh
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [can return early from "dot-sourced" files],
+      [ok=yes; . ./conftest-return.sh; test $? -eq 34 && test $ok = yes],
+      [rm -f conftest-return.sh],
+      [rm -f conftest-return.sh; am_score=1; break])
+
+    echo 'alias false=echo' > conftest-alias.sh
+    echo 'false && test "$(false 97)" = 97' >> conftest-alias.sh
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports alias named like shell builtins],
+      [. ./conftest-alias.sh],
+      [rm -f conftest-alias.sh],
+      [rm -f conftest-alias.sh; am_score=1; break])
+
+    _AM_CHECK_SHELL_FEATURE([$1],
+      [supports "test -e"],
+      [test -e config.log && test -e . && test ! -e nonesuch],
+      [], [am_score=1; break])
+
+    break
+  done])
+
+# These messages only goes to the config.log file.
+AC_MSG_NOTICE([will now look for a sturdy POSIX shell, for our testsuite])
+
+AC_CACHE_VAL(
+  [ac_cv_AM_TEST_RUNNER_SHELL],
+  [if test "$AM_TEST_RUNNER_SHELL"; then
+    # Let the user override it.
+    ac_cv_AM_TEST_RUNNER_SHELL=$AM_TEST_RUNNER_SHELL
+  else
+    ac_cv_AM_TEST_RUNNER_SHELL=no
+    am_candidate_shells=${CONFIG_SHELL-}
+    # For the benefit of Solaris.
+    am_PATH=$PATH$PATH_SEPARATOR/usr/xpg6/bin$PATH_SEPARATOR/usr/xpg4/bin
+    for am_sh in sh sh5 dash ash bash zsh ksh pdksh; do
+      AC_PATH_PROG([am_candidate_sh], [$am_sh], [], [$am_PATH])
+      if test -n "$am_candidate_sh"; then
+        am_candidate_shells="$am_candidate_shells $am_candidate_sh"
+      fi
+      AM_SUBST_NOTMAKE([am_candidate_sh])
+      # Must nullify these in order not to interfere with the checks in
+      # the next loop.
+      AS_UNSET([am_candidate_sh])
+      AS_UNSET([ac_cv_path_am_candidate_sh])
+    done
+    AS_UNSET([am_PATH]) # Not required anymore
+    for am_sh in $am_candidate_shells; do
+      am_score=0
+      _AM_CHECK_CANDIDATE_SHELL([$am_sh])
+      if test $am_score -eq 9; then
+        # The shell is barely acceptable for our needs.  We might
+        # still find one that is even better, so continue looking.
+        AC_MSG_NOTICE([shell $am_sh is acceptable, but we might do better])
+        ac_cv_AM_TEST_RUNNER_SHELL=$am_sh
+      elif test $am_score -eq 10; then
+        AC_MSG_NOTICE([shell $am_sh is good enough, stop looking])
+        ac_cv_AM_TEST_RUNNER_SHELL=$am_sh
+        break
+      fi
+    done
+  fi
+  AM_TEST_RUNNER_SHELL=$ac_cv_AM_TEST_RUNNER_SHELL])
+
+if test $AM_TEST_RUNNER_SHELL = no; then
+  AC_MSG_FAILURE([m4_normalize([no POSIX shell found that is good
+                                enough to be used in our testsuite])])
 else
-  am_cv_sh_errexit_works=no
+  AC_MSG_NOTICE([will use $AM_TEST_RUNNER_SHELL as the testsuite shell])
 fi
-])
-if test $am_cv_sh_errexit_works = no; then
-  AC_MSG_WARN(["${MAKE-make} check" will leave leftover directories t/*.dir])
-  AC_MSG_WARN([you can clean them up manually using "${MAKE-make} clean" or])
-  AC_MSG_WARN(["cd t && ${MAKE-make} clean-local-check'])
-fi
-AC_SUBST([sh_errexit_works], [$am_cv_sh_errexit_works])
+
+AC_ARG_VAR([AM_TEST_RUNNER_SHELL],
+           [a sturdy POSIX shell for our testsuite])
 
 
 ###########################################################################
@@ -295,12 +483,23 @@ _AM_COMPILER_CAN_FAIL(dnl
 
 AS_IF([test x"$GCC" = x"yes"], [am_CC_is_GNU=yes], [am_CC_is_GNU=no])
 
+# On case-insensitive file systems (seen e.g. on Cygwin and Mac OS X)
+# we must avoid looking for 'CC', because that would be the same as
+# 'cc', and could cause $CXX to point to the C compiler, instead of
+# to a C++ compiler as expected.  See automake bugs #11893 and #10766.
+if test -f /bIn/rMdIr || test -f /uSr/bIn/rMdIr; then
+  # Case-insensitive file system, don't look for CC.
+  am_CC=
+else
+  am_CC=CC
+fi
+
 # The list of C++ compilers here has been copied, pasted and edited
 # from 'lib/autoconf/c.m4:AC_PROG_CXX' in the Autoconf distribution.
 # Keep it in sync, or better again, find out a way to avoid this code
 # duplication.
 _AM_COMPILER_CAN_FAIL([AC_PROG_CXX(dnl
-  [aCC CC FCC KCC RCC xlC_r xlC c++ cxx cc++ gpp g++])],
+  [aCC $am_CC FCC KCC RCC xlC_r xlC c++ cxx cc++ gpp g++])],
   [CXX=false; _AM_SKIP_COMP_TESTS([C++])])
 
 AS_IF([test x"$GXX" = x"yes"], [am_CXX_is_GNU=yes], [am_CXX_is_GNU=no])
@@ -315,7 +514,6 @@ _AM_COMPILER_CAN_FAIL([AC_PROG_FC(dnl
   [xlf90 f90 pgf90 pghpf epcf90 g95 gfortran])],
   [FC=false; _AM_SKIP_COMP_TESTS([Fortran])])
 
-# FIXME this won't work as expected until we can assume autoconf 2.69 :-(
 AS_IF([test x"$GFC" = x"yes"], [am_FC_is_GNU=yes], [am_FC_is_GNU=no])
 
 _AM_COMPILER_CAN_FAIL([AC_PROG_F77(dnl
@@ -345,9 +543,11 @@ if test $am_CC_is_GNU = yes; then
 else
   AC_CHECK_TOOLS([GNU_CC], [gcc], [false])
 fi
-AS_IF([AM_RUN_LOG([$GNU_CC --version && $GNU_CC -v])], [],
-      [AC_MSG_WARN([botched installation for GNU C compiler])
-       _AM_SKIP_COMP_TESTS([GNU C])])
+if test "$GNU_CC" != false; then
+  AS_IF([AM_RUN_LOG([$GNU_CC --version && $GNU_CC -v])], [],
+        [AC_MSG_WARN([botched installation for GNU C compiler])
+         _AM_SKIP_COMP_TESTS([GNU C])])
+fi
 
 # GNU C++ compiler.
 AC_ARG_VAR([GNU_CXX],      [GNU C++ compiler])
@@ -359,9 +559,11 @@ if test $am_CXX_is_GNU = yes; then
 else
   AC_CHECK_TOOLS([GNU_CXX], [g++ gpp], [false])
 fi
-AS_IF([AM_RUN_LOG([$GNU_CXX --version && $GNU_CXX -v])], [],
-      [AC_MSG_WARN([botched installation for GNU C++ compiler])
-       _AM_SKIP_COMP_TESTS([GNU C++])])
+if test "$GNU_CXX" != false; then
+  AS_IF([AM_RUN_LOG([$GNU_CXX --version && $GNU_CXX -v])], [],
+        [AC_MSG_WARN([botched installation for GNU C++ compiler])
+         _AM_SKIP_COMP_TESTS([GNU C++])])
+fi
 
 # GNU Fortran compiler.
 AC_ARG_VAR([GNU_FC],      [GNU Fortran compiler])
@@ -373,9 +575,11 @@ if test $am_FC_is_GNU = yes; then
 else
   AC_CHECK_TOOLS([GNU_FC], [gfortran], [false])
 fi
-AS_IF([AM_RUN_LOG([$GNU_FC --version && $GNU_FC -v])], [],
-      [AC_MSG_WARN([botched installation for GNU Fortran compiler])
-       _AM_SKIP_COMP_TESTS([GNU Fortran])])
+if test "$GNU_FC" != false; then
+  AS_IF([AM_RUN_LOG([$GNU_FC --version && $GNU_FC -v])], [],
+        [AC_MSG_WARN([botched installation for GNU Fortran compiler])
+         _AM_SKIP_COMP_TESTS([GNU Fortran])])
+fi
 
 # GNU Fortran 77 compiler.
 AC_ARG_VAR([GNU_F77],    [GNU Fortran 77 compiler])
@@ -387,17 +591,21 @@ if test $am_F77_is_GNU = yes; then
 else
   AC_CHECK_TOOLS([GNU_F77], [g77 gfortran], [false])
 fi
-AS_IF([AM_RUN_LOG([$GNU_F77 --version && $GNU_F77 -v])], [],
-      [AC_MSG_WARN([botched installation for GNU Fortran 77 compiler])
-      _AM_SKIP_COMP_TESTS([GNU Fortran 77])])
+if test "$GNU_F77" != false; then
+  AS_IF([AM_RUN_LOG([$GNU_F77 --version && $GNU_F77 -v])], [],
+        [AC_MSG_WARN([botched installation for GNU Fortran 77 compiler])
+        _AM_SKIP_COMP_TESTS([GNU Fortran 77])])
+fi
 
 # GNU Java compiler.
 AC_ARG_VAR([GNU_GCJ], [GNU Java compiler])
 AC_ARG_VAR([GNU_GCJFLAGS], [GNU Java compiler flags])
 AC_CHECK_TOOLS([GNU_GCJ], [gcj], [false])
-AS_IF([AM_RUN_LOG([$GNU_GCJ --version && $GNU_GCJ -v])], [],
-      [AC_MSG_WARN([botched installation for GNU Java compiler])
-      _AM_SKIP_COMP_TESTS([GNU Java])])
+if test "$GNU_GCJ" != false; then
+  AS_IF([AM_RUN_LOG([$GNU_GCJ --version && $GNU_GCJ -v])], [],
+        [AC_MSG_WARN([botched installation for GNU Java compiler])
+        _AM_SKIP_COMP_TESTS([GNU Java])])
+fi
 
 # If we have been able to find at least a working compiler above, we
 # know what the object and executable extensions for this platform are.
@@ -408,14 +616,16 @@ AC_SUBST([EXEEXT])
 
 ###########################################################################
 
-AC_CONFIG_FILES([Makefile])
+## ---------------------- ##
+##  Create output files.  ##
+## ---------------------- ##
 
+AC_CONFIG_FILES([Makefile])
 AC_CONFIG_LINKS([GNUmakefile:GNUmakefile])
-AC_CONFIG_LINKS([defs:defs])
 
 AC_CONFIG_FILES([t/wrap/aclocal-${APIVERSION}:t/wrap/aclocal.in],
                 [chmod +x t/wrap/aclocal-${APIVERSION}],
-	        [APIVERSION=$APIVERSION])
+                [APIVERSION=$APIVERSION])
 AC_CONFIG_FILES([t/wrap/automake-${APIVERSION}:t/wrap/automake.in],
                 [chmod +x t/wrap/automake-${APIVERSION}],
 	        [APIVERSION=$APIVERSION])
@@ -437,7 +647,8 @@ am_release_type=`AS_ECHO(["$PACKAGE_VERSION"]) | LC_ALL=C awk ["
   /^$am_beta_version_rx$/ { print \"beta version\"; exit(0); }
   { print \"development snapshot\"; }"]`
 
-test "$am_release_type" = stable || cat <<EOF
+# '$silent' is set to yes if configure is passed the '--quiet' option.
+test "$am_release_type" = stable || test "$silent" = yes || cat <<EOF
 
 WARNING: You are about to use a $am_release_type of automake.
 WARNING: It might easily suffer from new bugs or regressions.

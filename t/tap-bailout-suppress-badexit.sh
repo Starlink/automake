@@ -18,8 +18,7 @@
 #  - A "Bail out!" directive causes the driver to ignore the exit
 #    status of the test script.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 tests='exit.test exit127.test sighup.test sigterm.test'
 
@@ -27,7 +26,7 @@ cat > Makefile.am <<END
 TESTS = $tests
 END
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > exit.test << 'END'
 #!/bin/sh
@@ -55,11 +54,11 @@ END
 
 chmod a+x $tests
 
-$MAKE check >stdout && { cat stdout; Exit 1; }
+$MAKE check >stdout && { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=4 pass=0 fail=0 xpass=0 xfail=0 skip=0 error=4
 for tst in $tests; do grep "^ERROR: $tst - Bail out!" stdout; done
-$EGREP "ERROR: .*(exit.*status|terminat.*signal)" stdout && Exit 1
+$EGREP "ERROR: .*(exit.*status|terminat.*signal)" stdout && exit 1
 
 :

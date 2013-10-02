@@ -16,12 +16,11 @@
 
 # parallel-tests support: redirection of file descriptors with
 # AM_TESTS_FD_REDIRECT, even when using tests without suffix.
-# The sister 'parallel-tests-fd-redirect-exeext.test' do a similar
+# The sister 'parallel-tests-fd-redirect-exeext.sh' do a similar
 # check for tests that are binary executables.
-# See also the more generic test 'check-fd-redirect.test'.
+# See also the more generic test 'check-fd-redirect.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_OUTPUT
@@ -65,6 +64,6 @@ cat bar.log
 test $st -eq 0
 grep "^ foofoofoo$" stdout
 grep "^ barbarbar$" stdout
-$EGREP '(foofoofoo|barbarbar)' *.log && Exit 1
+$EGREP '(foofoofoo|barbarbar)' *.log && exit 1
 
 :

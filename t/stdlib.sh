@@ -16,7 +16,7 @@
 
 # Test "not a standard library" error.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -41,12 +41,11 @@ END
 
 $ACLOCAL
 AUTOMAKE_fails
-q="[\`'\"]"
 badname='not a standard library name'
 # We're specifically testing for line-number information.
-grep "^Makefile\\.am:1:.*${q}sub/foo${q}.*$badname" stderr
+grep "^Makefile\\.am:1:.*'sub/foo'.*$badname" stderr
 grep "^Makefile\\.am:1:.*sub/libfoo\\.a" stderr
-grep "^foo\\.mk:5:.*${q}zardoz\\.a${q}.*$badname" stderr
+grep "^foo\\.mk:5:.*'zardoz\\.a'.*$badname" stderr
 grep "^foo\\.mk:5:.*libzardoz\\.a" stderr
 
 :

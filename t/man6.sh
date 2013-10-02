@@ -18,7 +18,7 @@
 # even if the 'missing' script is involved.
 
 required=help2man
-. ./defs || Exit 1
+. test-init.sh
 
 # Avoid a spurious failure due to a known FreeBSD make incompatibility.
 useless_vpath_rebuild \
@@ -65,7 +65,7 @@ cd build
 
 ../configure
 # Sanity check.
-grep '^HELP2MAN *=.*/missing --run help2man' Makefile
+grep '^HELP2MAN *=.*/missing help2man' Makefile
 
 $MAKE
 $FGREP foobar ../foobar.1
@@ -84,7 +84,7 @@ rm -f *.1 # Remove leftover generated manpages.
 
 ./configure
 # Sanity check.
-grep '^HELP2MAN *=.*/missing --run help2man' Makefile
+grep '^HELP2MAN *=.*/missing help2man' Makefile
 
 $MAKE
 $FGREP foobar  foobar.1

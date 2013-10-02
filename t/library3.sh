@@ -16,7 +16,7 @@
 
 # Make sure Automake simplify conditions in diagnostics.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >>configure.ac <<EOF
 AC_PROG_CC
@@ -49,4 +49,6 @@ $ACLOCAL
 AUTOMAKE_fails
 grep '^Makefile.am:.*:   !A and !C and !D$' stderr
 # Is there only one missing condition?
-test `grep ':   !' stderr | wc -l` = 1 || Exit 1
+test $(grep -c ':   !' stderr) -eq 1
+
+:

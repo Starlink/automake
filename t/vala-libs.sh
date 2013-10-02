@@ -18,7 +18,7 @@
 # And use of vapi files to call C code from Vala.
 
 required="valac cc pkg-config libtoolize GNUmake"
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -36,7 +36,7 @@ lib_LIBRARIES = libmu.a
 lib_LTLIBRARIES = src/libzardoz.la
 libmu_a_SOURCES = mu.vala mu2.c mu.vapi mu2.h
 libmu_a_CPPFLAGS = -DOKOKIMDEFINED=1
-libmu_a_VALAFLAGS = --profile=posix --vapidir=$(srcdir)
+libmu_a_VALAFLAGS = --vapidir=$(srcdir)
 AM_CFLAGS = $(GOBJECT_CFLAGS)
 src_libzardoz_la_LIBADD = $(GOBJECT_LIBS)
 src_libzardoz_la_SOURCES = src/zardoz-foo.vala src/zardoz-bar.vala
@@ -48,8 +48,6 @@ libtoolize
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE -a
-
-grep PKG_CHECK_MODULES configure && skip_ "pkg-config m4 macros not found"
 
 ./configure
 

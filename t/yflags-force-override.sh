@@ -19,7 +19,7 @@
 # variable is user-reserved).
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_PROG_CC

@@ -18,32 +18,31 @@
 # with respect to absolute paths.
 
 required='cl'
-. ./defs || Exit 1
+. test-init.sh
 
 get_shell_script compile
 
 mkdir sub
 
 cat >sub/foo.c <<'EOF'
-int
-foo ()
+int foo (void)
 {
   return 0;
 }
 EOF
 
 cat >main.c <<'EOF'
-extern int foo ();
-int
-main ()
+extern int foo (void);
+int main (void)
 {
   return foo ();
 }
 EOF
 
-absfoodir=`pwd`/sub
-absmainc=`pwd`/main.c
-absmainobj=`pwd`/main.obj
+cwd=$(pwd) || fatal_ "cannot get current directory"
+absfoodir=$cwd/sub
+absmainc=$cwd/main.c
+absmainobj=$cwd/main.obj
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -71,22 +70,13 @@ $MAKE
 
 ./compile cl $CPPFLAGS $CFLAGS -c -o "$absmainobj" "$absmainc"
 
-# cl expects archives to be named foo.lib, not libfoo.a so
-# make a simple copy here if needed. This is a severe case
-# of badness, but ignore that since this is not what is
-# being tested here...
-if test -f sub/libfoo.a; then
-  cp sub/libfoo.a sub/foo.lib
-fi
-
 # POSIX mandates that the compiler accepts a space between the -I,
 # -l and -L options and their respective arguments.  Traditionally,
 # this should work also without a space.  Try both usages.
 for sp in '' ' '; do
   rm -f main
-
-  ./compile cl $CFLAGS $LDFLAGS -L${sp}"$absfoodir" "$absmainobj" -o main -l${sp}foo
-
+  ./compile cl $CFLAGS $LDFLAGS -L${sp}"$absfoodir" "$absmainobj" \
+               -o main -l${sp}foo
   ./main
 done
 

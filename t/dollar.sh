@@ -21,7 +21,7 @@
 # Require GNU make for this test.  SunOS Make does not support
 # '$$' in a target or a dependency (it outputs the empty string instead).
 required=GNUmake
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 
@@ -38,7 +38,9 @@ EOF
 $ACLOCAL
 $AUTOCONF
 $AUTOMAKE
-./configure --prefix "`pwd`/inst"
+./configure --prefix "$(pwd)/inst"
 $MAKE install
 test -f 'inst/my/hello$world'
 $MAKE check-dist
+
+:

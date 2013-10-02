@@ -19,7 +19,7 @@
 # use of _CPPFLAGS (PR/337).
 
 required='cc native'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -55,9 +55,9 @@ $AUTOMAKE -a
 $MAKE
 
 ./true
-./false && Exit 1
+./false && exit 1
 
-objext=`sed -n -e 's/^OBJEXT = //p' < Makefile`
+objext=$(sed -n -e 's/^OBJEXT = //p' < Makefile)
 test -f ./true-true.$objext
 test -f ./false-true.$objext
 

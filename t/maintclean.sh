@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Make sure distclean and maintainer-clean erase the right files.
-# This test is for in-tree builds; see sister test 'maintclean-vpath.test'
+# This test is for in-tree builds; see sister test 'maintclean-vpath.sh'
 # for VPATH builds.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_CONFIG_FILES([bar sub/Makefile])
@@ -64,10 +64,10 @@ test -f sub/zap
 $test_cache
 
 $MAKE distclean
-test ! -f bar
-test ! -f Makefile
-test ! -f sub/Makefile
-test ! -f config.status
+test ! -e bar
+test ! -e Makefile
+test ! -e sub/Makefile
+test ! -e config.status
 test -f foo.c
 test -f sub/zap
 test -f sub/zap.sh
@@ -85,12 +85,12 @@ cd ..
 
 $MAKE maintainer-clean
 test -f sub/zap.sh
-test ! -f bar
-test ! -f foo.c
-test ! -f sub/zap
-test ! -f Makefile
-test ! -f sub/Makefile
-test ! -f config.status
-test ! -d autom4te.cache
+test ! -e bar
+test ! -e foo.c
+test ! -e sub/zap
+test ! -e Makefile
+test ! -e sub/Makefile
+test ! -e config.status
+test ! -e autom4te.cache
 
 :

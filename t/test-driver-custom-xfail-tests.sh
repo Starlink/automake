@@ -16,8 +16,7 @@
 
 # Custom test drivers: "abstract" XFAIL_TESTS support.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_SUBST([nihil], [])
@@ -142,20 +141,20 @@ $AUTOMAKE
 
 ./configure
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
-test `grep -c '^PASS:'  stdout` -eq 3
-test `grep -c '^XFAIL:' stdout` -eq 13
+test $(grep -c '^PASS:'  stdout) -eq 3
+test $(grep -c '^XFAIL:' stdout) -eq 13
 
 for dir in sub1 sub2; do
   cd $dir
   cp pass.test x1.test
   cp x2.test pass.test
-  $MAKE check >stdout && { cat stdout; Exit 1; }
+  $MAKE check >stdout && { cat stdout; exit 1; }
   cat stdout
-  test "`cat pass.trs`" = ":test-result: FAIL"
-  test "`cat x1.trs`"   = ":test-result: XPASS"
-  test "`cat x2.trs`"   = ":test-result: XFAIL"
+  test "$(cat pass.trs)" = ":test-result: FAIL"
+  test "$(cat x1.trs)"   = ":test-result: XPASS"
+  test "$(cat x2.trs)"   = ":test-result: XFAIL"
   grep '^FAIL: pass\.test$' stdout
   grep '^XPASS: x1\.test$'  stdout
   grep '^XFAIL: x2\.test$'  stdout

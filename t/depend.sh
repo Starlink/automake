@@ -18,7 +18,7 @@
 # In some cases the auto-dependency can get confused and try
 # to '-include' a directory (if a backslash-newline appears in _SOURCES).
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_PROG_CC >> configure.ac
 
@@ -31,4 +31,6 @@ END
 $ACLOCAL
 $AUTOMAKE
 
-test 1 = `grep '^@AMDEP_TRUE@@am__include@' Makefile.in | wc -l`
+test 1 -eq $(grep -c '^@AMDEP_TRUE@@am__include@' Makefile.in)
+
+:

@@ -16,7 +16,7 @@
 
 # Test to make sure bad options cause error.
 
-. ./defs || Exit 1
+. test-init.sh
 
 echo 'AUTOMAKE_OPTIONS = zardoz' > Makefile.am
 

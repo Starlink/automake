@@ -16,10 +16,10 @@
 
 # Check that remake rules works for adding a new subdirectory from a
 # pre-existing subdirectory.
-# See also the other similar tests 'remake-subdir*.test', and the
-# related test 'aclocal5.test'.
+# See also the other similar tests 'remake-subdir*.sh', and the
+# related test 'aclocal5.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac <<'END'
 m4_include([subdirs.m4])

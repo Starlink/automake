@@ -15,13 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # TAP support: whitespace normalization (or lack thereof) in the testsuite
-# progress output on console.  We keep all these checks here in a single
+# progress output on console.  We keep all of these checks here in a single
 # script so that a potential cosmetic change in the output format won't
 # force us to tweak dozens of other tests (hopefully).
-# See also related test 'tap-todo-skip-whitespace.test'.
+# See also related test 'tap-todo-skip-whitespace.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 TEST_LOG_COMPILER = cat
@@ -145,7 +144,7 @@ END
 
 chmod a+x *.test
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 # Don't care about exit status or number of test results, they should be
 # checked for in many other tests.

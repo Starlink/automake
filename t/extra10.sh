@@ -16,11 +16,11 @@
 
 # Check that wildcards in EXTRA_DIST are honoured.
 # Suggested by observations from Braden McDaniel.
-# See also sister test 'extra11.test', that check a similar usage
+# See also sister test 'extra11.sh', that checks a similar usage
 # with the involvement of the $(wildcard) GNU make builtin.
 
 required=GNUmake
-. ./defs || Exit 1
+. test-init.sh
 
 echo AC_OUTPUT >> configure.ac
 

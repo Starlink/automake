@@ -17,8 +17,7 @@
 # Basic TAP test protocol support:
 #  - dependencies between test scripts
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 # The tests are *deliberately* listed in inversed order here.
@@ -27,7 +26,7 @@ b.log: a.log
 c.log: b.log
 END
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 cat > a.test << 'END'
 #!/bin/sh
@@ -63,7 +62,7 @@ END
 
 chmod a+x *.test
 
-$MAKE check >stdout || { cat stdout; Exit 1; }
+$MAKE check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=5 pass=5 fail=0 xpass=0 xfail=0 skip=0 error=0

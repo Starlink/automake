@@ -17,10 +17,9 @@
 # Basic TAP test protocol support:
 #  - special plan format to skip all the tests in a script
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 weirdchars=\''"$!&()[]<>#;^?*/@%=,.:'
 
@@ -58,14 +57,14 @@ cat > mu.test <<END
 END
 
 env TESTS='foo.test bar.test baz.test wget.test curl.test mu.test' \
-  $MAKE -e check >stdout || { cat stdout; Exit 1; }
+  $MAKE -e check >stdout || { cat stdout; exit 1; }
 cat stdout
 
 count_test_results total=6 pass=0 fail=0 xpass=0 xfail=0 skip=6 error=0
 
 # Look for a regression where the "1..0" wasn't being stripped from the
 # SKIP message.
-$FGREP '1..0' stdout && Exit 1
+$FGREP '1..0' stdout && exit 1
 
 grep '^SKIP: foo\.test$' stdout
 grep '^SKIP: bar\.test$' stdout
@@ -73,6 +72,6 @@ grep '^SKIP: baz\.test' stdout # Deliberately laxer, see above for why.
 grep '^SKIP: wget\.test .* wget(1) not installed$' stdout
 grep '^SKIP: curl\.test .* Can'\''t connect to gnu\.org!$' stdout
 grep '^SKIP: mu\.test' stdout | $FGREP "$weirdchars" stdout
-test `grep -c ': .*\.test' stdout` -eq 6
+test $(grep -c ': .*\.test' stdout) -eq 6
 
 :

@@ -17,8 +17,8 @@
 # Test to make sure automatic dependency tracking work with Lex/C.
 # Test suggested by PR automake/6.
 
-required=lex
-. ./defs || Exit 1
+required='cc lex'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -38,8 +38,7 @@ test-deps-exist:
 
 .PHONY: test-obj-updated
 test-obj-updated: joe.$(OBJEXT)
-	stat older my-hdr.h joe.$(OBJEXT) || : For debugging.
-	test `ls -t older joe.$(OBJEXT) | sed 1q` = joe.$(OBJEXT)
+	is_newest joe.$(OBJEXT) my-hdr.h
 END
 
 cat > joe.l << 'END'
@@ -80,10 +79,15 @@ $AUTOCONF
 
 $MAKE test-deps-exist
 $MAKE
+cross_compiling || test "$(./zoo)" = 'Hello, World!' || exit 1
 
-: > older
 $sleep
-touch my-hdr.h
+cat >> my-hdr.h << 'END'
+#undef MESSAGE
+#define MESSAGE "Howdy, Earth!"
+END
 $MAKE test-obj-updated
+$MAKE
+cross_compiling || test "$(./zoo)" = 'Howdy, Earth!' || exit 1
 
 :

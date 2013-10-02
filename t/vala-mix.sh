@@ -16,27 +16,29 @@
 
 # Vala sources and C sources in the same program.  Functional test.
 
-required='valac cc GNUmake'
-. ./defs || Exit 1
+required='valac cc pkg-config GNUmake'
+. test-init.sh
 
 cat >> configure.ac <<'END'
 AC_PROG_CC
 AM_PROG_CC_C_O
 AM_PROG_VALAC([0.7.3])
+PKG_CHECK_MODULES([GOBJECT], [gobject-2.0 >= 2.4])
 AC_OUTPUT
 END
 
 cat > Makefile.am <<'END'
 bin_PROGRAMS = zardoz mu baz
-AM_VALAFLAGS = --profile=posix
+AM_CFLAGS = $(GOBJECT_CFLAGS)
+LDADD = $(GOBJECT_LIBS)
 zardoz_SOURCES = foo.vala bar.c
 mu_SOURCES = 1.vala 2.c
-mu_VALAFLAGS = $(AM_VALAFLAGS) --main=run
-mu_CFLAGS = -DHAVE_MU
+mu_VALAFLAGS = --main=run
+mu_CFLAGS = -DHAVE_MU $(AM_CFLAGS)
 baz_SOURCES = baz.c
 END
 
-if cross_compiling; then :; else
+if ! cross_compiling; then
   unindent >> Makefile.am <<'END'
     check-local:
 	./zardoz
@@ -105,7 +107,7 @@ have_generated_files
 
 # Remake rules are not uselessly triggered.
 $MAKE -q
-$MAKE -n | $FGREP vala.stamp && Exit 1
+$MAKE -n | $FGREP vala.stamp && exit 1
 
 # Check the distribution.
 $MAKE distcheck
@@ -119,6 +121,6 @@ have_generated_files
 # behaviour w.r.t. intermediate C files is still unclear, and
 # better left undefined for the moment).
 $MAKE maintainer-clean
-ls *vala*.stamp | grep . && Exit 1
+ls *vala*.stamp | grep . && exit 1
 
 :

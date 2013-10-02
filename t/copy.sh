@@ -17,7 +17,7 @@
 # Test to make sure '-c' works.  Report from Andris Pavenis.
 # See also the much more in-depth test 'add-missing'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 # We'll have to cater to systems like MSYS/MinGW where there are no
 # true symlinks ('ln -s' behaves like 'cp -p'); see automake bug#10441.
@@ -77,7 +77,7 @@ test -f auxdir/install-sh
 is_symlink auxdir/install-sh
 test -f auxdir/depcomp
 is_not_symlink auxdir/depcomp
-test FAKE-DEPCOMP = `cat auxdir/depcomp`
+test FAKE-DEPCOMP = "$(cat auxdir/depcomp)"
 
 # 'automake -a -c' should not create symlinks, even when there are
 # already symlinked required auxiliary files.

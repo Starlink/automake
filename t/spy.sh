@@ -67,7 +67,7 @@
 # So it seems only non-overlapping ::-rule may be portable.  This is
 # what we check now.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >Makefile <<\EOF
 a :: b
@@ -80,18 +80,18 @@ touch b c
 $sleep
 : > a
 $MAKE
-test "`cat a`" = ''
+test x"$(cat a)" = x
 $sleep
 touch b
 $MAKE
-test "`cat a`" = rule1
+test "$(cat a)" = "rule1"
 # Ensure a is strictly newer than b, so HP-UX make does not execute rule2.
 $sleep
 : > a
 $sleep
 touch c
 $MAKE
-test "`cat a`" = rule2
+test "$(cat a)" = "rule2"
 
 # Unfortunately, the following is not portable to FreeBSD/NetBSD/OpenBSD
 # make, see explanation above.

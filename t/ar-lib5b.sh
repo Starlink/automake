@@ -16,9 +16,9 @@
 
 # Test if AM_PROG_AR triggers the use of the ar-lib script.
 # This test does not require Microsoft lib.
-# Keep this test in sync with sister test 'ar-lib5a.test'.
+# Keep this test in sync with sister test 'ar-lib5a.sh'.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > configure.ac << END
 AC_INIT([$me], [1.0])
@@ -80,7 +80,7 @@ case " $* " in
 esac
 END
 chmod +x bin/lib
-PATH=`pwd`/bin$PATH_SEPARATOR$PATH; export PATH
+PATH=$(pwd)/bin$PATH_SEPARATOR$PATH; export PATH
 
 $ACLOCAL
 $AUTOCONF

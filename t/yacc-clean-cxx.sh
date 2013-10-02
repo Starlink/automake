@@ -18,10 +18,10 @@
 # Yacc sources are cleaned by "make clean", while C++ source and
 # header files derived from distributed Yacc sources are cleaned by
 # "make maintainer-clean".
-# See also sister test 'yacc-clean.test'.
+# See also sister test 'yacc-clean.sh'.
 
-required=yacc
-. ./defs || Exit 1
+required='c++ yacc'
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CXX
@@ -68,7 +68,8 @@ cat > sub1/parsefoo.yxx << 'END'
 %{
 // This file should contain valid C++ but invalid C.
 #include <cstdio>
-int yylex (void) { return (getchar ()); }
+// "std::" qualification required by Sun C++ 5.9.
+int yylex (void) { return std::getchar (); }
 void yyerror (const char *s) { return; }
 %}
 %%
@@ -125,20 +126,20 @@ for target in clean distclean; do
   ls -l . sub1 sub2
   test -f sub1/parsefoo.cxx
   test -f sub1/bar-parsebar.cc
-  test ! -r sub1/parsebaz.y++
-  test ! -r sub1/parsebaz.c++
-  test ! -r sub1/parsequx.ypp
-  test ! -r sub1/qux-parsequx.cpp
+  test ! -e sub1/parsebaz.y++
+  test ! -e sub1/parsebaz.c++
+  test ! -e sub1/parsequx.ypp
+  test ! -e sub1/qux-parsequx.cpp
   test -f sub2/parsefoo.cxx
   test -f sub2/parsefoo.hxx
   test -f sub2/bar-parsebar.cc
   test -f sub2/bar-parsebar.hh
-  test ! -r sub2/parsebaz.y++
-  test ! -r sub2/parsebaz.c++
-  test ! -r sub2/parsebaz.h++
-  test ! -r sub2/parsequx.ypp
-  test ! -r sub2/qux-parsequx.cpp
-  test ! -r sub2/qux-parsequx.hpp
+  test ! -e sub2/parsebaz.y++
+  test ! -e sub2/parsebaz.c++
+  test ! -e sub2/parsebaz.h++
+  test ! -e sub2/parsequx.ypp
+  test ! -e sub2/qux-parsequx.cpp
+  test ! -e sub2/qux-parsequx.hpp
 done
 
 cp config.sav config.status
@@ -148,16 +149,13 @@ $MAKE maintainer-clean
 ls -l . sub1 sub2
 test -f sub1/parsefoo.yxx
 test -f sub1/parsebar.yy
-test ! -r sub1/parsefoo.cxx
-test ! -r sub1/bar-parsebar.cc
+test ! -e sub1/parsefoo.cxx
+test ! -e sub1/bar-parsebar.cc
 test -f sub2/parsefoo.yxx
 test -f sub2/parsebar.yy
-test ! -r sub2/parsefoo.cxx
-test ! -r sub2/parsefoo.hxx
-test ! -r sub2/bar-parsebar.cc
-test ! -r sub2/bar-parsebar.hh
-
-cp config.sav config.status
-./config.status # re-create Makefile
+test ! -e sub2/parsefoo.cxx
+test ! -e sub2/parsefoo.hxx
+test ! -e sub2/bar-parsebar.cc
+test ! -e sub2/bar-parsebar.hh
 
 :

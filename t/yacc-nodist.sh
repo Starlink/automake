@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Checks for .c and .h files derived from non-distributed yacc sources.
-# The test 'yacc-pr204.test' does similar check with AM_MAINTAINER_MODE
+# The test 'yacc-pr204.sh' does similar check with AM_MAINTAINER_MODE
 # enabled.
-# The tests 'lex-nodist.test' and 'lex-pr204.test' does similar checks
+# The tests 'lex-nodist.sh' and 'lex-pr204.sh' does similar checks
 # for lex-generated .c files.
 
 required='cc yacc'
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
@@ -96,9 +96,6 @@ $MAKE
 $MAKE test-build
 $MAKE test-dist
 
-# But the distribution must work correctly, assuming the user has
-# the proper tools to process yacc files.  Do this check only with
-# GNU make, to avoid tripping on automake bug#7884.
-if using_gmake; then $MAKE distcheck; fi
+yl_distcheck
 
 :

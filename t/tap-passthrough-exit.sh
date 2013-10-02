@@ -17,10 +17,9 @@
 # TAP support:
 #  - non-success exit status of a test script is reported in the
 #    log file
-# See also related test 'tap-passthrough.test'.
+# See also related test 'tap-passthrough.sh'.
 
-am_parallel_tests=yes
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 TEST_LOG_COMPILER = $(SHELL)
@@ -39,13 +38,13 @@ END
   echo TESTS += exit-$e.test >> Makefile.am
 done
 
-. "$am_testauxdir"/tap-setup.sh || fatal_ "sourcing tap-setup.sh"
+. tap-setup.sh
 
 st=0
 $MAKE check || st=$?
 for e in $exit_statuses; do cat exit-$e.log; done
 cat test-suite.log
-test $st -gt 0 || Exit 1
+test $st -gt 0 || exit 1
 
 for e in $exit_statuses; do
   for log in exit-$e.log test-suite.log; do
@@ -54,6 +53,6 @@ for e in $exit_statuses; do
 done
 
 env TEST_LOG_DRIVER_FLAGS='--ignore-exit' $MAKE -e check
-$FGREP ".test - exited with status" *.log && Exit 1
+$FGREP ".test - exited with status" *.log && exit 1
 
 :

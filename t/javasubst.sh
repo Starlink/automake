@@ -16,7 +16,7 @@
 
 # Test to make sure redefining JAVAC with AC_SUBST works.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat >> configure.ac << 'END'
 AC_SUBST([JAVAC])

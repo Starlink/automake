@@ -17,7 +17,7 @@
 # Test that overriding 'html' target causes only one "html:" rule to
 # be output.
 
-. ./defs || Exit 1
+. test-init.sh
 
 cat > Makefile.am << 'END'
 html:
@@ -28,6 +28,6 @@ $ACLOCAL
 $AUTOMAKE -Wno-override
 
 # Overriding 'html' should cause only one "html:" rule to be output.
-test `grep '^html:' Makefile.in | wc -l` = 1
+test $(grep -c '^html:' Makefile.in) -eq 1
 
 :
