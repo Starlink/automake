@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2004-2012 Free Software Foundation, Inc.
+# Copyright (C) 2004-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,8 +87,7 @@ PATH=$(pwd)$PATH_SEPARATOR$PATH; export PATH
 # per GNU Standard.
 $MAKE maintainer-clean
 ./configure
-YACC="myyacc.sh" LEX="mylex.sh" \
-   LEX_OUTPUT_ROOT='lex.yy' $MAKE -e zardoz.c joe.c
+run_make YACC=myyacc.sh LEX=mylex.sh LEX_OUTPUT_ROOT=lex.yy zardoz.c joe.c
 $FGREP zardoz.y zardoz.c
 $FGREP joe.l joe.c
 

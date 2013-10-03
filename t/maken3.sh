@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,8 +142,7 @@ check_targets ()
     install-info install-html install-dvi install-pdf install-ps \
     installcheck installdirs tags mostlyclean maintainer-clean
   do
-    $MAKE -n $target >stdout || { cat stdout; exit 1; }
-    cat stdout
+    run_make -O -- -n $target
     case $target in
     install-* | installdirs | tags ) ;;
     *)

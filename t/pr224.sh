@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ EOF
 
 cat >>configure.ac <<'EOF'
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_OUTPUT
 EOF
 

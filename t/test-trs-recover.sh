@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,8 +65,7 @@ test ! -e baz.trs
 
 : Recreate by hand, with a failing test.
 rm -f foo.trs bar.trs
-TEST_STATUS=1 $MAKE bar.trs baz.trs >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O TEST_STATUS=1 bar.trs baz.trs
 test ! -e foo.trs
 test -f bar.trs
 test -f baz.trs
@@ -86,7 +85,7 @@ is_newest baz.trs stamp
 : ensure that also up-to-date '.trs' files are remade -- this time we
 : grep the "make check" output verify that.
 rm -f foo.trs bar.trs
-TEST_STATUS=1 $MAKE check >stdout && { cat stdout; exit 1; }
+run_make -O -e FAIL TEST_STATUS=1 check
 test -f foo.trs
 test -f bar.trs
 grep '^FAIL: foo\.test' stdout
@@ -95,22 +94,21 @@ grep '^PASS: baz\.test' stdout
 
 : Recreate with a "make check" with redefined TESTS.
 rm -f foo.trs bar.trs baz.trs
-TESTS=foo.test $MAKE -e check
+run_make TESTS=foo.test check
 test -f foo.trs
 test ! -e bar.trs
 test ! -e baz.trs
 
 : Recreate with a "make check" with redefined TEST_LOGS.
 rm -f foo.trs bar.trs baz.trs
-TEST_LOGS=bar.log $MAKE -e check
+run_make TEST_LOGS=bar.log check
 test ! -e foo.trs
 test -f bar.trs
 test ! -e baz.trs
 
 : Interactions with "make recheck" are OK.
 rm -f foo.trs bar.trs baz.log baz.trs
-$MAKE recheck >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O recheck
 test -f foo.trs
 test -f bar.trs
 test ! -e baz.trs
@@ -130,8 +128,7 @@ test -f baz.trs
 : '.trs' files are *not* remade.
 update_stamp
 rm -f foo.trs bar.trs test-suite.log
-$MAKE test-suite.log >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O test-suite.log
 grep '^PASS: foo\.test' stdout
 grep '^PASS: bar\.test' stdout
 grep 'baz\.test' stdout && exit 1
@@ -152,8 +149,7 @@ test -f baz.trs
 rm -f foo.trs
 update_stamp
 touch bar.test
-RECHECK_LOGS= $MAKE -e check >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O RECHECK_LOGS= check
 # Check that make has updated what it needed to, but no more.
 test -f foo.trs
 is_newest bar.trs bar.test

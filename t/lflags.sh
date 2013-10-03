@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,10 @@
 
 # Check that $(LFLAGS) takes precedence over both $(AM_LFLAGS) and
 # $(foo_LFLAGS).
-# Please keep this in sync with the sister tests lflags2.sh, yflags.sh
-# and yflags2.sh.
+# Please keep this in sync with the sister tests:
+#  - lflags-cxx.sh
+#  - yflags.sh
+#  - yflags-cxx.sh
 
 required=cc
 . test-init.sh
@@ -28,10 +30,6 @@ echo '/*' "$*" '*/' >lex.yy.c
 echo 'extern int dummy;' >> lex.yy.c
 END
 chmod a+x fake-lex
-
-# Remove Lex from the environment, so that it won't interfere
-# with 'make -e' below.
-unset LEX || :
 
 cat >> configure.ac <<'END'
 AC_SUBST([CC], [false])
@@ -62,7 +60,7 @@ grep '\$(LFLAGS).*\$(AM_LFLAGS)' Makefile.in && exit 1
 
 $AUTOCONF
 ./configure
-env LFLAGS=__user_flags__ $MAKE -e foo.c bar-bar.c
+run_make LFLAGS=__user_flags__ foo.c bar-bar.c
 
 cat foo.c
 cat bar-bar.c

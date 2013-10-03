@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -64,13 +64,12 @@ DISABLE_HARD_ERRORS=x $MAKE check
 # But an empty values for DISABLE_HARD_ERRORS means that hard errors
 # are not to be counted like normal failures.
 
-$MAKE check DISABLE_HARD_ERRORS='' && exit 1
+$MAKE check DISABLE_HARD_ERRORS= && exit 1
 cat test-suite.log
 grep '^ERROR: foo$' test-suite.log
 
 cd sub
-# The '-e' is wanted here.
-DISABLE_HARD_ERRORS='' $MAKE -e check && exit 1
+$MAKE check DISABLE_HARD_ERRORS= && exit 1
 cat test-suite.log
 grep '^ERROR: bar$' test-suite.log
 cd ..

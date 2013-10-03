@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,10 +46,7 @@ do_check ()
   cat foo.test # For debugging.
   echo 'this line will be removed' > four
   echo 'this line will not be removed' > five
-  st=0
-  echo 'ok ok ok' | $MAKE check >stdout 2>stderr || st=1
-  cat stdout
-  cat stderr >&2
+  st=0; echo 'ok ok ok' | run_make -O -E -e IGNORE check || st=$?
   cat four
   test x"$am_serial_tests" = x"yes" || cat foo.log
   test $st -eq 0

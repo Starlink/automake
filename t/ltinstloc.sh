@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2008-2012 Free Software Foundation, Inc.
+# Copyright (C) 2008-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ lib_LTLIBRARIES = liba1.la sub/liba2.la
 pkglib_LTLIBRARIES = liba1.la
 nobase_lib_LTLIBRARIES = sub/liba2.la
 endif
+AUTOMAKE_OPTIONS = subdir-objects
 END
 
 libtoolize

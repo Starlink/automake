@@ -3,7 +3,7 @@
 # of the Automake testsuite.  Also, automatically generate some more
 # tests from them (for particular cases/setups only).
 
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -313,7 +313,7 @@ while (my ($wrapped_test, $setup_list) = each %wrapper_setups)
         atomic_write $wrapper_test,
                      sub { write_wrapper_script $_[0], $wrapped_test,
                                                 $setup },
-                     0555;
+                     0444;
         # The generated test works by sourcing the original test, so that
         # it has to be re-run every time that changes ...
         print "$wbase.log: $wrapped_test\n";
@@ -342,7 +342,7 @@ my %depmodes =
   (
     auto         => ["cc"],
     disabled     => ["cc"],
-    makedepend   => ["cc", "makedepend"],
+    makedepend   => ["cc", "makedepend", "-c-o"],
     dashmstdout  => ["gcc"],
     cpp          => ["gcc"],
 # This was for older (pre-3.x) GCC versions (newer versions
@@ -391,7 +391,7 @@ foreach my $lt (TRUE, FALSE)
               exit \$?
 EOF
           },
-          0555);
+          0444);
       }
    }
 

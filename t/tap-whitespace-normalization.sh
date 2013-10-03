@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -146,10 +146,9 @@ chmod a+x *.test
 
 . tap-setup.sh
 
-# Don't care about exit status or number of test results, they should be
-# checked for in many other tests.
-$MAKE check >stdout || :
-cat stdout
+# We don't care about exit status or number of test results, they
+# should be checked for in many other tests.
+run_make -O -e FAIL check
 
 LC_ALL=C sort exp > t
 mv -f t exp

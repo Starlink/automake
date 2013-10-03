@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ cwd=$(pwd) || fatal_ "getting current working directory"
 
 doinst ()
 {
-  $MAKE install install-pdf install-ps install-dvi ${1+"$@"}
+  run_make install install-pdf install-ps install-dvi ${1+"$@"}
 }
 
 : > foo.sh
@@ -108,14 +108,15 @@ doinst ()
 doinst
 test ! -e inst || { find inst; exit 1; }
 $MAKE uninstall
-doinst bin_SCRIPTS=foo.sh AM_MAKEFLAGS='bin_SCRIPTS=foo.sh'
+doinst bin_SCRIPTS=foo.sh
 test -f inst/bin/foo.sh
 
-./configure
-doinst DESTDIR="$cwd/dest"
+# Explicitly pass prefix to avoid spurious influences from
+# global config.site scripts.
+./configure --prefix="/usr/local"
 test ! -e dest || { find dest; exit 1; }
 $MAKE uninstall
-doinst DESTDIR="$cwd/dest" bin_SCRIPTS=foo.sh AM_MAKEFLAGS='bin_SCRIPTS=foo.sh'
+doinst DESTDIR="$cwd/dest" bin_SCRIPTS=foo.sh
 test -f dest/usr/local/bin/foo.sh
 
 :

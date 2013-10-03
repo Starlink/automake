@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ test-nosilent:
 	test x'$(AM_DEFAULT_VERBOSITY)' = x'1'
 EOF
 
-unset enable_silent_rules || :
+unset enable_silent_rules
 
 : 'No explicit default in configure.ac, enable by default in config.site'
 

@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ _am_exit ()
   set +e
   # See comments in the exit trap for the reason we do this.
   test 77 = $1 && am__test_skipped=yes
-  # Spurious escaping to ensure we do not call our 'exit' alias.
+  # Extra escaping to ensure we do not call our 'exit' alias.
   (\exit $1); \exit $1
 }
 # Avoid interferences from the environment
@@ -100,6 +100,29 @@ am__test_skipped=no
 # This alias must actually be placed before any use if 'exit' -- even
 # just inside a function definition.  Weird, but real.
 alias exit=_am_exit
+
+# In some shells (e.g., Solaris 10 /bin/ksh, or NetBSD 5.1 /bin/sh),
+# "unset VAR" returns a non-zero exit status in case the VAR variable
+# is already unset.  This doesn't interact well with our usage of
+# "set -e" in the testsuite.  This function and the alias below help
+# to work around the issue.  But be sure to use them only if actually
+# needed.  The repeated unset in the check below cater to the very
+# unlikely case where the '_am_v' variable is set in the environment.
+if unset _am_v && unset _am_v; then
+  : Nothing needs to be done.
+else
+  _am_unset ()
+  {
+    for _am_v
+    do
+      # Extra escaping (here and below) to ensure we do not call our
+      # 'unset' alias.
+      eval ${_am_v}=dummy && \unset ${_am_v} || return 1
+    done
+    \unset _am_v
+  }
+  alias unset=_am_unset
+fi
 
 ## ------------------------------------ ##
 ##  General testsuite shell functions.  ##
@@ -174,10 +197,7 @@ seq_ ()
 rm_rf_ ()
 {
   test $# -gt 0 || return 0
-  # Ignore failures in find, we are only interested in failures of the
-  # final rm.
-  find "$@" -type d ! -perm -700 -exec chmod u+rwx {} \; || :
-  rm -rf "$@"
+  $PERL "$am_testaux_srcdir"/deltree.pl "$@"
 }
 
 commented_sed_unindent_prog='
@@ -258,7 +278,7 @@ am_set_exit_traps ()
   trap "fatal_ 'caught signal SIGINT'" 2
   trap "fatal_ 'caught signal SIGTERM'" 15
   # Various shells seems to just ignore SIGQUIT under some circumstances,
-  # even if the signal is not blocked; however, if the signal it trapped,
+  # even if the signal is not blocked; however, if the signal is trapped,
   # the trap gets correctly executed.  So we also trap SIGQUIT.
   # Here is a list of some shells that have been verified to exhibit the
   # problematic behavior with SIGQUIT:

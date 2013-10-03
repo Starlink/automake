@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,8 +74,7 @@ check_no_spurious_error ()
 
 ./configure
 
-$MAKE distcheck >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL distcheck
 for x in bar baz zar; do
   $EGREP "required m4 file.*not distributed.* $x.m4( |$)" output
 done
@@ -100,8 +99,7 @@ END
 $MAKE
 $EGREP 'MY_(FOO|BAR|BAZ|QUX|ZAR|BLA)' configure && exit 1 # Sanity check.
 
-$MAKE distcheck >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL distcheck
 $EGREP "required m4 file.*not distributed.* qux.m4( |$)" output
 $EGREP "required m4 file.*not distributed.* bla.m4( |$)" output
 check_no_spurious_error

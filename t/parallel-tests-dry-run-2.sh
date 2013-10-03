@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,8 +37,7 @@ $AUTOCONF
 make_n_ ()
 {
   st=0
-  $MAKE -n "$@" >output 2>&1 || { cat output; ls -l; exit 1; }
-  cat output
+  run_make -M -- -n "$@" || { ls -l; exit 1; }
   # Look out for possible errors from common tools used by recipes.
   $EGREP -i ' (exist|permission|denied|no .*(such|file))' output && exit 1
   $EGREP '(mv|cp|rm|cat|grep|sed|awk): ' output && exit 1

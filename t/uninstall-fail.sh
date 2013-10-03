@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,8 +68,7 @@ mkdir $inst $inst/share
 : > $inst/share/foobar.txt
 
 chmod a-w $inst/share
-$MAKE uninstall >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL uninstall
 if test $rm_f_is_silent_on_error = yes; then
   : "rm -f" is silent on errors, skip the grepping of make output
 else
@@ -79,9 +78,8 @@ fi
 chmod a-rwx $inst/share
 (cd $inst/share) && skip_ "cannot make directories fully unreadable"
 
-$MAKE uninstall >output 2>&1 && { cat output; exit 1; }
-cat output
-#
+run_make -M -e FAIL uninstall
+
 # Some shells, like Solaris 10 /bin/ksh and /usr/xpg4/bin/sh, do not
 # report the name of the 'cd' builtin upon a chdir error:
 #
@@ -97,7 +95,7 @@ cat output
 #   > \
 #   > cd unreadable'
 #   /bin/ksh[3]: unreadable: permission denied
-#
+
 $EGREP "(cd|sh)(\[[0-9]*[0-9]\])?: .*$inst/share" output
 
 :

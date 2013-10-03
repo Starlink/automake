@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,9 @@ AC_OUTPUT
 END
 
 cat > Makefile.am << 'END'
+## FIXME: stop disabling the warnings in the 'unsupported' category
+## FIXME: once the 'subdir-objects' option has been mandatory.
+AUTOMAKE_OPTIONS = -Wno-unsupported
 lib_LTLIBRARIES = libzardoz.la
 libzardoz_la_SOURCES = foo.c sub/bar.c
 END
@@ -42,7 +45,9 @@ echo 'int bar (void) { return 0; }' > sub/bar.c
 libtoolize
 
 $ACLOCAL
-$AUTOMAKE -a
+# FIXME: stop disabling the warnings in the 'unsupported' category
+# FIXME: once the 'subdir-objects' option has been mandatory.
+$AUTOMAKE -a -Wno-unsupported
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*\./\$(DEPDIR)/bar\.P' Makefile.in
@@ -56,12 +61,9 @@ DISTCHECK_CONFIGURE_FLAGS='--enable-dependency-tracking' $MAKE distcheck
 
 # Try again with subdir-objects option.
 
-sed 's/#x //' configure.ac >configure.int
-mv -f configure.int configure.ac
-echo AUTOMAKE_OPTIONS = subdir-objects >> Makefile.am
+echo AUTOMAKE_OPTIONS += subdir-objects >> Makefile.am
 
-$ACLOCAL
-$AUTOMAKE -a
+$AUTOMAKE
 grep include Makefile.in # For debugging.
 grep 'include.*\./\$(DEPDIR)/foo\.P' Makefile.in
 grep 'include.*[^a-zA-Z0-9_/]sub/\$(DEPDIR)/bar\.P' Makefile.in

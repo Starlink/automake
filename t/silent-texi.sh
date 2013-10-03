@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,11 +47,7 @@ $AUTOCONF
 ./configure --disable-silent-rules
 
 # Silent mode output.
-st=0
-$MAKE V=0 dvi html info ps pdf >stdout 2>stderr || st=$?
-cat stdout
-cat stderr >&2
-test $st -eq 0
+run_make -O -E -- V=0 dvi html info ps pdf
 grep '^  DVIPS    foo\.ps$'         stdout
 grep '^  MAKEINFO foo\.html$'       stdout
 # NetBSD make will print './foo.info' instead of 'foo.info'.
@@ -73,8 +69,7 @@ $EGREP '(zardoz|foo)\.log|3\.14|Copyright|This is|[Oo]utput ' \
 
 # Verbose mode output.
 $MAKE clean || exit 1
-$MAKE V=1 dvi html info ps pdf >output 2>&1 || { cat output; exit 1; }
-cat output
+run_make -M V=1 dvi html info ps pdf
 $EGREP '(DVIPS|MAKEINFO|TEXI2(PDF|DVI)) ' output && exit 1
 # Verbose output from TeX.
 grep '[Oo]utput .*foo\.pdf' output

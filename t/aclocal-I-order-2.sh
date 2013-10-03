@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 # Make sure that when two files define the same macro in the same
 # directory, the macro from the lexically greatest file is used.
-# See also sister test 'aclocal-I-ordering-2.sh'.
+# See also sister test 'aclocal-I-order-3.sh'.
 
 am_create_testdir=empty
 . test-init.sh

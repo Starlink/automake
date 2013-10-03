@@ -1,6 +1,6 @@
 # -*- shell-script -*-
 #
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,6 @@ distdir=$me-1.0
 ##  Environment cleanup.  ##
 ## ---------------------- ##
 
-# Temporarily disable this, since some shells (e.g., older version
-# of Bash) can return a non-zero exit status upon the when a non-set
-# variable is unset.
-set +e
-
 # Unset some make-related variables that may cause $MAKE to act like
 # a recursively invoked sub-make.  Any $MAKE invocation in a test is
 # conceptually an independent invocation, not part of the main
@@ -48,18 +43,16 @@ unset __MKLVL__ MAKE_JOBS_FIFO                     # For BSD make.
 unset DMAKE_CHILD DMAKE_DEF_PRINTED DMAKE_MAX_JOBS # For Solaris dmake.
 # Unset verbosity flag.
 unset V
-# Also unset variables that will let "make -e install" divert
-# files into unwanted directories.
+# Also unset variables that might influence "make install".
 unset DESTDIR
 unset prefix exec_prefix bindir datarootdir datadir docdir dvidir
 unset htmldir includedir infodir libdir libexecdir localedir mandir
 unset oldincludedir pdfdir psdir sbindir sharedstatedir sysconfdir
-# Unset variables that might change the "make distcheck" behaviour.
+# Unset variables that might influence "make distcheck".
 unset DISTCHECK_CONFIGURE_FLAGS AM_DISTCHECK_CONFIGURE_FLAGS
 # Used by install rules for info files.
 unset AM_UPDATE_INFO_DIR
-# The tests call "make -e" but we do not want $srcdir from the environment
-# to override the definition from the Makefile.
+# We don't want to use the $srcdir value exported by the test driver.
 unset srcdir
 # Also unset variables that control our test driver.  While not
 # conceptually independent, they cause some changed semantics we
@@ -84,9 +77,6 @@ for pfx in TEST_ SH_ TAP_ ''; do
   unset AM_${pfx}LOG_DRIVER_FLAGS
 done
 unset pfx
-
-# Re-enable, it had been temporarily disabled above.
-set -e
 
 # cross_compiling
 # ---------------
@@ -127,6 +117,186 @@ is_blocked_signal ()
   else
     fatal_ "couldn't determine whether signal $1 is blocked"
   fi
+}
+
+# single_quote STRING
+# -------------------
+# Single-quote STRING for the shell, also dealing with embedded single
+# quotes. Place the result in the '$am_result', that is thus to be
+# considered public.
+single_quote ()
+{
+  am_result=$1
+  case $am_result in
+    *\'*) am_result=$(printf '%s\n' "$*" | sed -e "s/'/'\\\\''/g");;
+  esac
+  am_result="'$am_result'"
+}
+
+# append_single_quoted VARIABLE STRING
+# ------------------------------------
+append_single_quoted ()
+{
+  am__var=$1; shift
+  single_quote "$1" # Sets 'am_result'.
+  eval "${am__var}=\${$am__var:+\"\${$am__var} \"}\$am_result"
+  unset am__var am_result
+}
+
+# is_valid_varname STRING
+# -----------------------
+# Tell whether STRING is a valid name for a shell variable.  Return 0
+# if yes, return 1 if not.
+is_valid_varname ()
+{
+  # FIXME: is the below truly portable even for LC_COLLATE != "C" ?
+  case $1 in
+    [0-9]*) return 1;;
+    *[!a-zA-Z0-9_]*) return 1;;
+  esac
+  return 0
+}
+
+# run_make [-e STATUS] [-O] [-E] [-M] [--] [VAR=VAL ...] [MAKE-ARGS...]
+# ---------------------------------------------------------------------
+#
+# Run $MAKE with the given command-line, and fail if it doesn't exit with
+# STATUS (default: 0).  If STATUS is "FAIL", then any exit status > 0 is
+# acceptable.  If STATUS is "IGNORE", any exit value is acceptable.
+#
+# Other options:
+#
+#  -O   save the standard output from make on disk, in a regular file
+#       named 'stdout'.
+#
+#  -E   save the standard error from make on disk, in a regular file
+#       named 'stderr'.
+#
+#  -M   save both the standard output and standard error from make on
+#       disk, in a regular file named 'output'. This option supersedes
+#       both the '-O' and '-E' options.
+#
+# This function also handle command-line override of variable definition
+# in a smart way, using AM_MAKEFLAGS if a non-GNU make implementation
+# is in use.
+#
+run_make ()
+{
+  am__make_redirect_stdout=no
+  am__make_redirect_stderr=no
+  am__make_redirect_stdall=no
+  am__make_flags=
+  am__make_rc_exp=0
+  # Follow-up code might want to analyse this, so mark is as
+  # publicly accessible (no double undesrscore).
+  am_make_rc=0
+  # Parse options for this function.
+  while test $# -gt 0; do
+    case $1 in
+      -e) am__make_rc_exp=$2; shift;;
+      -O) am__make_redirect_stdout=yes;;
+      -E) am__make_redirect_stderr=yes;;
+      -M) am__make_redirect_stdall=yes;;
+      --) shift; break;;
+       *) break;;
+    esac
+    shift
+  done
+
+  # Use append mode here to avoid dropping output.  See automake bug#11413
+  if using_gmake; then
+    # We can trust GNU make to correctly pass macro definitions given
+    # on the command line down to sub-make invocations, and this allow
+    # us to have a vary simple implementation: delegate all the work
+    # to GNU make.
+    :
+  else
+    # We have to explicitly parse arguments passed to make.  Not 100%
+    # safe w.r.t. options like '-I' that can have an argument, but
+    # should be good enough for our usages so far.
+    for am__x
+    do
+      case $am__x in
+        *=*)
+        am__maybe_var=${am__x%%=*}
+        am__maybe_val=${am__x#*=}
+        am__maybe_def="${am__maybe_var}=${am__maybe_val}"
+        # Some variables should be portably overridable from the command
+        # line, even when using non-GNU make.
+        case $am__maybe_var in
+          V|\
+          DESTDIR|\
+          SHELL|\
+          VERBOSE|\
+          DISABLE_HARD_ERRORS|\
+          DISTCHECK_CONFIGURE_FLAGS)
+            ;;
+          *)
+            if is_valid_varname "$am__maybe_var"; then
+              append_single_quoted am__make_flags "$am__maybe_def"
+            fi
+        esac
+        unset am__maybe_var am__maybe_val am__maybe_def
+        ;;
+      esac
+    done
+    unset am__x
+  fi
+
+  if test x"$am__make_flags" != x; then
+     set AM_MAKEFLAGS="$am__make_flags" ${1+"$@"}
+     unset am__make_flags
+  fi
+
+  # In redirecting make output below, use append mode, to avoid
+  # dropping output.  See automake bug#11413 for details.
+  # The exit status of 253 is a more-or-less random choice, to
+  # help us catch possible errors in redirections and error out
+  # accordingly.
+  (
+    : exec $MAKE ${1+"$@"} # Display traces for future command.
+    set +x # We need to remove them now, not to pollute redirected stderr.
+    if test $am__make_redirect_stdall = yes; then
+      : > output && exec 1>>output 2>&1 || exit 253
+    else
+      if test $am__make_redirect_stdout = yes; then
+        : > stdout && exec 1>>stdout || exit 253
+      fi
+      if test $am__make_redirect_stderr = yes; then
+        : > stderr && exec 2>>stderr || exit 253
+      fi
+    fi
+    exec $MAKE ${1+"$@"}
+  ) || am_make_rc=$?
+
+  if test $am_make_rc -eq 253; then
+    fatal_ "run_make: problems in redirecting make output"
+  fi
+
+  if test $am__make_redirect_stdall = yes; then
+    cat output || fatal_ "displaying make output"
+  else
+    if test $am__make_redirect_stdout = yes; then
+      cat stdout || fatal_ "displaying make output"
+    fi
+    if test $am__make_redirect_stderr = yes; then
+      cat stderr >&2 || fatal_ "displaying make output"
+    fi
+  fi
+
+  case $am__make_rc_exp in
+    IGNORE)
+      : Ignore exit status
+      ;;
+    FAIL)
+      test $am_make_rc -gt 0 || return 1
+      ;;
+    *)
+     test $am__make_rc_exp -ge 0 && test $am__make_rc_exp -le 255 \
+       || fatal_ "invalid expected exit status: '$am__make_rc_exp'"
+     test $am_make_rc -eq $am__make_rc_exp || return 1
+     ;;
+  esac
 }
 
 # AUTOMAKE_run [-e STATUS] [-d DESCRIPTION] [--] [AUTOMAKE-ARGS...]
@@ -319,7 +489,7 @@ useless_vpath_rebuild ()
         .a.b: ; cp $< $@
         baz: bar ; cp ../baz bar
 END
-    if $MAKE all && test ! -e foo.b && test ! -e bar; then
+    if run_make all && test ! -e foo.b && test ! -e bar; then
       am__useless_vpath_rebuild=no
     else
       am__useless_vpath_rebuild=yes
@@ -331,12 +501,42 @@ END
     yes) return 0;;
      no) return 1;;
      "") ;;
-      *) fatal_ "no_useless_builddir_remake: internal error";;
+      *) fatal_ "useless_vpath_rebuild: internal error";;
   esac
 }
 am__useless_vpath_rebuild=""
 
-yl_distcheck () { useless_vpath_rebuild || $MAKE distcheck ${1+"$@"}; }
+yl_distcheck () { useless_vpath_rebuild || run_make distcheck ${1+"$@"}; }
+
+null_install ()
+{
+  for am__v in nulldirs destdir instdir; do
+    if ! eval 'test -n "$'$am__v'"'; then
+      fatal_ "null_install() invoked with \$$am__v unset"
+    fi
+  done
+  unset am__v
+  case $#,$1 in
+    0,)
+      am__inst='install';;
+    1,-t|1,--texi)
+      am__inst='install install-html install-dvi install-ps install-pdf';;
+    *)
+      fatal_ "null_install(): invalid usage";;
+  esac
+  run_make $nulldirs $am__inst
+  test ! -e "$instdir"
+  run_make $nulldirs $am__inst DESTDIR="$destdir"
+  test ! -e "$instdir"
+  test ! -e "$destdir"
+  run_make -M $nulldirs uninstall
+  # Creative quoting below to please maintainer-check.
+  grep 'rm'' ' output && exit 1
+  run_make -M $nulldirs uninstall DESTDIR="$destdir"
+  # Creative quoting below to please maintainer-check.
+  grep 'rm'' ' output && exit 1
+  : # For 'set -e'.
+}
 
 # count_test_results total=N pass=N fail=N xpass=N xfail=N skip=N error=N
 # -----------------------------------------------------------------------
@@ -439,8 +639,6 @@ fetch_tap_driver ()
     || framework_failure_ "couldn't fetch $am_tap_implementation TAP driver"
   sed 10q tap-driver # For debugging.
 }
-# The shell/awk implementation of the TAP driver is still mostly dummy, so
-# use the perl implementation by default for the moment.
 am_tap_implementation=${am_tap_implementation-shell}
 
 # $PYTHON and support for PEP-3147.  Needed to check our python-related
@@ -563,6 +761,11 @@ require_tool ()
   case $1 in
     cc|c++|fortran|fortran77)
       require_compiler_ $1;;
+    -c-o)
+      if test x"$AM_TESTSUITE_SIMULATING_NO_CC_C_O" = x"yes"; then
+        skip_all_ "need a C compiler that grasps -c and -o together"
+      fi
+      ;;
     xsi-lib-shell)
       if test x"$am_test_prefer_config_shell" = x"yes"; then
         require_xsi "$SHELL"
@@ -597,16 +800,17 @@ require_tool ()
         || skip_all_ "required program 'etags' not available"
       ;;
     GNUmake)
-      for make_ in "$MAKE" gmake gnumake :; do
-        MAKE=$make_ am__using_gmake=''
-        test "$MAKE" =  : && break
+      for am_make in "$MAKE" gmake gnumake :; do
+        MAKE=$am_make
+        am__using_gmake= # Invalidate cache used by 'using_gmake()'.
+        test "$MAKE" = : && break
         echo "$me: determine whether $MAKE is GNU make"
         using_gmake && break
         : For shells with busted 'set -e'.
       done
       test "$MAKE" = : && skip_all_ "this test requires GNU make"
       export MAKE
-      unset make_
+      unset am_make
       ;;
     gcj)
       GCJ=$GNU_GCJ GCJFLAGS=$GNU_GCJFLAGS; export GCJ GCJFLAGS
@@ -662,8 +866,7 @@ require_tool ()
       java -version -help || skip_all_ "Sun Java interpreter not found"
       ;;
     lib)
-      AR=lib
-      export AR
+      AR=lib; export AR
       # Attempting to create an empty archive will actually not
       # create the archive, but lib will output its version.
       echo "$me: running $AR -out:defstest.lib"
@@ -687,7 +890,7 @@ require_tool ()
     non-root)
       # Skip this test case if the user is root.
       # We try to append to a read-only file to detect this.
-      priv_check_temp=priv-check.$$
+      priv_check_temp=am--priv-check.$$
       touch $priv_check_temp && chmod a-w $priv_check_temp \
         || framework_failure_ "creating unwritable file $priv_check_temp"
       # Not a useless use of subshell: lesser shells might bail
@@ -767,6 +970,19 @@ require_tool ()
       echo "$me: running bison --version"
       bison --version || skip_all_ "required program 'bison' not available"
       ;;
+    valac)
+      echo "$me: running valac --version"
+      if ! valac --version; then
+        skip_all_ "required program 'valac' not available"
+      elif cross_compiling; then
+        skip_all_ "cross-compiling valac-generated C files is brittle"
+      fi
+      # TODO: We also know we need GNU make, the C compiler, and pkg-config
+      # here, but there is no easy way to express this with the current
+      # code organization.  We should improve the situation, sooner or
+      # later.  At which point the tests requiring 'valac' can drop the
+      # explicit requirements for those tools.
+      ;;
     *)
       # Generic case: the tool must support --version.
       echo "$me: running $1 --version"
@@ -794,7 +1010,7 @@ process_requirements ()
       *" $am_tool"*) . ./t/$am_tool-macros.dir/get.sh;;
     esac
   done
-  am_tool=; unset am_tool
+  unset am_tool
 }
 
 ## ---------------------------------------------------------------- ##
@@ -820,7 +1036,7 @@ am_setup_testdir ()
     || framework_failure_ "cannot chdir into test subdirectory"
   if test x"$am_create_testdir" != x"empty"; then
     cp "$am_scriptdir"/install-sh "$am_scriptdir"/missing \
-       "$am_scriptdir"/depcomp . \
+       "$am_scriptdir"/compile "$am_scriptdir"/depcomp . \
       || framework_failure_ "fetching common files from $am_scriptdir"
     # Build appropriate environment in test directory.  E.g., create
     # configure.ac, touch all necessary files, etc.  Don't use AC_OUTPUT,

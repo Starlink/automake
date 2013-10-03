@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -130,9 +130,8 @@ check_distclean ()
 cat > configure.ac <<END
 AC_INIT([$me], [1.0])
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CC
-AM_PROG_CC_C_O
 AM_PROG_AR
 $(if test $depcomp_with_libtool = yes; then
     echo AC_PROG_LIBTOOL
@@ -161,8 +160,7 @@ case $depcomp_with_libtool in
     echo lib_LTLIBRARIES = libfoo.la >> Makefile.am
     make_ok ()
     {
-      $MAKE ${1+"$@"} >output 2>&1 || { cat output; return 1; }
-      cat output
+      run_make -M -- ${1+"$@"}
       $FGREP 'unknown directive' output && return 1
       rm -f output
       # Checks for stray files possibly left around by less common
@@ -200,18 +198,17 @@ ${normalized_target}_${LINKADD} = src/libbaz.$a
 grep-test:
 ## For debugging.
 	cat \$(DEPDIR)/foo.$po || :
-	cat \$(DEPDIR)/subfoo.$po || :
+	cat sub/\$(DEPDIR)/subfoo.$po || :
 	cat src/\$(DEPDIR)/baz.$po || :
 	cat src/sub2/\$(DEPDIR)/sub2foo.$po || :
-## Checks done here.
+## Checks are done here.
 	grep '^foo.$objext.*:' \$(DEPDIR)/foo.$po
-	grep '^subfoo\.$objext.*:' \$(DEPDIR)/subfoo.$po
+	grep '^sub/subfoo\.$objext.*:' sub/\$(DEPDIR)/subfoo.$po
 	grep '^baz\.$objext.*:' src/\$(DEPDIR)/baz.$po
 	grep '^sub2/sub2foo\.$objext.*:' src/sub2/\$(DEPDIR)/sub2foo.$po
 END
 
 cat > src/Makefile.am <<END
-AUTOMAKE_OPTIONS = subdir-objects
 noinst_${LIBPRIMARY} = libbaz.$a
 # We include sub2foo only to be sure that the munging in depcomp
 # doesn't remove too much from the object file name.

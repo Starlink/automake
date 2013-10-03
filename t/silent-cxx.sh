@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -71,9 +71,10 @@ $FGREP am_cv_CXX_dependencies_compiler_type configure
 for config_args in \
   --enable-dependency-tracking --disable-dependency-tracking
 do
+
   ./configure $config_args --enable-silent-rules
-  $MAKE >stdout || { cat stdout; exit 1; }
-  cat stdout
+
+  run_make -O
 
   $EGREP ' (-c|-o)' stdout && exit 1
   grep 'mv ' stdout && exit 1
@@ -90,8 +91,7 @@ do
   # Ensure a clean rebuild.
   $MAKE clean
 
-  $MAKE V=1 >stdout || { cat stdout; exit 1; }
-  cat stdout
+  run_make -O V=1
 
   grep ' -c ' stdout
   grep ' -o ' stdout

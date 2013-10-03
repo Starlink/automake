@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -118,10 +118,7 @@ echo "ERROR: e.test - Bail out!" >> exp
 # Doing the sums above, we have:
 test_counts='total=12 pass=3 fail=1 xpass=1 xfail=1 skip=1 error=5'
 
-TESTS='a.test b.test c.test d.test e.test' $MAKE -e check >stdout \
-  && { cat stdout; exit 1; }
-cat stdout
-
+run_make -O -e FAIL TESTS='a.test b.test c.test d.test e.test' check
 count_test_results $test_counts
 
 LC_ALL=C sort exp > t

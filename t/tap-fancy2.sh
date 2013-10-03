@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -125,8 +125,7 @@ total=$(($total + 3))
 # And add the test plan!
 echo 1..$total >> all.test
 
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 
 $EGREP '^(PASS|FAIL|SKIP).*#.*TODO' stdout && exit 1
 $EGREP '^X?(PASS|FAIL).*#.*SKIP' stdout && exit 1

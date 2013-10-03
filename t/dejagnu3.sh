@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,9 +62,8 @@ $MAKE distcheck
 
 # Ensure that the envvar RUNTESTFLAGS is used.
 # Report from Mark Mitchell.
-RUNTESTFLAGS=--unknown-runtest-option $MAKE check >output 2>&1 \
-  && { cat output; exit 1; }
-cat output
+RUNTESTFLAGS=--unknown-runtest-option; export RUNTESTFLAGS
+run_make -M -e FAIL check
 $FGREP 'unknown-runtest-option' output
 
 :

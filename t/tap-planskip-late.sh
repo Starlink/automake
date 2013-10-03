@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,8 +32,7 @@ cat > bar.test <<END
 1..0
 END
 
-TESTS='foo.test bar.test' $MAKE -e check >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O TESTS='foo.test bar.test' check
 
 grep '^SKIP: foo\.test .* from the last line$' stdout
 grep '^SKIP: bar\.test$' stdout

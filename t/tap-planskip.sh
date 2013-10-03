@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,10 +56,8 @@ cat > mu.test <<END
 1..0 # SKIP $weirdchars
 END
 
-env TESTS='foo.test bar.test baz.test wget.test curl.test mu.test' \
-  $MAKE -e check >stdout || { cat stdout; exit 1; }
-cat stdout
-
+run_make -O check \
+  TESTS='foo.test bar.test baz.test wget.test curl.test mu.test'
 count_test_results total=6 pass=0 fail=0 xpass=0 xfail=0 skip=6 error=0
 
 # Look for a regression where the "1..0" wasn't being stripped from the

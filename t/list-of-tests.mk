@@ -2,7 +2,7 @@
 ## testsuite.  This fragment is meant to be included by the Makefile.am,
 ## but also to be executed directly by make when bootstrapping automake.
 
-## Copyright (C) 2011-2012 Free Software Foundation, Inc.
+## Copyright (C) 2011-2013 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -33,15 +33,17 @@ t/all.sh \
 t/cond17.sh \
 t/gcj6.sh \
 t/override-conditional-2.sh \
+t/override-conditional-pr13940.sh \
 t/dist-pr109765.sh \
 t/instdir-cond2.sh \
 t/java-nobase.sh \
 t/objext-pr10128.sh \
 t/remake-timing-bug-pr8365.sh \
 t/lex-subobj-nodep.sh \
+t/subobj-indir-pr13928.sh \
+t/subobj-vpath-pr13928.sh \
 t/remake-am-pr10111.sh \
 t/remake-m4-pr10111.sh \
-t/txinfo5.sh \
 $(perl_fake_XFAIL_TESTS)
 
 perl_TESTS = \
@@ -72,10 +74,10 @@ t/get-sysconf.sh \
 $(perl_TESTS) \
 t/instspc.tap \
 t/aclocal.sh \
-t/acloca10.sh \
 t/aclocal-I-order-1.sh \
 t/aclocal-I-order-2.sh \
 t/aclocal-I-order-3.sh \
+t/aclocal-I-and-install.sh \
 t/aclocal-acdir.sh \
 t/aclocal-amflags.sh \
 t/aclocal-autoconf-version-check.sh \
@@ -131,6 +133,9 @@ t/amhello-cross-compile.sh \
 t/amhello-binpkg.sh \
 t/aminit-moreargs-deprecation.sh \
 t/amassign.sh \
+t/am-config-header.sh \
+t/am-prog-cc-stdc.sh \
+t/am-prog-cc-c-o.sh \
 t/am-macro-not-found.sh \
 t/amopt.sh \
 t/amopts-location.sh \
@@ -184,10 +189,8 @@ t/backcompat2.sh \
 t/backcompat3.sh \
 t/backcompat6.sh \
 t/backcompat-acout.sh \
-t/backsl.sh \
-t/backsl2.sh \
-t/backsl3.sh \
-t/backsl4.sh \
+t/backslash-issues.sh \
+t/backslash-before-trailing-whitespace.sh \
 t/badline.sh \
 t/badopt.sh \
 t/badprog.sh \
@@ -208,8 +211,11 @@ t/canon7.sh \
 t/canon8.sh \
 t/canon-name.sh \
 t/ccnoco.sh \
-t/ccnoco2.sh \
+t/ccnoco-lib.sh \
+t/ccnoco-lt.sh \
 t/ccnoco3.sh \
+t/ccnoco4.sh \
+t/ccnoco-deps.sh \
 t/check.sh \
 t/check2.sh \
 t/check4.sh \
@@ -384,6 +390,9 @@ t/destdir.sh \
 t/dir-named-obj-is-bad.sh \
 t/discover.sh \
 t/dist-formats.tap \
+t/dist-lzma.sh \
+t/dist-tarZ.sh \
+t/dist-shar.sh \
 t/dist-auxdir-many-subdirs.sh \
 t/dist-auxfile-2.sh \
 t/dist-auxfile.sh \
@@ -434,28 +443,27 @@ t/exeext.sh \
 t/exeext2.sh \
 t/exeext3.sh \
 t/exeext4.sh \
-t/exsource.sh \
+t/extra-sources.sh \
 t/ext.sh \
 t/ext2.sh \
 t/ext3.sh \
 t/extra.sh \
-t/extra2.sh \
-t/extra3.sh \
-t/extra4.sh \
-t/extra5.sh \
-t/extra6.sh \
-t/extra7.sh \
-t/extra8.sh \
-t/extra9.sh \
-t/extra10.sh \
-t/extra11.sh \
-t/extra12.sh \
+t/extra-sources-no-spurious.sh \
+t/extra-data.sh \
+t/extra-dist-vpath-dir.sh \
+t/extra-dist-dirs-and-subdirs.sh \
+t/extra-dist-vpath-dir-merge.sh \
+t/extra-dist-wildcards.sh \
+t/extra-dist-wildcards-gnu.sh \
+t/extra-dist-wildcards-vpath.sh \
+t/extra-programs-misc.sh \
+t/extra-programs-and-libs.sh \
 t/extra-programs-empty.sh \
 t/extra-portability.sh \
 t/extra-portability2.sh \
 t/extra-portability3.sh \
-t/extradep.sh \
-t/extradep2.sh \
+t/extra-deps.sh \
+t/extra-deps-lt.sh \
 t/f90only.sh \
 t/flavor.sh \
 t/flibs.sh \
@@ -476,9 +484,11 @@ t/gcj3.sh \
 t/gcj4.sh \
 t/gcj5.sh \
 t/gcj6.sh \
-t/gettext.sh \
-t/gettext2.sh \
-t/gettext3.sh \
+t/gettext-basics.sh \
+t/gettext-config-rpath.sh \
+t/gettext-external-pr338.sh \
+t/gettext-intl-subdir.sh \
+t/gettext-pr381.sh \
 t/gnumake.sh \
 t/gnuwarn.sh \
 t/gnuwarn2.sh \
@@ -570,6 +580,7 @@ t/lex-header.sh \
 t/lex-lib.sh \
 t/lex-lib-external.sh \
 t/lex-libobj.sh \
+t/lex-multiple.sh \
 t/lex-noyywrap.sh \
 t/lex-clean-cxx.sh \
 t/lex-clean.sh \
@@ -580,7 +591,7 @@ t/lex-line.sh \
 t/lex-nodist.sh \
 t/lex-pr204.sh \
 t/lflags.sh \
-t/lflags2.sh \
+t/lflags-cxx.sh \
 t/libexec.sh \
 t/libobj-basic.sh \
 t/libobj2.sh \
@@ -655,7 +666,6 @@ t/ltinstloc.sh \
 t/ltlibobjs.sh \
 t/ltlibsrc.sh \
 t/ltorder.sh \
-t/lzma.sh \
 t/m4-inclusion.sh \
 t/maintclean.sh \
 t/maintclean-vpath.sh \
@@ -666,8 +676,10 @@ t/makej.sh \
 t/makej2.sh \
 t/maken.sh \
 t/maken3.sh \
-t/make-dryrun.tap \
 t/makevars.sh \
+t/make-dryrun.tap \
+t/make-keepgoing.tap \
+t/make-is-gnu.sh \
 t/man.sh \
 t/man2.sh \
 t/man3.sh \
@@ -692,6 +704,7 @@ t/mkinst2.sh \
 t/mkinst3.sh \
 t/mmode.sh \
 t/mmodely.sh \
+t/no-extra-c-stuff.sh \
 t/no-extra-makefile-code.sh \
 t/no-spurious-install-recursive.sh \
 t/nobase.sh \
@@ -740,6 +753,7 @@ t/output13.sh \
 t/output-order.sh \
 t/override-conditional-1.sh \
 t/override-conditional-2.sh \
+t/override-conditional-pr13940.sh \
 t/override-html.sh \
 t/override-suggest-local.sh \
 t/parallel-am.sh \
@@ -865,6 +879,10 @@ t/pr401.sh \
 t/pr401b.sh \
 t/pr401c.sh \
 t/prefix.sh \
+t/preproc-basics.sh \
+t/preproc-c-compile.sh \
+t/preproc-demo.sh \
+t/preproc-errmsg.sh \
 t/primary.sh \
 t/primary2.sh \
 t/primary3.sh \
@@ -918,6 +936,8 @@ t/remake-after-aclocal-m4.sh \
 t/remake-include-configure.sh \
 t/remake-include-makefile.sh \
 t/remake-include-aclocal.sh \
+t/remake-config-status-dependencies.sh \
+t/remake-configure-dependencies.sh \
 t/remake-deeply-nested.sh \
 t/remake-mild-stress.sh \
 t/remake-all-1.sh \
@@ -951,7 +971,9 @@ t/remake-macrodir.sh \
 t/remake-timing-bug-pr8365.sh \
 t/reqd2.sh \
 t/repeated-options.sh \
+t/rm-f-probe.sh \
 t/rulepat.sh \
+t/self-check-cc-no-c-o.sh \
 t/self-check-configure-help.sh \
 t/self-check-dir.tap \
 t/self-check-exit.tap \
@@ -991,7 +1013,7 @@ t/spell.sh \
 t/spell2.sh \
 t/spell3.sh \
 t/spelling.sh \
-t/spy.sh \
+t/spy-double-colon.sh \
 t/spy-rm.tap \
 t/stdinc.sh \
 t/stamph2.sh \
@@ -1014,6 +1036,7 @@ t/subdir-order.sh \
 t/subdir-with-slash.sh \
 t/subdir-subsub.sh \
 t/subdir-distclean.sh \
+t/subdir-keep-going-pr12554.sh \
 t/subobj.sh \
 t/subobj2.sh \
 t/subobj4.sh \
@@ -1029,6 +1052,8 @@ t/subobj11c.sh \
 t/subobjname.sh \
 t/subobj-clean-pr10697.sh \
 t/subobj-clean-lt-pr10697.sh \
+t/subobj-indir-pr13928.sh \
+t/subobj-vpath-pr13928.sh \
 t/subpkg.sh \
 t/subpkg2.sh \
 t/subpkg3.sh \
@@ -1057,8 +1082,10 @@ t/suffix9.sh \
 t/suffix10.tap \
 t/suffix11.tap \
 t/suffix-chain.tap \
+t/suffix-custom-pr14441.sh \
 t/suffix-custom-subobj.sh \
 t/suffix-custom-subobj-and-specflg.sh \
+t/suffix-extra-c-stuff-pr14560.sh \
 t/symlink.sh \
 t/symlink2.sh \
 t/syntax.sh \
@@ -1148,42 +1175,50 @@ t/tags.sh \
 t/tags2.sh \
 t/tagsub.sh \
 t/tags-pr12372.sh \
-t/tar.sh \
-t/tar2.sh \
-t/tar3.sh \
+t/tar-ustar.sh \
+t/tar-pax.sh \
+t/tar-opts-errors.sh \
+t/tar-ustar-id-too-high.sh \
 t/tar-override.sh \
 t/target-cflags.sh \
 t/targetclash.sh \
 t/tests-environment-fd-redirect.sh \
 t/tests-environment-and-log-compiler.sh \
-t/txinfo.sh \
-t/txinfo2.sh \
-t/txinfo3.sh \
-t/txinfo4.sh \
-t/txinfo6.sh \
-t/txinfo7.sh \
-t/txinfo8.sh \
-t/txinfo9.sh \
-t/txinfo10.sh \
-t/txinfo13.sh \
-t/txinfo16.sh \
-t/txinfo17.sh \
+t/txinfo-absolute-srcdir-pr408.sh \
+t/txinfo-add-missing-and-dist.sh \
+t/txinfo-bsd-make-recurs.sh \
+t/txinfo-builddir.sh \
+t/txinfo-clean.sh \
+t/txinfo-dvi-recurs.sh \
+t/txinfo-info-in-srcdir.sh \
+t/txinfo-include.sh \
+t/txinfo-makeinfo-error-no-clobber.sh \
+t/txinfo-many-output-formats.sh \
+t/txinfo-many-output-formats-vpath.sh \
+t/txinfo-nodist-info.sh \
+t/txinfo-no-clutter.sh \
+t/txinfo-no-extra-dist.sh \
+t/txinfo-no-installinfo.sh \
+t/txinfo-no-repeated-targets.sh \
+t/txinfo-other-suffixes.sh \
+t/txinfo-override-infodeps.sh \
+t/txinfo-override-texinfo-tex.sh \
+t/txinfo-setfilename-repeated.sh \
+t/txinfo-setfilename-suffix-strip.sh \
+t/txinfo-subdir-pr343.sh \
+t/txinfo-tex-dist.sh \
+t/txinfo-unrecognized-extension.sh \
+t/txinfo-unrecognized-info-suffix.sh \
+t/txinfo-vtexi.sh \
+t/txinfo-vtexi2.sh \
+t/txinfo-vtexi3.sh \
+t/txinfo-vtexi4.sh \
+t/txinfo-without-info-suffix.sh \
 t/txinfo19.sh \
-t/txinfo20.sh \
-t/txinfo21.sh \
-t/txinfo22.sh \
 t/txinfo23.sh \
 t/txinfo24.sh \
 t/txinfo25.sh \
-t/txinfo26.sh \
-t/txinfo27.sh \
 t/txinfo28.sh \
-t/txinfo29.sh \
-t/txinfo31.sh \
-t/txinfo32.sh \
-t/txinfo33.sh \
-t/txinfo-no-clutter.sh \
-t/txinfo-unrecognized-extension.sh \
 t/transform.sh \
 t/transform2.sh \
 t/transform3.sh \
@@ -1218,10 +1253,6 @@ t/version6.sh \
 t/version7.sh \
 t/version8.sh \
 t/vpath.sh \
-t/vtexi.sh \
-t/vtexi2.sh \
-t/vtexi3.sh \
-t/vtexi4.sh \
 t/warnings-obsolete-default.sh \
 t/warnings-override.sh \
 t/warnings-precedence.sh \
@@ -1236,10 +1267,10 @@ t/werror3.sh \
 t/werror4.sh \
 t/whoami.sh \
 t/xsource.sh \
-t/yacc4.sh \
-t/yaccdry.sh \
-t/yaccpp.sh \
-t/yaccvpath.sh \
+t/yacc-misc.sh \
+t/yacc-dry.sh \
+t/yacc-cxx-grepping.sh \
+t/yacc-vpath.sh \
 t/yacc-auxdir.sh \
 t/yacc-basic.sh \
 t/yacc-cxx.sh \
@@ -1265,7 +1296,7 @@ t/yacc-pr204.sh \
 t/yacc-subdir.sh \
 t/yacc-weirdnames.sh \
 t/yflags.sh \
-t/yflags2.sh \
+t/yflags-cxx.sh \
 t/yflags-cmdline-override.sh \
 t/yflags-conditional.sh \
 t/yflags-d-false-positives.sh \

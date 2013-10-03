@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ $ACLOCAL
 $AUTOMAKE -a -Wno-gnu
 
 $EGREP '(foo|YFLAGS)' Makefile.in # For debugging.
-grep '^foo.h *:' Makefile.in
+grep '^foo\.h *:' Makefile.in
 
 $AUTOCONF
 ./configure

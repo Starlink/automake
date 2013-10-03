@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ am_create_testdir=no
 
 plan_ 5
 
-keep_testdirs=; unset keep_testdirs
+unset keep_testdirs
 
 # This needs to be consistent with what $AM_TEST_RUNNER_SHELL
 # deems to be the current working directory.

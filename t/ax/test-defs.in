@@ -1,7 +1,7 @@
 # -*- shell-script -*-
 # @configure_input@
 #
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,6 +76,11 @@ PATH_SEPARATOR='@PATH_SEPARATOR@'
 host_alias=${host_alias-'@host_alias@'}; export host_alias
 build_alias=${build_alias-'@build_alias@'}; export build_alias
 
+# Whether the testsuite is being run by faking the presence of a C
+# compiler that doesn't grasp the '-c' and '-o' flags together.  By
+# default, of course, it isn't.
+: "${AM_TESTSUITE_SIMULATING_NO_CC_C_O:=no}"
+
 # A concurrency-safe "mkdir -p" implementation.
 MKDIR_P=${AM_TESTSUITE_MKDIR_P-'@MKDIR_P@'}
 
@@ -102,7 +107,7 @@ AUTORECONF=${AM_TESTSUITE_AUTORECONF-${AUTORECONF-'@am_AUTORECONF@'}}
 AUTOHEADER=${AM_TESTSUITE_AUTOHEADER-${AUTOHEADER-'@am_AUTOHEADER@'}}
 AUTOUPDATE=${AM_TESTSUITE_AUTOUPDATE-${AUTOUPDATE-'@am_AUTOUPDATE@'}}
 
-# Tests who want complete control over aclocal or automake command-line
+# Tests which want complete control over aclocal or automake command-line
 # options should use $am_original_ACLOCAL or $am_original_AUTOMAKE.  The
 # "test -z" tests take care not to re-initialize them if 'test-defs.sh'
 # is re-sourced, as we want that file to remain really idempotent.
@@ -113,9 +118,9 @@ if test -z "$am_original_ACLOCAL"; then
   am_original_ACLOCAL=${AM_TESTSUITE_ACLOCAL-${ACLOCAL-"aclocal-$APIVERSION"}}
 fi
 
-# Use -Werror because this also turns some Perl warnings into error.
-# Tests for which this is inappropriate should use -Wno-error.
-# Tests who want complete control over aclocal command-line options
+# Use -Werror by default.  Tests for which this is inappropriate should
+# use -Wno-error.
+# Tests which want complete control over aclocal command-line options
 # should use $am_original_ACLOCAL instead.
 ACLOCAL="$am_original_ACLOCAL -Werror"
 
@@ -136,7 +141,11 @@ FGREP=${AM_TESTSUITE_FGREP-'@FGREP@'}
 
 # Compilers and their flags.  These can point to non-GNU compilers (and
 # on non-Linux and non-BSD systems, they probably will).
-CC=${AM_TESTSUITE_CC-${CC-'@CC@'}}
+if test $AM_TESTSUITE_SIMULATING_NO_CC_C_O = no; then
+  CC=${AM_TESTSUITE_CC-${CC-'@CC@'}}
+else
+  CC=$am_testaux_builddir/cc-no-c-o
+fi
 CXX=${AM_TESTSUITE_CXX-${CXX-'@CXX@'}}
 F77=${AM_TESTSUITE_F77-${F77-'@F77@'}}
 FC=${AM_TESTSUITE_FC-${FC-'@FC@'}}
@@ -147,6 +156,11 @@ FFLAGS=${AM_TESTSUITE_FFLAGS-${FFLAGS-'@FFLAGS@'}}
 CPPFLAGS=${AM_TESTSUITE_CPPFLAGS-${CPPFLAGS-'@CPPFLAGS@'}}
 
 # GNU compilers and their flags.
+if test $AM_TESTSUITE_SIMULATING_NO_CC_C_O = no; then
+  GNU_CC=${AM_TESTSUITE_GNU_CC-${GNU_CC-'@GNU_CC@'}}
+else
+  GNU_CC=$am_testaux_builddir/cc-no-c-o
+fi
 GNU_CC=${AM_TESTSUITE_GNU_CC-${GNU_CC-'@GNU_CC@'}}
 GNU_CXX=${AM_TESTSUITE_GNU_CXX-${GNU_CXX-'@GNU_CXX@'}}
 GNU_F77=${AM_TESTSUITE_GNU_F77-${GNU_F77-'@GNU_F77@'}}

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,22 +37,17 @@ $AUTOMAKE -a
 
 ./configure
 
-$MAKE check >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -e FAIL -M check
 test -f ok.log
 grep '^PASS: ok\.test' output
 $FGREP 'zardoz.log' output
 test ! -e test-suite.log
 
-TESTS='zardoz2.test' $MAKE -e check >output 2>&1 \
-  && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL TESTS='zardoz2.test' check
 $FGREP 'zardoz2.log' output
 test ! -e test-suite.log
 
-TEST_LOGS='zardoz3.log' $MAKE -e check >output 2>&1 \
-  && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL TEST_LOGS='zardoz3.log' check
 $FGREP 'zardoz3.log' output
 test ! -e test-suite.log
 
@@ -63,8 +58,7 @@ test ! -e test-suite.log
 $MAKE check
 rm -f zardoz.test
 
-$MAKE check >output 2>&1 && { cat output; exit 1; }
-cat output
+run_make -M -e FAIL check
 $FGREP 'zardoz.log' output
 test ! -e test-suite.log
 

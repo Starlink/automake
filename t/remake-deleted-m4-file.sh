@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 # Test remake rules when an m4 file gets removed and the macros it
 # defined get inlined into the caller.  Try with both an indirect
 # call and a direct one.  This can be seen as testing the "deleted
-# header file" issue w.r.t. aclocal.m4 dependencies.  See also related
-# test 'acloca22.sh'.
+# header file" issue w.r.t. aclocal.m4 dependencies.  See also
+# related test 'aclocal-deleted-header.sh'.
 
 . test-init.sh
 

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 1996-2012 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,4 +37,5 @@ grep "^zardoz" Makefile.in
 
 # Can't have EXTRA clean rules.
 grep 'clean.*EXTRA' Makefile.in && exit 1
-exit 0
+
+:

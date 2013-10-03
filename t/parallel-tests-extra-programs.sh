@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -115,13 +115,10 @@ $AUTOMAKE -a
 #    'test-suite.log' file shouldn't be created (as it depends
 #     on *all* the test logs).
 
-st=0
-$MAKE -k check >stdout 2>stderr || st=$?
-cat stdout
-cat stderr >&2
+run_make -E -O -e IGNORE -- -k check
 ls -l
 if using_gmake; then
-  test $st -gt 0 || exit 1
+  test $am_make_rc -gt 0 || exit 1
 else
   # Don't trust exit status of "make -k" for non-GNU make.
   $MAKE check && exit 1
@@ -158,11 +155,9 @@ $sleep
 
 echo 'int main (void) { return 0; }' > none.c
 
-st=0
-RECHECK_LOGS= $MAKE -e check >stdout || st=$?
-cat stdout
-ls -l
-test $st -eq 0 || exit 1
+run_make -O -e IGNORE check RECHECK_LOGS=
+ls -l # For debugging.
+test $am_make_rc -eq 0 || exit 1
 
 # For debugging.
 stat stamp foo.log bar.log baz.log || :

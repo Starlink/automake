@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+# Copyright (C) 2010-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ AC_SUBST(two, $two)
 three=3
 AC_SUBST(three)
 AC_PROG_CC
-AC_CONFIG_HEADERS(config.h:config.hin)
+AM_CONFIG_HEADER(config.h:config.hin)
 AM_CONDITIONAL(CROSS_COMPILING, test "$cross_compiling" = yes)
 AC_OUTPUT(Makefile foo.got:foo1.in:foo2.in:foo3.in)
 END

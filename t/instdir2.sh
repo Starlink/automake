@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2009-2012 Free Software Foundation, Inc.
+# Copyright (C) 2009-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,17 +77,7 @@ cd build
 ../configure --prefix="$instdir"
 $MAKE
 
-bindir= datadir= includedir= foodir= bardir= man1dir= man2dir=
-export bindir datadir includedir foodir bardir man1dir man2dir
-
-$MAKE -e install
-test ! -e "$instdir"
-$MAKE -e install DESTDIR="$destdir"
-test ! -e "$instdir"
-test ! -e "$destdir"
-$MAKE -e uninstall > stdout || { cat stdout; exit 1; }
-cat stdout
-grep 'rm -f' stdout && exit 1
-$MAKE -e uninstall DESTDIR="$destdir"
+nulldirs='bindir= datadir= includedir= foodir= bardir= man1dir= man2dir='
+null_install
 
 :

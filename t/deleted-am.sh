@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,9 +35,8 @@ $AUTOMAKE
 $MAKE
 
 rm -f zardoz.am
-$sleep # Required to avoid racy failures with FreeBSD make.
-$MAKE >output 2>&1 && { cat output; exit 1; }
-cat output
+using_gmake || $sleep # Required by BSD make.
+run_make -e FAIL -M
 # This error will come from automake, not make, so we can be stricter
 # in our grepping of it.
 grep 'cannot open.*zardoz\.am' output
@@ -49,9 +48,8 @@ $AUTOMAKE Makefile
 ./config.status Makefile
 $MAKE # Sanity check.
 rm -f foobar.am
-$sleep # Required to avoid racy failures with FreeBSD make.
-$MAKE >output 2>&1 && { cat output; exit 1; }
-cat output
+using_gmake || $sleep # Required by BSD make.
+run_make -e FAIL -M
 # This error will come from automake, not make, so we can be stricter
 # in our grepping of it.
 grep 'cannot open.*foobar\.am' output

@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,15 +41,11 @@ chmod a+x foobar
 
 mkcheck ()
 {
-  if $MAKE "$@" check > stdout; then
-    rc=0
-  else
-    rc=1
-  fi
+  run_make -O -e IGNORE "$@" check
   cat stdout
   cat foobar.log
   cat test-suite.log
-  return $rc
+  return $am_make_rc
 }
 
 $ACLOCAL

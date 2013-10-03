@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 cat >>configure.ac <<'EOF'
 AM_SILENT_RULES
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_OUTPUT
 EOF
 
@@ -116,8 +115,7 @@ grep '^checking whether \./mymake supports nested variables\.\.\. no *$' \
 $EGREP 'CC|AM_V|GEN' Makefile # For debugging.
 grep '^AM_V_CC =  *\$(am__v_CC_0) *$' Makefile
 grep '^AM_V_GEN =  *\$(am__v_GEN_0) *$' Makefile
-$MAKE >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O
 $EGREP ' (-c|-o)' stdout && exit 1
 grep 'mv ' stdout && exit 1
 grep 'echo .*oop' stdout && exit 1
@@ -136,8 +134,7 @@ $EGREP 'CC|AM_V|GEN' Makefile # For debugging.
 grep '^AM_V_CC =  *\$(am__v_CC_1) *$' Makefile
 grep '^AM_V_GEN =  *\$(am__v_GEN_1) *$' Makefile
 
-$MAKE >stdout || { cat stdout; exit 1; }
-cat stdout
+run_make -O
 grep ' -c' stdout
 grep ' -o foo' stdout
 grep ' -o bar' stdout

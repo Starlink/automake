@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ $AUTOMAKE --add-missing
 
 ./configure
 mv config.log config-log # Avoid possible false positives below.
-AM_COLOR_TESTS=always $MAKE -e check && exit 1
+run_make -e FAIL AM_COLOR_TESTS=always check
 # Not a useless use of cat; see above comments "grep-nonprinting"
 # requirement in 'test-init.sh'.
 cat *.log | grep "$esc" && exit 1

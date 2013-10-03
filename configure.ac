@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1995-2012 Free Software Foundation, Inc.
+# Copyright (C) 1995-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,9 +27,9 @@ dnl  would otherwise construct.
 AC_INIT([Starlink Automake], [1.12-starlink], [starlink@jiscmail.ac.uk], automake)
 
 AC_PREREQ([2.69])
-dnl AC_INIT([GNU Automake], [1.13], [bug-automake@gnu.org])
+dnl AC_INIT([GNU Automake], [1.14], [bug-automake@gnu.org])
 
-AC_CONFIG_SRCDIR([automake.in])
+AC_CONFIG_SRCDIR([bin/automake.in])
 AC_CONFIG_AUX_DIR([lib])
 
 AM_SILENT_RULES([yes])
@@ -55,12 +55,12 @@ AC_SUBST([am_AUTOUPDATE], ["${AUTOUPDATE-autoupdate}"])
 dnl We call AC_PROG_CC in an unusual way, and only for use in our
 dnl testsuite, so also use 'no-dependencies' and 'no-define' among
 dnl the automake options to avoid bloating and potential problems.
-AM_INIT_AUTOMAKE([dist-xz filename-length-max=99 color-tests
+AM_INIT_AUTOMAKE([-Wall -Werror dist-xz filename-length-max=99
                   no-define no-dependencies])
 
 ## Keep this on a line of its own, since it must be found and processed
 ## by the 'update-copyright' rule in our Makefile.
-RELEASE_YEAR=2012
+RELEASE_YEAR=2013
 AC_SUBST([RELEASE_YEAR])
 
 # The API version is the base version.  We must guarantee
@@ -102,32 +102,6 @@ installed, select the one Automake should use using
   ./configure PERL=/path/to/perl])
 }
 
-# We require ithreads support, and version 5.7.2 for CLONE.
-AC_CACHE_CHECK([whether $PERL supports ithreads], [am_cv_prog_PERL_ithreads],
-[if $PERL -e '
-    require 5.007_002;
-    use Config;
-    if ($Config{useithreads})
-      {
-        require threads;
-        import threads;
-        require Thread::Queue;
-        import Thread::Queue;
-        exit 0;
-      }
-    exit 1;' >&AS_MESSAGE_LOG_FD 2>&1
-then
-  am_cv_prog_PERL_ithreads=yes
-else
-  am_cv_prog_PERL_ithreads=no
-fi])
-if test $am_cv_prog_PERL_ithreads = yes; then
-  PERL_THREADS=1;
-else
-  PERL_THREADS=0;
-fi
-AC_SUBST([PERL_THREADS])
-
 # The test suite will skip some tests if tex is absent.
 AC_CHECK_PROG([TEX], [tex], [tex])
 # Save details about the selected TeX program in config.log.
@@ -155,7 +129,7 @@ AC_CHECK_PROGS([LEX], [lex flex], [false])
 # following tests, but some users were unable to figure out that their
 # installation was broken since --version appeared to work.
 
-required_autoconf_version=2.65
+AC_SUBST([required_autoconf_version], [2.65])
 AC_CACHE_CHECK([whether autoconf is installed], [am_cv_autoconf_installed],
 [if AM_RUN_LOG([$am_AUTOCONF --version]);
 then
@@ -292,9 +266,6 @@ exit 77" >&AS_MESSAGE_LOG_FD 2>&1; test $? -eq 77; }
 #   $ set -x; P=1 true 2>file
 # would emit "P=1" into file with /usr/xpg4/bin/sh from Solaris 10 and
 # /bin/sh from SunOS 5.11 and OpenBSD 4.7.
-#
-# Finally, we look for weird bugs and portability problems mentioned in
-# the Autoconf manual, and reject shells that suffers from them. (TODO)
 #
 # Use '$am_score' to indicate the degree of acceptability of the shell.
 # A score of "10" means that the shell is good enough for our needs;
@@ -486,12 +457,14 @@ AS_IF([test x"$GCC" = x"yes"], [am_CC_is_GNU=yes], [am_CC_is_GNU=no])
 # On case-insensitive file systems (seen e.g. on Cygwin and Mac OS X)
 # we must avoid looking for 'CC', because that would be the same as
 # 'cc', and could cause $CXX to point to the C compiler, instead of
-# to a C++ compiler as expected.  See automake bugs #11893 and #10766.
+# to a C++ compiler as expected (see automake bugs #11893 and #10766).
+# Similarly, we must avoid looking for 'RCC', as that can point to the
+# Qt4 "Resource Compiler": <http://doc.qt.digia.com/4.2/rcc.html>
 if test -f /bIn/rMdIr || test -f /uSr/bIn/rMdIr; then
   # Case-insensitive file system, don't look for CC.
-  am_CC=
+  am_CC= am_RCC=
 else
-  am_CC=CC
+  am_CC=CC am_RCC=RCC
 fi
 
 # The list of C++ compilers here has been copied, pasted and edited
@@ -499,7 +472,7 @@ fi
 # Keep it in sync, or better again, find out a way to avoid this code
 # duplication.
 _AM_COMPILER_CAN_FAIL([AC_PROG_CXX(dnl
-  [aCC $am_CC FCC KCC RCC xlC_r xlC c++ cxx cc++ gpp g++])],
+  [aCC $am_CC FCC KCC $am_RCC xlC_r xlC c++ cxx cc++ gpp g++])],
   [CXX=false; _AM_SKIP_COMP_TESTS([C++])])
 
 AS_IF([test x"$GXX" = x"yes"], [am_CXX_is_GNU=yes], [am_CXX_is_GNU=no])

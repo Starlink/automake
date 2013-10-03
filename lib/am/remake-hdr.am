@@ -1,5 +1,5 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 1994-2012 Free Software Foundation, Inc.
+## Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -15,9 +15,9 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 %CONFIG_H%: %STAMP%
-## Recover from removal of CONFIG_HEADER
-	@if test ! -f $@; then rm -f %STAMP%; else :; fi
-	@if test ! -f $@; then $(MAKE) $(AM_MAKEFLAGS) %STAMP%; else :; fi
+## Recover from removal of CONFIG_HEADER.
+	@test -f $@ || rm -f %STAMP%
+	@test -f $@ || $(MAKE) $(AM_MAKEFLAGS) %STAMP%
 
 
 %STAMP%: %CONFIG_H_DEPS% $(top_builddir)/config.status

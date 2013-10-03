@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,8 +79,7 @@ for sh in "$SHELL" "$bin_ksh"; do
 END
     $AUTOMAKE -a
     CONFIG_SHELL="$sh" $sh ./configure CONFIG_SHELL="$sh"
-    VERBOSE=y $MAKE check >stdout || { cat stdout; exit 1; }
-    cat stdout
+    run_make -O VERBOSE=y check
     grep '[ /]foo\.test: foofoofoo$' stdout
     grep '[ /]foo\.test: barbarbar$' stdout
     grep '[ /]bar\.test: 8888$' stdout

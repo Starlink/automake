@@ -1,5 +1,5 @@
 ##                                                          -*- Autoconf -*-
-# Copyright (C) 2003-2012 Free Software Foundation, Inc.
+# Copyright (C) 2003-2013 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -11,7 +11,8 @@
 AC_DEFUN([AM_PROG_MKDIR_P],
 [AC_PREREQ([2.60])dnl
 AC_REQUIRE([AC_PROG_MKDIR_P])dnl
-dnl FIXME to be removed in Automake 1.14.
+dnl FIXME we are no longer going to remove this! adjust warning
+dnl FIXME message accordingly.
 AC_DIAGNOSE([obsolete],
 [$0: this macro is deprecated, and will soon be removed.
 You should use the Autoconf-provided 'AC][_PROG_MKDIR_P' macro instead,

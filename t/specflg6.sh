@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2001-2012 Free Software Foundation, Inc.
+# Copyright (C) 2001-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
-AM_PROG_CC_C_O
 AM_CONDITIONAL([BAR], [true])
 END
 
@@ -35,8 +34,6 @@ bin_PROGRAMS = foo
 foo_CFLAGS = -DFOO
 foo_SOURCES = foo.c
 END
-
-: > compile
 
 $ACLOCAL
 $AUTOMAKE

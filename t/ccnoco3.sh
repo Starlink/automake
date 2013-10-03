@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2001-2012 Free Software Foundation, Inc.
+# Copyright (C) 2001-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,12 +16,11 @@
 
 # Test to make sure 'compile' doesn't call 'mv SRC SRC'.
 
-required=gcc
+required=gcc # For cc-no-c-o.
 . test-init.sh
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
-AM_PROG_CC_C_O
 $CC --version; $CC -v; # For debugging.
 AC_OUTPUT
 END
@@ -43,25 +42,8 @@ int main ()
 }
 END
 
-cat > Mycomp << END
-#!/bin/sh
-
-case " \$* " in
- *\ -c*\ -o* | *\ -o*\ -c*)
-    exit 1
-    ;;
-esac
-
-# Use '$CC', not 'gcc', to honour the compiler chosen
-# by the testsuite setup.
-exec $CC "\$@"
-END
-
-chmod +x Mycomp
-
 # Make sure the compiler doesn't understand '-c -o'
-CC=$(pwd)/Mycomp
-export CC
+CC=$am_testaux_builddir/cc-no-c-o; export CC
 
 $ACLOCAL
 $AUTOCONF
@@ -71,8 +53,7 @@ mkdir build
 cd build
 
 ../configure
-$MAKE 2>stderr || { cat stderr >&2; exit 1; }
-cat stderr >&2
+run_make -E
 grep 'mv.*the same file' stderr && exit 1
 
 :

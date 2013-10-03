@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2005-2012 Free Software Foundation, Inc.
+# Copyright (C) 2005-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ required='cc libtoolize'
 
 cat >> configure.ac << 'END'
 AC_PROG_CC
-AM_PROG_CC_C_O
 AM_PROG_AR
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
@@ -85,10 +84,14 @@ $AUTOCONF
 $AUTOMAKE --add-missing --copy
 
 ./configure
-env LDFLAGS=ldflags AM_LDFLAGS=am_ldflags libmod1_la_LDFLAGS=lm1_la_ldflags \
-    CFLAGS=cflags AM_CFLAGS=am_cflags prg2_CFLAGS=prg2_cflags \
-    $MAKE -e print >output 2>&1 || { cat output; exit 1; }
-cat output
+run_make -M -- print \
+  LDFLAGS=ldflags \
+  AM_LDFLAGS=am_ldflags \
+  libmod1_la_LDFLAGS=lm1_la_ldflags \
+  CFLAGS=cflags \
+  AM_CFLAGS=am_cflags \
+  prg2_CFLAGS=prg2_cflags
+
 grep '1BEG: libmod1.la mod2.la :END1' output
 grep '2BEG: mod2.la :END2' output
 grep '3BEG:.* am_cflags cflags .*lm1_la_ldflags ldflags.* :END3' output
@@ -97,6 +100,7 @@ grep '4BEG: :END4' output
 grep '5BEG: :END5' output
 grep '6BEG:.* prg2_cflags cflags .*am_ldflags ldflags.* :END6' output
 grep '6BEG: .*am_cflags.* :END6' output && exit 1
+
 $MAKE
 
 :

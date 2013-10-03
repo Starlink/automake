@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ mkdir lib/src
 
 cat >lib/configure.ac <<'EOF'
 AC_INIT([lib], [2.3])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_RANLIB
 AC_PROG_YACC
 dnl This comes after YACC and RANLIB checks, deliberately.

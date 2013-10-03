@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2002-2012 Free Software Foundation, Inc.
+# Copyright (C) 2002-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -73,15 +73,13 @@ export AUTOCONF AUTOMAKE
 
 # Opportunistically check that --tag=CXX is used when supported.
 if ./libtool --help | grep tag=TAG; then
-  $MAKE print >stdout || { cat stdout; exit 1; }
-  cat stdout
+  run_make -O print
   grep 'BEG1: .*--tag=CXX.*--mode=compile.* :1END' stdout
   grep 'BEG2: .*--tag=CXX.*--mode=link.* :2END' stdout
 fi
 
 $MAKE
-$MAKE distcheck >output 2>&1 || { cat output; exit 1; }
-cat output
+run_make -M distcheck
 # GNU Make used to complain that the Makefile contained two rules
 # for 'src/.dirstamp' and './/src/.dirstamp'.
 grep 'overriding commands' output && exit 1

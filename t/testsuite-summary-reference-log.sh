@@ -1,5 +1,5 @@
 #! /bin/sh
-# Copyright (C) 2011-2012 Free Software Foundation, Inc.
+# Copyright (C) 2011-2013 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,13 +45,11 @@ cd build
 
 ../configure
 
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 grep '^See \./my_test_suite\.log$' stdout
 
 mkdir bar
-TEST_SUITE_LOG=bar/bar.log $MAKE -e check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL TEST_SUITE_LOG=bar/bar.log check
 grep '^See \./bar/bar\.log$' stdout
 
 cd ..
@@ -71,17 +69,14 @@ $AUTOCONF --force
 $AUTOMAKE
 
 ./configure
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 grep '^See sub/test-suite\.log$' stdout
 cd sub
-$MAKE check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL check
 grep '^See sub/test-suite\.log$' stdout
 cd ..
 
-TEST_SUITE_LOG=foo.log $MAKE -e check >stdout && { cat stdout; exit 1; }
-cat stdout
+run_make -O -e FAIL TEST_SUITE_LOG=foo.log check
 grep '^See sub/foo\.log$' stdout
 
 :
