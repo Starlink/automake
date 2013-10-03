@@ -892,7 +892,7 @@ register_language ('name' => 'fc',
                    'lder' => 'FCLD',
                    'ld' => '$(FC)',
                    'pure' => 1,
-                   'extensions' => ['.f', '.f90', '.f95']
+                   'extensions' => ['.f', '.f90', '.f95', '.f03', '.f08']
                    # .f made a FC extension -- modification for Starlink
                    #'extensions' => ['.f90', '.f95']
                   );
@@ -5766,15 +5766,15 @@ sub handle_starlink
     # was added to am__bin_DATA in handle_data above).
     my $want_version_dat = defined $starlink_seen_features{'per-package-dirs'};
 
-    $output_rules .= &file_contents ('starlink',
-                                     new Automake::Location,
-                                     HAVEDOCS => $havesomedocs,
-                                     LATEXDOCS => $havelatex,
-                                     XMLDOCS => $havexml,
-                                     COMPIFL => $want_compifl,
-                                     VERSIONDAT => $want_version_dat,
-                                     ALL_AM_SUPPRESS => $suppress_build,
-                                    );
+    $output_rules .= file_contents ('starlink',
+                                    new Automake::Location,
+                                    HAVEDOCS => $havesomedocs,
+                                    LATEXDOCS => $havelatex,
+                                    XMLDOCS => $havexml,
+                                    COMPIFL => $want_compifl,
+                                    VERSIONDAT => $want_version_dat,
+                                    ALL_AM_SUPPRESS => $suppress_build,
+                                   );
 }
 
 ################################################################
@@ -6429,30 +6429,6 @@ sub lang_lex_rewrite
     return ($r, $newext);
 }
 
-# Rewrite a single assembly file.
-sub lang_asm_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single preprocessed assembly file.
-sub lang_cppasm_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single Fortran 77 file.
-sub lang_f77_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single Fortran file.
-sub lang_fc_rewrite
-{
-    return &lang_sub_obj;
-}
-
 # Rewrite a single preprocessed Fortran file.
 sub lang_ppfc_rewrite
 {
@@ -6468,30 +6444,6 @@ sub lang_ppfc_rewrite
     # Cause the Fortran support to be pulled in
     &saw_extension('.f');
     return $r;
-}
-
-# Rewrite a single preprocessed Fortran 77 file.
-sub lang_ppf77_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single ratfor file.
-sub lang_ratfor_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single Objective C file.
-sub lang_objc_rewrite
-{
-    return &lang_sub_obj;
-}
-
-# Rewrite a single Unified Parallel C file.
-sub lang_upc_rewrite
-{
-    return &lang_sub_obj;
 }
 
 sub lang_lexxx_rewrite { lang_lex_rewrite (@_); };
