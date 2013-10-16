@@ -952,7 +952,7 @@ register_language ('name' => 'ppfc',
                    # rather than older F77
                    'config_vars' => ['FC'],
                    'linker' => 'FCLINK',
-                   'link' => '$(FC) $(AM_FCFLAGS) $(FCFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+                   'link' => '$(FCLD) $(AM_FCFLAGS) $(FCFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
                    'lder' => 'FCLD',
                    'ld' => '$(FC)',
                    'flags' => ['FCFLAGS', 'CPPFLAGS'],
@@ -994,7 +994,8 @@ register_language ('name' => 'ppf77',
 		   'Name' => 'Preprocessed Fortran 77',
 		   'config_vars' => ['F77'],
 		   'linker' => 'F77LINK',
-		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+		   'linker' => 'F77LINK',
 		   'lder' => 'F77LD',
 		   'ld' => '$(F77)',
 		   'flags' => ['FFLAGS', 'CPPFLAGS'],
@@ -1012,7 +1013,7 @@ register_language ('name' => 'ratfor',
 		   'Name' => 'Ratfor',
 		   'config_vars' => ['F77'],
 		   'linker' => 'F77LINK',
-		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
 		   'lder' => 'F77LD',
 		   'ld' => '$(F77)',
 		   'flags' => ['RFLAGS', 'FFLAGS'],
@@ -2635,10 +2636,10 @@ sub handle_programs ()
 # an import, you should diff these two functions, and verify that the
 # changes are all down to such additions.  The function has been kept
 # the same as much as possible, right down to tabs, to make this easier.
-sub handle_monoliths
+sub handle_monoliths ()
 {
-  my @proglist = &am_install_var ('monoliths', 'MONOLITHS',
-                                  'bin', 'check', 'noinst');
+  my @proglist = am_install_var ('monoliths', 'MONOLITHS',
+                                 'bin', 'check', 'noinst');
 
   # If there is no monolith support mentioned (bin_MONOLITHS), then do nothing.
   # We used to warn, here, if STAR_MONOLITHS had been seen in
@@ -2655,7 +2656,7 @@ sub handle_monoliths
   
 
   my $seen_global_libobjs =
-    var ('LDADD') && &handle_lib_objects ('', 'LDADD');
+    var ('LDADD') && handle_lib_objects ('', 'LDADD');
 
   # All the .ifc files which are to be generated
   my @all_ifcs;
@@ -2670,7 +2671,7 @@ sub handle_monoliths
       my ($where, $one_file) = @$pair;
 
       my $seen_libobjs = 0;
-      my $obj = get_object_extension '.$(OBJEXT)';
+      my $obj = '.$(OBJEXT)';
       
       # Strip any $(EXEEXT) suffix the user might have added, or this
       # will confuse &handle_source_transform and &check_canonical_spelling.
@@ -2678,13 +2679,13 @@ sub handle_monoliths
       $one_file =~ s/\$\(EXEEXT\)$//;
 
       # Canonicalize names and check for misspellings.
-      my $xname = &check_canonical_spelling ($one_file, 
-                                             '_SOURCES', '_TASKS',
-                                             '_LDADD', '_LDFLAGS',
-                                             '_LIBADD',
-                                             '_OBJECTS', '_DEPENDENCIES');
+      my $xname = check_canonical_spelling ($one_file, 
+                                            '_SOURCES', '_TASKS',
+                                            '_LDADD', '_LDFLAGS',
+                                            '_LIBADD',
+                                            '_OBJECTS', '_DEPENDENCIES');
 
-      $where->push_context ("while processing program `$one_file'");
+      $where->push_context ("while processing program '$one_file'");
       $where->set (INTERNAL->get);
 
       my $linker = &handle_source_transform ($xname, $one_file, $obj, $where,
@@ -2693,23 +2694,23 @@ sub handle_monoliths
       # Ought we to support _LDADD for monoliths?  Might as well, I suppose.
       if (var ($xname . "_LDADD"))
 	{
-          $seen_libobjs = &handle_lib_objects ($xname, $xname . '_LDADD');
+          $seen_libobjs = handle_lib_objects ($xname, $xname . '_LDADD');
 	}
       else
 	{
 	  # User didn't define prog_LDADD override.  So do it.
-	  &define_variable ($xname . '_LDADD', '$(LDADD)', $where);
+	  define_variable ($xname . '_LDADD', '$(LDADD)', $where);
 
 	  # This does a bit too much work.  But we need it to
 	  # generate _DEPENDENCIES when appropriate.
 	  if (var ('LDADD'))
 	    {
-	      $seen_libobjs = &handle_lib_objects ($xname, 'LDADD');
+	      $seen_libobjs = handle_lib_objects ($xname, 'LDADD');
 	    }
 	}
 
       reject_var ($xname . '_LIBADD',
-		  "use `${xname}_LDADD', not `${xname}_LIBADD'");
+		  "use `${xname}_LDADD', not '${xname}_LIBADD'");
 
       set_seen ($xname . '_DEPENDENCIES');
 
@@ -2752,7 +2753,6 @@ sub handle_monoliths
                                       PROGRAM  => $one_file,
                                       XPROGRAM => $xname,
                                       XLINK    => $xlink,
-                                      VERBOSE  => $vlink,
                                       DIRSTAMP => $dirstamp,
                                       EXEEXT   => '$(EXEEXT)',
                                       LINKMAGIC => $linkmagic
@@ -8962,6 +8962,7 @@ sub parse_arguments ()
   use Automake::Getopt ();
   Automake::Getopt::parse_options %cli_options;
 
+  print "strictness = $strict\n";
   set_strictness ($strict);
   my $cli_where = new Automake::Location;
   set_global_option ('no-dependencies', $cli_where) if $ignore_deps;

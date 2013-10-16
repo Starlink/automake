@@ -24,7 +24,7 @@ dnl  Include the TARNAME field, not because we want to distribute
 dnl  this package, but so that autoconf uses this when building some
 dnl  installation locations rather than the "starlink-automake" it
 dnl  would otherwise construct.
-AC_INIT([Starlink Automake], [1.12-starlink], [starlink@jiscmail.ac.uk], automake)
+AC_INIT([Starlink Automake], [1.14-starlink], [starlink@jiscmail.ac.uk], automake)
 
 AC_PREREQ([2.69])
 dnl AC_INIT([GNU Automake], [1.14], [bug-automake@gnu.org])

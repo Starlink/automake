@@ -20,7 +20,6 @@
 ## Might be updated later.
 CLEANFILES =
 DISTCLEANFILES =
-MAINTAINERCLEANFILES =
 EXTRA_DIST =
 TAGS_FILES =
 dist_noinst_DATA =
