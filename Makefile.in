@@ -104,39 +104,32 @@ DIST_COMMON = $(srcdir)/bin/Makefile.inc $(srcdir)/doc/Makefile.inc \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(top_srcdir)/lib/mkinstalldirs \
 	$(top_srcdir)/t/wrap/aclocal.in \
-	$(top_srcdir)/t/wrap/automake.in $(srcdir)/GNUmakefile \
-	$(dist_noinst_SCRIPTS) $(doc_automake_TEXINFOS) \
-	$(top_srcdir)/lib/mdate-sh $(srcdir)/doc/version.texi \
-	$(srcdir)/doc/stamp-vti $(doc_automake_history_TEXINFOS) \
-	$(top_srcdir)/lib/texinfo.tex $(dist_am_DATA) \
-	$(dist_automake_ac_DATA) $(dist_automake_internal_ac_DATA) \
-	$(dist_doc_DATA) $(dist_noinst_DATA) $(dist_perllib_DATA) \
-	$(dist_pkgvdata_DATA) $(dist_script_DATA) \
-	$(dist_system_ac_DATA) $(top_srcdir)/lib/test-driver COPYING \
-	lib/COPYING lib/INSTALL THANKS lib/ar-lib lib/compile \
-	lib/config.guess lib/config.sub lib/depcomp lib/install-sh \
-	lib/mdate-sh lib/missing lib/mkinstalldirs lib/py-compile \
-	lib/texinfo.tex lib/ylwrap $(top_srcdir)/lib/compile \
-	$(top_srcdir)/lib/config.guess $(top_srcdir)/lib/config.sub \
-	$(top_srcdir)/lib/install-sh $(top_srcdir)/lib/missing
+	$(top_srcdir)/t/wrap/automake.in $(srcdir)/component.xml.in \
+	$(srcdir)/GNUmakefile $(dist_noinst_SCRIPTS) \
+	$(doc_automake_TEXINFOS) $(top_srcdir)/lib/mdate-sh \
+	$(srcdir)/doc/version.texi $(srcdir)/doc/stamp-vti \
+	$(doc_automake_history_TEXINFOS) $(top_srcdir)/lib/texinfo.tex \
+	$(dist_am_DATA) $(dist_automake_ac_DATA) \
+	$(dist_automake_internal_ac_DATA) $(dist_doc_DATA) \
+	$(dist_noinst_DATA) $(dist_perllib_DATA) $(dist_pkgvdata_DATA) \
+	$(dist_script_DATA) $(dist_system_ac_DATA) \
+	$(top_srcdir)/lib/test-driver COPYING lib/COPYING lib/INSTALL \
+	THANKS lib/ar-lib lib/compile lib/config.guess lib/config.sub \
+	lib/depcomp lib/install-sh lib/mdate-sh lib/missing \
+	lib/mkinstalldirs lib/py-compile lib/texinfo.tex lib/ylwrap \
+	$(top_srcdir)/lib/compile $(top_srcdir)/lib/config.guess \
+	$(top_srcdir)/lib/config.sub $(top_srcdir)/lib/install-sh \
+	$(top_srcdir)/lib/missing
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/amversion.m4 \
-	$(top_srcdir)/m4/auxdir.m4 $(top_srcdir)/m4/cond.m4 \
-	$(top_srcdir)/m4/init.m4 $(top_srcdir)/m4/install-sh.m4 \
-	$(top_srcdir)/m4/lead-dot.m4 $(top_srcdir)/m4/missing.m4 \
-	$(top_srcdir)/m4/options.m4 $(top_srcdir)/m4/prog-cc-c-o.m4 \
-	$(top_srcdir)/m4/runlog.m4 $(top_srcdir)/m4/sanity.m4 \
-	$(top_srcdir)/m4/silent.m4 $(top_srcdir)/m4/strip.m4 \
-	$(top_srcdir)/m4/substnot.m4 $(top_srcdir)/m4/tar.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/lib/mkinstalldirs
 CONFIG_CLEAN_FILES = t/wrap/aclocal-${APIVERSION} \
-	t/wrap/automake-${APIVERSION}
+	t/wrap/automake-${APIVERSION} component.xml
 CONFIG_CLEAN_VPATH_FILES = GNUmakefile
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -527,6 +520,7 @@ PERL = @PERL@
 RELEASE_YEAR = @RELEASE_YEAR@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+STAR_MANIFEST_DIR = @STAR_MANIFEST_DIR@
 STRIP = @STRIP@
 TEX = @TEX@
 VERSION = @VERSION@
@@ -602,7 +596,6 @@ CLEANFILES = $(bin_SCRIPTS) $(man1_MANS) $(nodist_perllib_DATA) \
 	t/ax/test-defs.sh t/ax/shell-no-trail-bslash t/ax/cc-no-c-o \
 	runtest $(PERF_TEST_SUITE_LOG)
 DISTCLEANFILES = 
-MAINTAINERCLEANFILES = 
 
 # Third-party, obsolescent or experimental stuff.
 
@@ -2454,7 +2447,12 @@ am__tmk = tests-in-makefile-list.tmp
 am__tfs = tests-on-filesystem-list.tmp
 am__tdf = diff-in-tests-lists.tmp
 PERF_TEST_SUITE_LOG = t/perf/test-suite.log
-all: all-am
+
+# Most work delegated to sub-dir makefile fragments.
+BUILT_SOURCES = checkout-fixup
+MAINTAINERCLEANFILES = checkout-fixup
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .dvi .log .pl .pl$(EXEEXT) .ps .sh .sh$(EXEEXT) .tap .tap$(EXEEXT) .trs
@@ -2496,6 +2494,8 @@ $(am__aclocal_m4_deps):
 t/wrap/aclocal-${APIVERSION}: $(top_builddir)/config.status $(top_srcdir)/t/wrap/aclocal.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 t/wrap/automake-${APIVERSION}: $(top_builddir)/config.status $(top_srcdir)/t/wrap/automake.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+component.xml: $(top_builddir)/config.status $(srcdir)/component.xml.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
@@ -3386,13 +3386,15 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(INFO_DEPS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(amdir)" "$(DESTDIR)$(automake_acdir)" "$(DESTDIR)$(automake_internal_acdir)" "$(DESTDIR)$(docdir)" "$(DESTDIR)$(perllibdir)" "$(DESTDIR)$(pkgvdatadir)" "$(DESTDIR)$(scriptdir)" "$(DESTDIR)$(system_acdir)" "$(DESTDIR)$(perllibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -3428,6 +3430,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
 
@@ -3607,8 +3610,8 @@ uninstall-am: uninstall-binSCRIPTS uninstall-dist_amDATA \
 	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 uninstall-man: uninstall-man1
 
-.MAKE: check-am install-am install-data-am install-exec-am \
-	install-strip uninstall-am
+.MAKE: all check check-am install install-am install-data-am \
+	install-exec-am install-strip uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--refresh check check-TESTS \
 	check-am check-local clean clean-aminfo clean-cscope \
@@ -4363,7 +4366,19 @@ clean-local-check:
 
 # vim: ft=automake noet
 
-# Most work delegated to sub-dir makefile fragments.
+checkout-fixup:
+	@echo "Fixing up post-checkout timestamps"
+	for f in \
+	  aclocal.m4 \
+	  configure \
+	  Makefile.in m4/Makefile.in doc/Makefile.in \
+	  lib/am/Makefile.in lib/Makefile.in lib/Automake/tests/Makefile.in \
+	  lib/Automake/Makefile.in tests/Makefile.in \
+	  doc/stamp-vti doc/version.texi doc/automake.info \
+	; do \
+	    touch $$f; \
+	  done
+	date >checkout-fixup
 
 # vim: ft=automake noet
 
