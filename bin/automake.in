@@ -959,7 +959,7 @@ register_language ('name' => 'ppfc',
 		   'ccer' => 'PPFC',
                    'compiler' => 'FCCOMPILE',
 #                   'compiler' => 'PPFCCOMPILE', # better?
-                   'compile' => '$(FC) $(FPP_MAKE_FLAGS) @cpplike_flags $(AM_FCFLAGS) $(FCFLAGS)',
+                   'compile' => "\$(FC) \$(FPP_MAKE_FLAGS) @cpplike_flags \$(STAR_FCFLAGS) \$(AM_FCFLAGS) \$(FCFLAGS)",
                    'compile_flag' => '-c',
                    'output_flag' => '-o',
 		   'libtool_tag' => 'FC',
@@ -990,23 +990,24 @@ register_suffix_rule (INTERNAL, '.F08', '.@FPP_COMPILE_EXT@');
 # macro AC_PROG_FPP should test the Fortran 77 compiler first for
 # preprocessing capabilities, and then fall back on cpp (if cpp were
 # available).
-register_language ('name' => 'ppf77',
-		   'Name' => 'Preprocessed Fortran 77',
-		   'config_vars' => ['F77'],
-		   'linker' => 'F77LINK',
-		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
-		   'linker' => 'F77LINK',
-		   'lder' => 'F77LD',
-		   'ld' => '$(F77)',
-		   'flags' => ['FFLAGS', 'CPPFLAGS'],
-		   'ccer' => 'PPF77',
-		   'compiler' => 'PPF77COMPILE',
-		   'compile' => "\$(F77) @cpplike_flags \$(AM_FFLAGS) \$(FFLAGS)",
-		   'compile_flag' => '-c',
-		   'output_flag' => '-o',
-		   'libtool_tag' => 'F77',
-		   'pure' => 1,
-		   'extensions' => ['.F']);
+# Disabled in this version as .F is handled by the Starlink extensions.
+#register_language ('name' => 'ppf77',
+#		   'Name' => 'Preprocessed Fortran 77',
+#		   'config_vars' => ['F77'],
+#		   'linker' => 'F77LINK',
+#		   'link' => '$(F77LD) $(AM_FFLAGS) $(FFLAGS) $(STAR_LDFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@',
+#		   'linker' => 'F77LINK',
+#		   'lder' => 'F77LD',
+#		   'ld' => '$(F77)',
+#		   'flags' => ['FFLAGS', 'CPPFLAGS'],
+#		   'ccer' => 'PPF77',
+#		   'compiler' => 'PPF77COMPILE',
+#		   'compile' => "\$(F77) @cpplike_flags \$(AM_FFLAGS) \$(FFLAGS)",
+#		   'compile_flag' => '-c',
+#		   'output_flag' => '-o',
+#		   'libtool_tag' => 'F77',
+#		   'pure' => 1,
+#		   'extensions' => ['.F']);
 
 # Ratfor.
 register_language ('name' => 'ratfor',
@@ -2744,6 +2745,7 @@ sub handle_monoliths ()
                          'ALINK');
 
       my $linkmagic = derive_linkmagic ($xlink);
+      my $vlink = verbose_flag ('GEN');
 
       # If the resulting program lies into a subdirectory,
       # make sure this directory will exist.
@@ -2753,6 +2755,7 @@ sub handle_monoliths ()
                                       PROGRAM  => $one_file,
                                       XPROGRAM => $xname,
                                       XLINK    => $xlink,
+				      VERBOSE  => $vlink,
                                       DIRSTAMP => $dirstamp,
                                       EXEEXT   => '$(EXEEXT)',
                                       LINKMAGIC => $linkmagic
@@ -6433,7 +6436,7 @@ sub lang_lex_rewrite
 sub lang_ppfc_rewrite
 {
     my ($directory, $base, $ext) = @_;
-    my $r = &lang_fc_rewrite($directory, $base, $ext);
+    my $r = lang_sub_obj;
     my $pfx = '';
     if ($r == LANG_SUBDIR)
       {
