@@ -49,11 +49,15 @@ dist_am_DATA = \
   %D%/ltlibrary.am \
   %D%/mans-vars.am \
   %D%/mans.am \
+  %D%/monoliths.am \
   %D%/program.am \
   %D%/progs.am \
   %D%/python.am \
   %D%/remake-hdr.am \
   %D%/scripts.am \
+  %D%/starlink.am \
+  %D%/starlink_messgen.am \
+  %D%/starlink_stardocs.am \
   %D%/subdirs.am \
   %D%/tags.am \
   %D%/texi-vers.am \
