@@ -2648,6 +2648,7 @@ sub handle_monoliths ()
   # Don't do this, however, since if we're processing a Makefile.am in
   # a subdirectory, then this situation can occur quite legitimately.
   return if ! @proglist;
+  $must_handle_compiled_objects = 1;
 
   # Just to keep the user sane, check that we did see STAR_MONOLITHS in the
   # configure.ac.
