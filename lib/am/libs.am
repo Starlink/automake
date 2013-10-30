@@ -44,7 +44,7 @@ if %?BASE%
 	  $(INSTALL_DATA) $$list2 "$(DESTDIR)$(%NDIR%dir)" || exit $$?; \
 	  for f in $$list2; do \
 	      $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(%NDIR%dir)/$$f" || :; \
-          done}
+          done;}
 else !%?BASE%
 ## Funny invocation because Makefile variable can be empty, leading to
 ## a syntax error in sh.
@@ -64,7 +64,7 @@ else !%?BASE%
 	    $(INSTALL_DATA) $$xfiles "$(DESTDIR)$(%NDIR%dir)/$$dir" || exit $$?; \
 	    for f in $$xfiles; do \
 	        $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(%NDIR%dir)/$$f" || :; \
-            done};\
+            done;};\
 	done
 endif !%?BASE%
 ## We do two loops here so that $(POST_INSTALL) can be empty.  If we
