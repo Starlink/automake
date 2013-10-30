@@ -3,6 +3,7 @@
 configure.ac
 aclocal.m4
 configure
+t/testsuite-part.am
 Makefile.in
 doc/stamp-vti
 doc/configure
@@ -13,4 +14,3 @@ lib/Automake/tests/Makefile.in
 lib/Makefile.in
 lib/am/Makefile.in
 m4/Makefile.in
-tests/Makefile.in
