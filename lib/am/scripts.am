@@ -69,7 +69,7 @@ install-%DIR%SCRIPTS: $(%DIR%_SCRIPTS)
 	       $(MANIFEST) && echo "MANIFEST:$(DESTDIR)$(%NDIR%dir)/$$f" || :; \
 	     } \
 ?!BASE?	  ;; esac \
-	; done
+	done
 endif %?INSTALL%
 
 
