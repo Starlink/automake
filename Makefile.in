@@ -4470,7 +4470,7 @@ checkout-fixup:
 	  Makefile.in m4/Makefile.in doc/Makefile.in \
 	  lib/am/Makefile.in lib/Makefile.in lib/Automake/tests/Makefile.in \
 	  lib/Automake/Makefile.in \
-	  doc/stamp-vti doc/version.texi doc/automake.info \
+	  doc/stamp-vti doc/version.texi doc/automake.info doc/amhello-1.0.tar.gz \
 	; do \
 	    touch $$f; \
 	  done

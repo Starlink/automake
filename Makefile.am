@@ -161,7 +161,7 @@ checkout-fixup:
 ## doc/automake.info is the important one, but we also have to touch
 ## doc/version.texi and doc/stamp-vti, to make sure they're newer than
 ## ./configure, touched above.
-	  doc/stamp-vti doc/version.texi doc/automake.info \
+	  doc/stamp-vti doc/version.texi doc/automake.info doc/amhello-1.0.tar.gz \
 	; do \
 	    touch $$f; \
 	  done
