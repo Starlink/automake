@@ -8966,7 +8966,6 @@ sub parse_arguments ()
   use Automake::Getopt ();
   Automake::Getopt::parse_options %cli_options;
 
-  print "strictness = $strict\n";
   set_strictness ($strict);
   my $cli_where = new Automake::Location;
   set_global_option ('no-dependencies', $cli_where) if $ignore_deps;
