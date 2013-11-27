@@ -6,11 +6,9 @@ configure
 t/testsuite-part.am
 Makefile.in
 doc/stamp-vti
-doc/configure
 doc/Makefile.in
 doc/automake.info
 lib/Automake/Makefile.in
 lib/Automake/tests/Makefile.in
 lib/Makefile.in
-lib/am/Makefile.in
 m4/Makefile.in
