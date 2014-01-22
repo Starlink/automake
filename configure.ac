@@ -37,11 +37,6 @@ AM_SILENT_RULES([yes])
 AC_CANONICAL_HOST
 AC_CANONICAL_BUILD
 
-# Set the STAR_MANIFEST_DIR variable, defaulting it from the environment.
-# This causes the `install-manifest' target to be included in Makefile.in
-: ${STAR_MANIFEST_DIR='$(prefix)/manifests'}
-AC_SUBST(STAR_MANIFEST_DIR)
-
 # Save the AUTOCONF setting before AM_INIT_AUTOMAKE overrides it; this
 # way we can run Autoconf tests from configure (or from the test
 # suite) without being bothered by 'missing'.  Likewise for autom4te,
@@ -601,8 +596,7 @@ AC_CONFIG_FILES([t/wrap/aclocal-${APIVERSION}:t/wrap/aclocal.in],
                 [APIVERSION=$APIVERSION])
 AC_CONFIG_FILES([t/wrap/automake-${APIVERSION}:t/wrap/automake.in],
                 [chmod +x t/wrap/automake-${APIVERSION}],
-	        [APIVERSION=$APIVERSION])
-AC_CONFIG_FILES([component.xml])
+                [APIVERSION=$APIVERSION])
 
 AC_OUTPUT
 
