@@ -1,8 +1,9 @@
-This is automake.info, produced by makeinfo version 5.1 from
+This is automake.info, produced by makeinfo version 5.2 from
 automake.texi.
 
-This manual is for GNU Automake (version 1.14, 20 June 2013), a program
-that creates GNU standards-compliant Makefiles from template files.
+This manual is for GNU Automake (version 1.14.1, 6 November 2013), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
@@ -2590,9 +2591,9 @@ All Files in CVS
           sleep 1
           # autoconf-generated configure depends on aclocal.m4 and on
           # configure.ac
-          configure config.h.in
+          touch configure
           # so does autoheader-generated config.h.in
-          configure config.h.in
+          touch config.h.in
           # and all the automake-generated Makefile.in files
           touch `find . -name Makefile.in -print`
           # finally, the makeinfo-generated '.info' files depend on the
@@ -4478,17 +4479,17 @@ B.2 Variable Index
 * DISTCHECK_CONFIGURE_FLAGS:             Checking the Distribution.
                                                               (line  21)
 * distcleancheck_listfiles:              Checking the Distribution.
-                                                              (line  60)
+                                                              (line  63)
 * distcleancheck_listfiles <1>:          Errors with distclean.
                                                               (line 112)
 * DISTCLEANFILES:                        Clean.               (line  13)
 * DISTCLEANFILES <1>:                    Checking the Distribution.
-                                                              (line  60)
+                                                              (line  63)
 * distdir:                               The dist Hook.       (line  33)
 * distdir <1>:                           Third-Party Makefiles.
                                                               (line  25)
 * distuninstallcheck_listfiles:          Checking the Distribution.
-                                                              (line  96)
+                                                              (line  99)
 * dist_:                                 Alternative.         (line  29)
 * dist_ <1>:                             Fine-grained Distribution Control.
                                                               (line   6)
@@ -5122,7 +5123,7 @@ B.3 General Index
                                                               (line  10)
 * 'distcheck' example:                   Creating amhello.    (line 100)
 * distcheck-hook:                        Checking the Distribution.
-                                                              (line  45)
+                                                              (line  48)
 * distclean:                             Standard Targets.    (line  29)
 * distclean <1>:                         Extending.           (line  41)
 * distclean <2>:                         Errors with distclean.
@@ -5132,7 +5133,7 @@ B.3 General Index
 * distclean-local:                       Clean.               (line  15)
 * distclean-local <1>:                   Extending.           (line  41)
 * distcleancheck:                        Checking the Distribution.
-                                                              (line  60)
+                                                              (line  63)
 * distdir:                               Third-Party Makefiles.
                                                               (line  25)
 * Distinction between errors and failures in testsuites: Generalities about Testing.
@@ -5140,7 +5141,7 @@ B.3 General Index
 * Distributions, preparation:            Preparing Distributions.
                                                               (line   6)
 * distuninstallcheck:                    Checking the Distribution.
-                                                              (line  96)
+                                                              (line  99)
 * 'dist_' and 'nobase_':                 Alternative.         (line  29)
 * 'dist_' and 'notrans_':                Man Pages.           (line  63)
 * 'DIST_SUBDIRS', explained:             SUBDIRS vs DIST_SUBDIRS.
@@ -5399,9 +5400,9 @@ B.3 General Index
 * 'make distclean', diagnostic:          Errors with distclean.
                                                               (line   6)
 * 'make distcleancheck':                 Checking the Distribution.
-                                                              (line  60)
+                                                              (line  63)
 * 'make distuninstallcheck':             Checking the Distribution.
-                                                              (line  96)
+                                                              (line  99)
 * 'make install' support:                Install.             (line   6)
 * 'make installcheck', testing '--help' and '--version': List of Automake options.
                                                               (line 126)

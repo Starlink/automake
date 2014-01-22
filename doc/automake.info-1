@@ -1,8 +1,9 @@
-This is automake.info, produced by makeinfo version 5.1 from
+This is automake.info, produced by makeinfo version 5.2 from
 automake.texi.
 
-This manual is for GNU Automake (version 1.14, 20 June 2013), a program
-that creates GNU standards-compliant Makefiles from template files.
+This manual is for GNU Automake (version 1.14.1, 6 November 2013), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
@@ -30,8 +31,9 @@ File: automake.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU Automake
 ************
 
-This manual is for GNU Automake (version 1.14, 20 June 2013), a program
-that creates GNU standards-compliant Makefiles from template files.
+This manual is for GNU Automake (version 1.14.1, 6 November 2013), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
@@ -7172,9 +7174,12 @@ supply additional flags to 'configure', define them in the
 'AM_DISTCHECK_CONFIGURE_FLAGS' variable in your top-level 'Makefile.am'.
 The user can still extend or override the flags provided there by
 defining the 'DISTCHECK_CONFIGURE_FLAGS' variable, on the command line
-when invoking 'make'.
+when invoking 'make'.  It's worth nothing that 'make distcheck' needs
+complete control over the 'configure' options '--srcdir' and '--prefix',
+so those options cannot be overridden by 'AM_DISTCHECK_CONFIGURE_FLAGS'
+nor by 'DISTCHECK_CONFIGURE_FLAGS'.
 
-   Still, developers are encouraged to strive to make their code
+   Also note that developers are encouraged to strive to make their code
 buildable without requiring any special configure option; thus, in
 general, you shouldn't define 'AM_DISTCHECK_CONFIGURE_FLAGS'.  However,
 there might be few scenarios in which the use of this variable is

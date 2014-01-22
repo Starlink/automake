@@ -1,3 +1,439 @@
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	release: stable micro release 1.14.1
+
+	* configure.ac (AC_INIT): Bump version number to 1.14.1.
+	* m4/amversion.m4: Likewise (auto-updated by "make bootstrap").
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	HACKING: minor clarification
+
+2013-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: make install-info-dir.sh print more debugging info
+
+	With the hope that this will shed more light on bug#14601
+
+2013-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: remove too-brittle test tap-realtime.sh
+
+	* t/tap-realtime.sh: Delete.  It has always been brittle, but now
+	it's also causing spurious failures when mawk is used as the awk
+	implementation in tap-driver.sh (see bug#14601).
+	* t/list-of-tests.mk: Adjust.
+
+2013-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	maintainer: am-ft: add option to cater to clock skews
+
+	* maintainer/am-ft: Add option '-S', giving a number of seconds to sleep
+	after copying the tarball to the remote system and before unpacking,
+	building and testing it.  This is to cater to situations where the clock
+	of the remote system is skewed (in the past) w.r.t. the clock the local
+	system the tarball has been built on.
+
+2013-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	sync: update INSTALL, config.guess and config.sub from upstream
+
+2013-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	TAP driver: cosmetic fixes
+
+	* lib/tap-driver.sh: Quote 'like this', not `like this'.  Remove an
+	obsolete FIXME.  Correctly mark another comment as a TODO rather
+	than as a FIXME.
+
+2013-11-02  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	cosmetics: fix typo in a user-facing message in tests
+
+	* t/lex-header.sh: A "skip" message in this test, precisely.
+
+2013-11-01  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branches 'fix-pr14991' and 'fix-pr14891' into micro
+
+	* fix-pr14991:
+	  distcheck: don't allow overriding of --prefix and --srcdir by the user
+	  tests: expose bug#14991 (relates to 'distcheck')
+
+	* fix-pr14891:
+	  automake: account for perl hash order randomization
+	  tests: avoid use of intervals to capitalize letters
+
+2013-10-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	automake: account for perl hash order randomization
+
+	Try to explicitly order the keys of some perl hashes when looping
+	on them to do sanity/correctness checks and possibly display warning
+	messages; this should ensure a more reproducible output.  Not really
+	a big deal, but I prefer to keep the order of such output reproducible
+	if possible.
+
+	Issue revealed by spurious testsuite failures with perl 5.18, as
+	reported in automake bug#14891.  See also:
+	<http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#Hash_randomization>
+	<http://onionstand.blogspot.ie/2012/12/are-you-relying-on-hash-keys-being.html>
+
+	* lib/Automake/Variable.pm (variables): Explicitly order the values of
+	the returned Automake::Variable instances.
+	(variables_dump): Simplify, using the knowledge that 'variables()' now
+	sorts its output.
+	* t/preproc-errmsg.sh: Adjust.
+
+2013-10-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: avoid use of intervals to capitalize letters
+
+	It was causing spurious failures with with Solaris 8 'tr'.
+	See automake bug#14891.
+
+	* t/test-extensions.sh: Adjust.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	distcheck: don't allow overriding of --prefix and --srcdir by the user
+
+	Not through AM_DISTCHECK_FLAGS, nor through DISTCHECK_FLAGS.  Apparently,
+	some packages got in the habit of relaying all the options passed to the
+	original ./configure invocation through to the configure invocations
+	in "make distcheck".  This was causing problems, because it also passed
+	through the original --srcdir and --prefix options.
+
+	Fixes: expose bug#14991 (relates to 'distcheck')
+
+	* lib/am/distdir.am (distcheck): Pass the hard-coded --srcdir and
+	--prefix options *after* both the developer-defined options in
+	$(AM_DISTCHECK_FLAGS) and the user-defined options in $(DISTCHECK_FLAGS).
+	* t/list-of-tests.mk (XFAIL_TESTS): Remove the now-passing test
+	'distcheck-no-destdist-or-srcdir-override.sh'.
+	* doc/automake.texi (Checking the Distribution): Update.
+	* NEWS: Likewise.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: expose bug#14991 (relates to 'distcheck')
+
+	* t/distcheck-no-prefix-or-srcdir-override.sh: New, expose the bug.
+	* t/list-of-tests.mk (handwritten_TESTS, XFAIL_TESTS): Add it.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: fix spurious failure when zip is present but unzip is not
+
+	Fixes automake bug#15181.
+
+	* t/dist-formats.tap (have_compressor): When checking that zip(1), also
+	check for unzip(1), otherwise "make distcheck" will be unable to extract
+	the zip tarball it creates, which will cause spurious failures.  While
+	at it, reorganize the existing code a bit.
+	* THANKS, NEWS: Update.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: fix spurious failure due to localization issues
+
+	Fixes automake bug#15237.
+
+	* t/autohdr-subdir-pr12495.sh: Ensure make is run in the C locale, so that
+	we can expect error messages in English when grepping its output.
+	* THANKS, NEWS: Update.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: update with the changes since v1.14
+
+2013-10-29  Peter Breitenlohner  <peb@mppmu.mpg.de>  (tiny change)
+
+	docs: correct typos in the fix-timestamp.sh script
+
+	* doc/automake.texi: Here.  The original version of this example script
+	makes no sense at all, using 'configure' instead of the intended 'touch'
+	in few key places.
+
+2013-10-28  Benoit Sigoure  <tsunanet@gmail.com>  (tiny change)
+
+	python: byte-compile nobase_*_PYTHON files only once
+
+	* lib/am/python.am: Here. Byte-compiling was occurring inside of
+	a loop, causing an O(n^2) number of byte-compilations instead of
+	O(n).
+
+2013-10-28  Václav Zeman  <vhaisman@gmail.com>  (tiny change)
+
+	cosmetics: typofix in the 'missing' script
+
+	* lib/missing: Here, in a message printed to the user.
+	* THANKS: Update.
+
+2013-07-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'fix-pr14911' into micro
+
+	* fix-pr14911:
+	  test: avoid false positives in 'cc-no-c-o' script
+
+2013-07-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'fix-half-pr14760' into micro
+
+	* fix-half-pr14760:
+	  tests: fix a spurious failure on NetBSD-current
+
+2013-07-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	test: avoid false positives in 'cc-no-c-o' script
+
+	Fixes automake bug#14911.
+
+	* t/ax/cc-no-c-o.in: Be more careful in determining whether both the
+	'-c' and '-o' options have been passed on the command line to the
+	compiler.  In particular, do not spuriously complain in the face of
+	options like '-compatibility_version' or '-current_version' (seen on
+	Mac OS X 10.7).
+	* THANKS: Update.
+
+2013-07-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	test harness: improve catching of usage errors in script 'test-driver'
+
+	Fixes automake bug#14840.
+
+	* lib/test-driver: Catch and report usage errors where the caller has
+	forgotten to specify one of the mandatory options (--test-name,
+	--log-file, --trs-file) or has not passed any non-option argument.
+	Also, be sure to work correctly even when no '--' special argument
+	is passed to separate option from non-options arguments.
+	* THANKS: Update.
+
+2013-07-07  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: fix a spurious failure on NetBSD-current
+
+	Reported in automake bug#14760.
+
+	* tests/silent-custom.sh: Be prepared to handle creative
+	quoting in the output of the shell run for the make recipes
+	when the shell traces are active ("set -x").
+
+2013-06-28  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	am-ft: make the environment available earlier
+
+	So that, with a PATH that is updated earlier, we can find the 'xz'
+	program even on systems where it isn't in the default PATH.
+
+	* maintainer/am-ft: Adjust accordingly.
+
+2013-06-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: post-release tweaks (for 1.14.x series)
+
+2013-06-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: avoid a spurious failure on MacOS X 10.6.8
+
+	Fixes automake bug#14706.
+
+	* t/depcomp2.sh: Strip, from the redirected ./configure stderr, the
+	possible error message "rm: conftest.dSYM: is a directory", generated
+	by cleanup code that doesn't cater to the existence of *.dSYM
+	directories sometimes created by the compiler on MacOS X.  This
+	"massaging" of ./configure stderr is legitimate, since the spurious
+	error message is due not to automake-related code, but to a know
+	buglet/limitation of either Autoconf or Mac OS X bundles gcc:
+	<http://lists.gnu.org/archive/html/bug-autoconf/2007-11/msg00017.html>
+	Actually, from that link it appears that the original Autoconf issue
+	had been fixed, but it must have been re-introduced in the meantime :-(
+
+2013-06-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: don't risk hanging on the 'cl' requirement
+
+	On the GNU/Linux boxes of some users that run our testsuite there
+	is a '/usr/local/bin/cl' executable, from the IRAF package:
+
+	    <http://iraf.noao.edu/>
+
+	The test 'compile4.sh' (and other tests) try to invoke the 'cl'
+	command to check whether it's a Microsoft compiler; the IRAF cl
+	is an interactive program, so it hangs on such invocation.  In
+	conclusion, the testsuite hangs for those users which have the
+	IRAF cl early in PATH.
+
+	Fix the issue by redirecting the input of cl from /dev/null when
+	invoking it, which is enough to prevent the cl program from IRAF
+	from hanging, and should have no effect on the behaviour of the
+	Microsoft compiler.
+
+	This change fixes automake bug#14707.
+
+	* t/ax/am-test-lib.sh (require_tool): Adjust the handling of
+	the 'cl' requirement.
+
+2013-06-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	post-release: micro version bump (1.14.0a)
+
+	* configure.ac: Bump version: 1.14 -> 1.14.0a
+	* m4/amversion.m4: Likewise (auto-updated by "make bootstrap").
+
+2013-06-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'maint' into micro
+
+	* maint:
+	  release: stable minor release 1.14
+	  NEWS: one more minor fixlet
+	  maint: port check-minimal-autoconf to VPATH builds
+	  tests: avoid spurious failures in Linux -> MinGW cross-compilation mode
+	  tests: simplify checks for some expected variables values in Makefiles
+	  NEWS: improve and update wording
+	  tests: fix/improve few heading comments
+	  coverage: new test on Texinfo @include support
+	  tests: tighten a grepping check
+	  tests: more significant names for some tests
+	  rename-tests: rework some code for clarity and safety
+	  tests: cosmetic changes in t/extra-sources.sh
+	  rename-tests: inform the user about the pre-filled commit msg
+	  typofix: in comments in 'maintainer/rename-tests'
+	  rename-tests: also "git add" list-of-tests.mk
+	  tests: rename t/exsource.sh -> t/extra-sources.sh
+	  tests: some improvements to Gettext tests
+	  maint: version bump after beta release 1.13b
+	  release: beta release 1.13b (will become 1.14)
+	  automake: assume we can always pass '-o' to the C compiler
+	  NEWS: fix typo
+	  NEWS: on assuming "rm -f" without arguments work
+	  docs: AM_PROG_CC_C_O: correct imprecise statements about it
+	  NEWS: document deprecation of 'shar' and 'compress' dist formats
+	  m4: rename minuso.m4 -> prog-cc-c-o.m4
+	  tests: some tests make no sense if "$CC -c -o" doesn't work
+	  AM_PROG_CC_C_O: don't rely on AC_PROG_CC_C_O, re-implement similar logic
+	  compile: rewrite AC_PROG_CC with AM_PROG_CC_C_O contents
+	  tests: avoid few lingering $MAKE redirections
+	  tests: fix a spurious failure on NetBSD 5.1
+	  texi: build version.texi and stamp-vti in srcdir
+	  tests: fix a botched heading comment
+	  tests: fix another spurious with FreeBSD make
+	  tests: fix a spurious failure with FreeBSD make
+	  tests: remove remaining exec bits ('maint' branch)
+	  PLANS: subdir-objects: various updates
+	  THANKS: update Akim's e-mail address
+	  tests: less uses of "make -e"; avoid spurious failures in 'check-cc-no-c-o'
+	  build: be more respectful of user-specified verbosity
+	  check-cc-no-c-o: unify initializations in a single place
+	  check-cc-no-c-o: avoid a spurious failure
+	  build: fixup for building in a VPATH setup
+	  Use AC_DEFUN_ONCE to define AM_PROG_CC_C_O
+	  compile: avoid AC_PROG_CC messy rewrite
+	  options: tiny simplification in dealing with incompatible versions
+	  options: try to report as much errors as possible
+	  refactor: fix few "inverted boolean" usages
+	  options: better name for an internal function
+	  options: more consistency in use of return statuses to report errors
+	  options: tiny simplification in dealing with erroneous opts
+	  options: consistently use return statuses to report errors
+	  options: re-enable some sanity checks
+	  THANKS: update Eric Blake's e-mail address
+	  NEWS: typofix
+	  news: document new 'subdir-objects' warning
+	  PLANS: one minor fixlet (mostly cosmetic)
+	  PLANS: we have already dropped support for split info files in master
+	  NEWS: fix a reference to Automake 1.14 where Automake 2.0 was intended
+	  PLANS: fix reference to non-existent 'next' branch
+	  PLANS: fix botched version reference
+	  maintcheck: fix two references to old location of aclocal and automake
+	  dist: deprecated shar and tar+compress formats
+	  am: prefer a shorter idiom where possible
+	  maint: re-run "make update-copyright" ...
+	  tests: avoid spurious failure with older flex (2.5.4)
+	  build: move automake and aclocal in 'bin' subdir
+	  build: break up monolithic Makefile.am in subdir-specific fragments
+	  maint branch: we are going to become Automake 1.14
+	  tests: typofixes in comments in t/preproc-c-compile.sh
+	  tests: remove bashism from a test
+	  tests: rename some with more descriptive names
+	  typofix: in comments in t/extra2.sh
+	  tests: fix botched cross-reference in a heading comment
+	  automake: refactoring: factor out common cpp-like flags
+	  NEWS (mint): reflect new Automake versioning scheme
+	  maintcheck: avoid spurious failure
+	  perl: perl subroutine prototypes are problematic, don't use them
+	  maint: more adjustments to the new versioning scheme
+	  cosmetics: fix some "docstring-like" comments in automake
+	  style: call perl functions 'like_this()', not '&like_this()'
+	  preproc: enhance and extend tests
+	  preproc: add support for relative names in included fragments
+	  maint: use more perl subroutines prototypes in the automake script
+	  build: auto-generate perl subroutines prototypes for automake and aclocal
+	  refactor: rip module Automake::Language out of automake script
+	  tests: more information about Lex and Yacc programs
+	  lint: fix spurious failure for 'sc_rm_minus_f' syntax check
+	  maint: bump version 1.13.1a -> 1.13.2a
+	  plans: we are not going to remove AM_PROG_MKDIR_P in Automake 1.14
+	  init.m4: add probe to check "rm -f" without args work
+	  subdir-objects: complain if it isn't enabled
+	  plans: update w.r.t. latest changes
+	  ywrap: remove an obsolete FIXME comment
+	  ywrap: style fixes (no semantic change intended)
+	  convenience: "make lint" as an alias for "make maintainer-check"
+	  docs: typofix in manual
+	  coverage: using multiple lexers in a single program
+	  tests: remove most uses of the AM_PROG_CC_C_O obsolete macro
+	  coverage: obsolete macro AM_PROG_CC_C_O should cause no warning nor errors
+	  INSTALL: update copyright years
+	  ithreads: use runtime (not configure time) detection of perl threads
+	  copyright: add few missing copyright notices
+	  maint: files in PLANS are to be exempted from copyright notice
+	  maint: consistently honor the UPDATE_COPYRIGHT_YEAR environment variable
+	  copyright: update some copyright years
+	  compile: use 'compile' script when "-c -o" is used with losing compilers
+	  HACKING: suggest more checks before releasing
+	  tests: can fake a compiler not grasping "-c -o" -- globally in all tests
+	  sync: update files from upstream with "make fetch"
+	  typofix: in comments in GNUmakefile
+	  Rename 'maint/' -> 'maintainer/', for Git's sake
+	  HACKING: minor typofix
+	  HACKING: bug-tracker, the PLANS directory, and how to plan "big" changes
+	  HACKING: rewindable branches should live in the 'experimental/*' namespace
+	  HACKING: fixlets about git branch rewinding policy
+	  HACKING: commit messages are not to follow GCS ChangeLog rules too strongly
+	  HACKING: "detailed explanation" in commit messages is almost mandatory
+	  HACKING: we use "merge --log" even when merging master
+	  HACKING: typofix
+	  depend2.am: fix comments on verbosity of compilation rules
+	  depend2.am: improve comments a little
+	  plans: automake 1.14 is to assume "rm -f" with no args is OK
+	  plans: we want to active subdir-objects unconditionally in automake 1.14
+	  tests: adjust stale references to old test names
+	  tests: rename the last aclocal test with dumb name
+	  tests: fix an old botched change to an aclocal test
+	  tests: fix some botched inter-test references in heading comments
+	  coverage: compile rules used "-c -o" also with losing compilers
+	  texi: remove extra verbosity in creation of dirstamp directory
+	  coverage: user can avoid distributing '.info' pages
+	  plans: add some on-going plans (already registered on the bug tracker)
+	  docs: mention dist-hook help for EXTRA_DIST
+	  texi: remove workaround for older Texinfo (4.1)
+	  NEWS: improve wordings in entry deprecating suffix-less info files
+	  build: don't enable 'color-tests' automake option explicitly
+	  build: enable all warnings as fatal in our own build system
+	  texi: Texinfo sources and CLEANFILES definition should co-exist peacefully
+	  tests: make two new test executable
+	  runtest: better command line API
+	  tests: move runtest.in away from the top-lever directory
+	  maint: move more maintainer files in the 'maint/' subdir
+	  plans: add the "PLANS" directory
+	  tests: more significant names for some tests
+	  maint: add some of my maintainer-specific scripts
+	  texi: deprecate hack about info files in CLEANFILES variables
+	  texi: info files can be generated in the builddir
+
 2013-06-20  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
 	release: stable minor release 1.14
