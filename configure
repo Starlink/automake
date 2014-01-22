@@ -669,7 +669,6 @@ am_AUTOHEADER
 am_AUTORECONF
 am_AUTOM4TE
 am_AUTOCONF
-STAR_MANIFEST_DIR
 host_os
 host_vendor
 host_cpu
@@ -2129,11 +2128,6 @@ IFS=$ac_save_IFS
 case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
-
-
-# Set the STAR_MANIFEST_DIR variable, defaulting it from the environment.
-# This causes the `install-manifest' target to be included in Makefile.in
-: ${STAR_MANIFEST_DIR='$(prefix)/manifests'}
 
 
 # Save the AUTOCONF setting before AM_INIT_AUTOMAKE overrides it; this
@@ -6519,8 +6513,6 @@ ac_config_files="$ac_config_files t/wrap/aclocal-${APIVERSION}:t/wrap/aclocal.in
 
 ac_config_files="$ac_config_files t/wrap/automake-${APIVERSION}:t/wrap/automake.in"
 
-ac_config_files="$ac_config_files component.xml"
-
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7260,7 +7252,6 @@ do
     "GNUmakefile") CONFIG_LINKS="$CONFIG_LINKS GNUmakefile:GNUmakefile" ;;
     "t/wrap/aclocal-${APIVERSION}") CONFIG_FILES="$CONFIG_FILES t/wrap/aclocal-${APIVERSION}:t/wrap/aclocal.in" ;;
     "t/wrap/automake-${APIVERSION}") CONFIG_FILES="$CONFIG_FILES t/wrap/automake-${APIVERSION}:t/wrap/automake.in" ;;
-    "component.xml") CONFIG_FILES="$CONFIG_FILES component.xml" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
