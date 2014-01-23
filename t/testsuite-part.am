@@ -118,8 +118,6 @@ t/check-fd-redirect-w.log: t/check-fd-redirect.sh
 t/check-fd-redirect-w.log: t/check-fd-redirect.log
 t/tap-no-spurious-summary-w.log: t/tap-no-spurious-summary.sh
 t/tap-no-spurious-summary-w.log: t/tap-no-spurious-summary.log
-t/tap-realtime-w.log: t/tap-realtime.sh
-t/tap-realtime-w.log: t/tap-realtime.log
 t/tap-test-number-0-w.log: t/tap-test-number-0.sh
 t/tap-test-number-0-w.log: t/tap-test-number-0.log
 t/tap-recheck-w.log: t/tap-recheck.sh
@@ -291,7 +289,6 @@ generated_TESTS += t/tap-exit-w.sh
 generated_TESTS += t/tap-plan-leading-zero-w.sh
 generated_TESTS += t/check-fd-redirect-w.sh
 generated_TESTS += t/tap-no-spurious-summary-w.sh
-generated_TESTS += t/tap-realtime-w.sh
 generated_TESTS += t/tap-test-number-0-w.sh
 generated_TESTS += t/tap-recheck-w.sh
 generated_TESTS += t/tap-planskip-unplanned-corner-w.sh
@@ -565,7 +562,6 @@ on_tap_with_common_setup_TESTS = \
   t/tap-planskip-badexit.sh \
   t/tap-planskip-bailout.sh \
   t/tap-planskip-later-errors.sh \
-  t/tap-realtime.sh \
   t/tap-test-number-0.sh \
   t/tap-recheck-logs.sh \
   t/tap-result-comment.sh \
@@ -635,7 +631,6 @@ t/tap-planskip-whitespace.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-planskip-badexit.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-planskip-bailout.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-planskip-later-errors.log: t/ax/tap-setup.sh t/tap-common-setup.log
-t/tap-realtime.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-test-number-0.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-recheck-logs.log: t/ax/tap-setup.sh t/tap-common-setup.log
 t/tap-result-comment.log: t/ax/tap-setup.sh t/tap-common-setup.log

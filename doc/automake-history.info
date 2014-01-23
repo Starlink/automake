@@ -1,4 +1,4 @@
-This is automake-history.info-t, produced by makeinfo version 5.1 from
+This is automake-history.info, produced by makeinfo version 5.2 from
 automake-history.texi.
 
 This manual describes (part of) the history of GNU Automake, a program
@@ -14,7 +14,7 @@ that creates GNU standards-compliant Makefiles from template files.
      the section entitled "GNU Free Documentation License."
 
 
-File: automake-history.info-t,  Node: Top,  Next: Timeline,  Up: (dir)
+File: automake-history.info,  Node: Top,  Next: Timeline,  Up: (dir)
 
 Brief History of Automake
 *************************
@@ -58,7 +58,7 @@ Copying This Manual
 
 
 
-File: automake-history.info-t,  Node: Timeline,  Next: Dependency Tracking Evolution,  Prev: Top,  Up: Top
+File: automake-history.info,  Node: Timeline,  Next: Dependency Tracking Evolution,  Prev: Top,  Up: Top
 
 1 Timeline
 **********
@@ -789,7 +789,7 @@ File: automake-history.info-t,  Node: Timeline,  Next: Dependency Tracking Evolu
      and uses git as primary repository.
 
 
-File: automake-history.info-t,  Node: Dependency Tracking Evolution,  Next: Releases,  Prev: Timeline,  Up: Top
+File: automake-history.info,  Node: Dependency Tracking Evolution,  Next: Releases,  Prev: Timeline,  Up: Top
 
 2 Evolution of Automatic Dependency Tracking
 ********************************************
@@ -809,7 +809,7 @@ tracking work in Automake.
 * Techniques for Dependencies::   Alternative approaches
 
 
-File: automake-history.info-t,  Node: First Take on Dependencies,  Next: Dependencies As Side Effects,  Up: Dependency Tracking Evolution
+File: automake-history.info,  Node: First Take on Dependencies,  Next: Dependencies As Side Effects,  Up: Dependency Tracking Evolution
 
 2.1 First Take on Dependency Tracking
 =====================================
@@ -866,7 +866,7 @@ Meyering.  (I could be mistaken.  If you know otherwise feel free to
 correct me.)
 
 
-File: automake-history.info-t,  Node: Dependencies As Side Effects,  Next: Dependencies for the User,  Prev: First Take on Dependencies,  Up: Dependency Tracking Evolution
+File: automake-history.info,  Node: Dependencies As Side Effects,  Next: Dependencies for the User,  Prev: First Take on Dependencies,  Up: Dependency Tracking Evolution
 
 2.2 Dependencies As Side Effects
 ================================
@@ -913,7 +913,7 @@ Bugs
      output of 'gcc' to include a dummy dependency for each header file.
 
 
-File: automake-history.info-t,  Node: Dependencies for the User,  Next: Techniques for Dependencies,  Prev: Dependencies As Side Effects,  Up: Dependency Tracking Evolution
+File: automake-history.info,  Node: Dependencies for the User,  Next: Techniques for Dependencies,  Prev: Dependencies As Side Effects,  Up: Dependency Tracking Evolution
 
 2.3 Dependencies for the User
 =============================
@@ -1014,7 +1014,7 @@ counterpart is that because we have to encode two compilation rules in
 larger.
 
 
-File: automake-history.info-t,  Node: Techniques for Dependencies,  Prev: Dependencies for the User,  Up: Dependency Tracking Evolution
+File: automake-history.info,  Node: Techniques for Dependencies,  Prev: Dependencies for the User,  Up: Dependency Tracking Evolution
 
 2.4 Techniques for Computing Dependencies
 =========================================
@@ -1053,7 +1053,7 @@ The file system
 * Future Directions for Dependencies::
 
 
-File: automake-history.info-t,  Node: Recommendations for Tool Writers,  Next: Future Directions for Dependencies,  Up: Techniques for Dependencies
+File: automake-history.info,  Node: Recommendations for Tool Writers,  Next: Future Directions for Dependencies,  Up: Techniques for Dependencies
 
 2.4.1 Recommendations for Tool Writers
 --------------------------------------
@@ -1068,7 +1068,7 @@ of each successful file open, in order to avoid the duplicated new
 header bug.
 
 
-File: automake-history.info-t,  Node: Future Directions for Dependencies,  Prev: Recommendations for Tool Writers,  Up: Techniques for Dependencies
+File: automake-history.info,  Node: Future Directions for Dependencies,  Prev: Recommendations for Tool Writers,  Up: Techniques for Dependencies
 
 2.4.2 Future Directions for Dependencies
 ----------------------------------------
@@ -1079,7 +1079,7 @@ dependency tracking enabled.  We would like to see if it is practical
 languages unknown to Automake.
 
 
-File: automake-history.info-t,  Node: Releases,  Next: Copying This Manual,  Prev: Dependency Tracking Evolution,  Up: Top
+File: automake-history.info,  Node: Releases,  Next: Copying This Manual,  Prev: Dependency Tracking Evolution,  Up: Top
 
 3 Release Statistics
 ********************
@@ -1168,7 +1168,7 @@ Date         Rel      am     acl    pm     '*.am'      m4          doc   t
 2009-05-17   1.11     8721   1092   8289   4164 (42)   1714 (37)   181   732 (20)
 
 
-File: automake-history.info-t,  Node: Copying This Manual,  Prev: Releases,  Up: Top
+File: automake-history.info,  Node: Copying This Manual,  Prev: Releases,  Up: Top
 
 Appendix A Copying This Manual
 ******************************
@@ -1178,7 +1178,7 @@ Appendix A Copying This Manual
 * GNU Free Documentation License::  License for copying this manual
 
 
-File: automake-history.info-t,  Node: GNU Free Documentation License,  Up: Copying This Manual
+File: automake-history.info,  Node: GNU Free Documentation License,  Up: Copying This Manual
 
 A.1 GNU Free Documentation License
 ==================================
@@ -1662,17 +1662,17 @@ their use in free software.
 
 
 Tag Table:
-Node: Top704
-Node: Timeline2240
-Node: Dependency Tracking Evolution33703
-Node: First Take on Dependencies34547
-Node: Dependencies As Side Effects37207
-Node: Dependencies for the User39268
-Node: Techniques for Dependencies44300
-Node: Recommendations for Tool Writers46000
-Node: Future Directions for Dependencies46721
-Node: Releases47193
-Node: Copying This Manual52582
-Node: GNU Free Documentation License52811
+Node: Top702
+Node: Timeline2236
+Node: Dependency Tracking Evolution33697
+Node: First Take on Dependencies34539
+Node: Dependencies As Side Effects37197
+Node: Dependencies for the User39256
+Node: Techniques for Dependencies44286
+Node: Recommendations for Tool Writers45984
+Node: Future Directions for Dependencies46703
+Node: Releases47173
+Node: Copying This Manual52560
+Node: GNU Free Documentation License52787
 
 End Tag Table

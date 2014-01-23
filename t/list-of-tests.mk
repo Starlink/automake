@@ -422,6 +422,7 @@ t/distcheck-hook2.sh \
 t/distcheck-writable-srcdir.sh \
 t/distcheck-missing-m4.sh \
 t/distcheck-outdated-m4.sh \
+t/distcheck-no-prefix-or-srcdir-override.sh \
 t/distcheck-override-infodir.sh \
 t/distcheck-pr9579.sh \
 t/distcheck-pr10470.sh \
@@ -1148,7 +1149,6 @@ t/tap-planskip-whitespace.sh \
 t/tap-planskip-badexit.sh \
 t/tap-planskip-bailout.sh \
 t/tap-planskip-later-errors.sh \
-t/tap-realtime.sh \
 t/tap-test-number-0.sh \
 t/tap-recheck-logs.sh \
 t/tap-result-comment.sh \

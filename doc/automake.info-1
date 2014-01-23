@@ -1,9 +1,9 @@
-This is doc/automake.info, produced by makeinfo version 4.13 from
+This is automake.info, produced by makeinfo version 5.2 from
 ./doc/automake.texi.
 
-This manual is for GNU Automake (version 1.14-starlink, 4 October
-2013), a program that creates GNU standards-compliant Makefiles from
-template files.
+This manual is for GNU Automake (version 1.14.1, 6 November 2013), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
@@ -32,9 +32,9 @@ File: automake.info,  Node: Top,  Next: Introduction,  Up: (dir)
 GNU Automake
 ************
 
-This manual is for GNU Automake (version 1.14-starlink, 4 October
-2013), a program that creates GNU standards-compliant Makefiles from
-template files.
+This manual is for GNU Automake (version 1.14.1, 6 November 2013), a
+program that creates GNU standards-compliant Makefiles from template
+files.
 
    Copyright (C) 1995-2013 Free Software Foundation, Inc.
 
@@ -7251,4 +7251,124 @@ distributed tree.  At the top-level it's equal to `$(distdir)'.  In the
    Note that when packages are nested using `AC_CONFIG_SUBDIRS' (*note
 Subpackages::), then `$(distdir)' and `$(top_distdir)' are relative to
 the package where `make dist' was run, not to any sub-packages involved.
+
+
+File: automake.info,  Node: Checking the Distribution,  Next: The Types of Distributions,  Prev: The dist Hook,  Up: Dist
+
+14.4 Checking the Distribution
+==============================
+
+Automake also generates a 'distcheck' rule that can be of help to ensure
+that a given distribution will actually work.  Simplifying a bit, we can
+say this rule first makes a distribution, and then, _operating from it_,
+takes the following steps:
+   * tries to do a 'VPATH' build (*note VPATH Builds::), with the
+     'srcdir' and all its content made _read-only_;
+   * runs the test suite (with 'make check') on this fresh build;
+   * installs the package in a temporary directory (with 'make
+     install'), and tries runs the test suite on the resulting
+     installation (with 'make installcheck');
+   * checks that the package can be correctly uninstalled (by 'make
+     uninstall') and cleaned (by 'make distclean');
+   * finally, makes another tarball to ensure the distribution is
+     self-contained.
+
+DISTCHECK_CONFIGURE_FLAGS
+-------------------------
+
+Building the package involves running './configure'.  If you need to
+supply additional flags to 'configure', define them in the
+'AM_DISTCHECK_CONFIGURE_FLAGS' variable in your top-level 'Makefile.am'.
+The user can still extend or override the flags provided there by
+defining the 'DISTCHECK_CONFIGURE_FLAGS' variable, on the command line
+when invoking 'make'.  It's worth nothing that 'make distcheck' needs
+complete control over the 'configure' options '--srcdir' and '--prefix',
+so those options cannot be overridden by 'AM_DISTCHECK_CONFIGURE_FLAGS'
+nor by 'DISTCHECK_CONFIGURE_FLAGS'.
+
+   Also note that developers are encouraged to strive to make their code
+buildable without requiring any special configure option; thus, in
+general, you shouldn't define 'AM_DISTCHECK_CONFIGURE_FLAGS'.  However,
+there might be few scenarios in which the use of this variable is
+justified.  GNU 'm4' offers an example.  GNU 'm4' configures by default
+with its experimental and seldom used "changeword" feature disabled; so
+in its case it is useful to have 'make distcheck' run configure with the
+'--with-changeword' option, to ensure that the code for changeword
+support still compiles correctly.  GNU 'm4' also employs the
+'AM_DISTCHECK_CONFIGURE_FLAGS' variable to stress-test the use of
+'--program-prefix=g', since at one point the 'm4' build system had a bug
+where 'make installcheck' was wrongly assuming it could blindly test
+"'m4'", rather than the just-installed "'gm4'".
+
+distcheck-hook
+--------------
+
+If the 'distcheck-hook' rule is defined in your top-level 'Makefile.am',
+then it will be invoked by 'distcheck' after the new distribution has
+been unpacked, but before the unpacked copy is configured and built.
+Your 'distcheck-hook' can do almost anything, though as always caution
+is advised.  Generally this hook is used to check for potential
+distribution errors not caught by the standard mechanism.  Note that
+'distcheck-hook' as well as 'AM_DISTCHECK_CONFIGURE_FLAGS' and
+'DISTCHECK_CONFIGURE_FLAGS' are not honored in a subpackage
+'Makefile.am', but the flags from 'AM_DISTCHECK_CONFIGURE_FLAGS' and
+'DISTCHECK_CONFIGURE_FLAGS' are passed down to the 'configure' script of
+the subpackage.
+
+distcleancheck
+--------------
+
+Speaking of potential distribution errors, 'distcheck' also ensures that
+the 'distclean' rule actually removes all built files.  This is done by
+running 'make distcleancheck' at the end of the 'VPATH' build.  By
+default, 'distcleancheck' will run 'distclean' and then make sure the
+build tree has been emptied by running '$(distcleancheck_listfiles)'.
+Usually this check will find generated files that you forgot to add to
+the 'DISTCLEANFILES' variable (*note Clean::).
+
+   The 'distcleancheck' behavior should be OK for most packages,
+otherwise you have the possibility to override the definition of either
+the 'distcleancheck' rule, or the '$(distcleancheck_listfiles)'
+variable.  For instance, to disable 'distcleancheck' completely, add the
+following rule to your top-level 'Makefile.am':
+
+     distcleancheck:
+             @:
+
+   If you want 'distcleancheck' to ignore built files that have not been
+cleaned because they are also part of the distribution, add the
+following definition instead:
+
+     distcleancheck_listfiles = \
+       find . -type f -exec sh -c 'test -f $(srcdir)/$$1 || echo $$1' \
+            sh '{}' ';'
+
+   The above definition is not the default because it's usually an error
+if your Makefiles cause some distributed files to be rebuilt when the
+user build the package.  (Think about the user missing the tool required
+to build the file; or if the required tool is built by your package,
+consider the cross-compilation case where it can't be run.)  There is an
+entry in the FAQ about this (*note Errors with distclean::), make sure
+you read it before playing with 'distcleancheck_listfiles'.
+
+distuninstallcheck
+------------------
+
+'distcheck' also checks that the 'uninstall' rule works properly, both
+for ordinary and 'DESTDIR' builds.  It does this by invoking 'make
+uninstall', and then it checks the install tree to see if any files are
+left over.  This check will make sure that you correctly coded your
+'uninstall'-related rules.
+
+   By default, the checking is done by the 'distuninstallcheck' rule,
+and the list of files in the install tree is generated by
+'$(distuninstallcheck_listfiles)' (this is a variable whose value is a
+shell command to run that prints the list of files to stdout).
+
+   Either of these can be overridden to modify the behavior of
+'distcheck'.  For instance, to disable this check completely, you would
+write:
+
+     distuninstallcheck:
+             @:
 
