@@ -57,7 +57,7 @@ if %?LATEXDOCS%
 	dvips -o $@ $(<:.tex=.dvi)
 .tex.pdf:
 	LATEX=pdflatex; latex2dvi () { $(LATEX2DVI); }; \
-	  latex2dvi ${<:.tex=}
+	  TEXINPUTS=${STARLINK}/share/latexsupport//:${TEXINPUTS} latex2dvi ${<:.tex=}
 .tex.htx_tar:
 	- @STAR2HTML@ $(STAR2HTML_FLAGS) $<
 	test -d ${<:.tex=.htx}
