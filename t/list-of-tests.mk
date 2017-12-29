@@ -2,7 +2,7 @@
 ## testsuite.  This fragment is meant to be included by the Makefile.am,
 ## but also to be executed directly by make when bootstrapping automake.
 
-## Copyright (C) 2011-2013 Free Software Foundation, Inc.
+## Copyright (C) 2011-2014 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ t/pm/Version3.pl
 
 XFAIL_TESTS = \
 t/all.sh \
+t/auxdir-pr19311.sh \
 t/cond17.sh \
 t/gcj6.sh \
 t/override-conditional-2.sh \
@@ -116,6 +117,8 @@ t/aclocal-scan-configure-ac-pr319.sh \
 t/aclocal-serial.sh \
 t/aclocal-underquoted-defun.sh \
 t/aclocal-verbose-install.sh \
+t/auxdir-pr15981.sh \
+t/auxdir-cc-pr15981.sh \
 t/ac-output-old.tap \
 t/acsilent.sh \
 t/acsubst.sh \
@@ -132,6 +135,7 @@ t/amhello-cflags.sh \
 t/amhello-cross-compile.sh \
 t/amhello-binpkg.sh \
 t/aminit-moreargs-deprecation.sh \
+t/aminit-trailing-dnl-comment-pr16841.sh \
 t/amassign.sh \
 t/am-config-header.sh \
 t/am-prog-cc-stdc.sh \
@@ -142,6 +146,7 @@ t/amopts-location.sh \
 t/amopts-variable-expansion.sh \
 t/amsubst.sh \
 t/am-default-source-ext.sh \
+t/am-include-only-one-generated-fragment.sh \
 t/ansi2knr-no-more.sh \
 t/ar-lib.sh \
 t/ar-lib2.sh \
@@ -183,6 +188,7 @@ t/auxdir-autodetect.sh \
 t/auxdir-computed.tap \
 t/auxdir-misplaced.sh \
 t/auxdir-nonexistent.sh \
+t/auxdir-pr19311.sh \
 t/auxdir-unportable.tap \
 t/backcompat.sh \
 t/backcompat2.sh \
@@ -426,6 +432,7 @@ t/distcheck-no-prefix-or-srcdir-override.sh \
 t/distcheck-override-infodir.sh \
 t/distcheck-pr9579.sh \
 t/distcheck-pr10470.sh \
+t/distcheck-pr18286.sh \
 t/dmalloc.sh \
 t/doc-parsing-buglets-colneq-subst.sh \
 t/doc-parsing-buglets-tabs.sh \
@@ -514,12 +521,12 @@ t/hfs.sh \
 t/implicit.sh \
 t/init.sh \
 t/init2.sh \
-t/insh2.sh \
-t/install2.sh \
+t/dist-install-sh.sh \
+t/dist-with-unreadable-makefile-fails.sh \
 t/installdir.sh \
-t/instsh.sh \
-t/instsh2.sh \
-t/instsh3.sh \
+t/add-missing-install-sh.sh \
+t/install-sh-unittests.sh \
+t/install-sh-option-C.sh \
 t/instdat.sh \
 t/instdat2.sh \
 t/instdir.sh \
@@ -765,6 +772,7 @@ t/parallel-tests-basics.sh \
 t/parallel-tests-concurrency.sh \
 t/parallel-tests-concurrency-2.sh \
 t/parallel-tests-empty.sh \
+t/parallel-tests-exit-status-reported.sh \
 t/parallel-tests-generated-and-distributed.sh \
 t/parallel-tests-recheck.sh \
 t/parallel-tests-trailing-whitespace.sh \
@@ -837,6 +845,7 @@ t/percent.sh \
 t/percent2.sh \
 t/per-target-flags.sh \
 t/phony.sh \
+t/precious.sh \
 t/pluseq.sh \
 t/pluseq2.sh \
 t/pluseq3.sh \

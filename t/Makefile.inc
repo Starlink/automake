@@ -1,6 +1,6 @@
 ## Included by top-level Makefile for Automake.
 
-## Copyright (C) 1995-2013 Free Software Foundation, Inc.
+## Copyright (C) 1995-2014 Free Software Foundation, Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ TAP_LOG_DRIVER = AM_TAP_AWK='$(AWK)' $(SHELL) $(srcdir)/lib/tap-driver.sh
 AM_TAP_LOG_DRIVER_FLAGS = --merge
 
 EXTRA_DIST += %D%/README %D%/ax/is %D%/ax/is_newest %D%/ax/deltree.pl
- 
+
 
 ## Will be updated later.
 TESTS =
@@ -64,9 +64,9 @@ AM_TESTS_ENVIRONMENT += stderr_fileno_=9; export stderr_fileno_;
 # in case it is given with a relative name containing no slashes.
 AM_TESTS_ENVIRONMENT += \
   if test $(srcdir) != .; then \
-    PATH='$(abs_srcdir)/%D%/ax'$(PATH_SEPARATOR)$$PATH; \
+    PATH='$(abs_srcdir)/%D%/ax$(PATH_SEPARATOR)'$$PATH; \
   fi; \
-  PATH='$(abs_builddir)/%D%/ax'$(PATH_SEPARATOR)$$PATH; \
+  PATH='$(abs_builddir)/%D%/ax$(PATH_SEPARATOR)'$$PATH; \
   export PATH;
 
 # Hand-written tests.

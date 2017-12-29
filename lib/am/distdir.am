@@ -1,5 +1,5 @@
 ## automake - create Makefile.in from Makefile.am
-## Copyright (C) 2001-2013 Free Software Foundation, Inc.
+## Copyright (C) 2001-2014 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+DIST_COMMON += $(am__DIST_COMMON)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 if %?TOPDIR_P%
@@ -339,8 +340,8 @@ dist-xz: distdir
 ?COMPRESS?DIST_ARCHIVES += $(distdir).tar.Z
 .PHONY: dist-tarZ
 dist-tarZ: distdir
-	@echo WARNING: "Support for shar distribution archives is" \
-	               "deprecated." >&2
+	@echo WARNING: "Support for distribution archives compressed with" \
+		       "legacy program 'compress' is deprecated." >&2
 	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
 	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z
 	$(am__post_remove_distdir)
@@ -348,8 +349,8 @@ dist-tarZ: distdir
 ?SHAR?DIST_ARCHIVES += $(distdir).shar.gz
 .PHONY: dist-shar
 dist-shar: distdir
-	@echo WARNING: "Support for distribution archives compressed with" \
-		       "legacy program 'compress' is deprecated." >&2
+	@echo WARNING: "Support for shar distribution archives is" \
+	               "deprecated." >&2
 	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
 	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
 	$(am__post_remove_distdir)
@@ -430,7 +431,7 @@ distcheck: dist
 ## can make our new subdirs.
 	chmod -R a-w $(distdir)
 	chmod u+w $(distdir)
-	mkdir $(distdir)/_build $(distdir)/_inst
+	mkdir $(distdir)/_build $(distdir)/_build/sub $(distdir)/_inst
 ## Undo the write access.
 	chmod a-w $(distdir)
 ## With GNU make, the following command will be executed even with "make -n",
@@ -451,8 +452,12 @@ distcheck: dist
 ## Parallel BSD make may not start a new shell for each command in a recipe,
 ## so be sure to 'cd' back to the original directory after this.
 	  && am__cwd=`pwd` \
-	  && $(am__cd) $(distdir)/_build \
-	  && ../configure \
+## If we merely used '$(distdir)/_build' here, "make distcheck" could
+## sometimes fail to detect missing files in the distribution tarball,
+## especially in those cases where both the generated files and their
+## dependencies are explicitly in $(srcdir).  See automake bug#18286.
+	  && $(am__cd) $(distdir)/_build/sub \
+	  && ../../configure \
 ?GETTEXT?	    --with-included-gettext \
 ## Additional flags for configure.
 	    $(AM_DISTCHECK_CONFIGURE_FLAGS) \
@@ -461,7 +466,7 @@ distcheck: dist
 ## and --prefix values, so don't allow them to be overridden by the user or
 ## the developer.  That used to be allowed, and caused issues in practice
 ## (in corner-case usages); see automake bug#14991.
-	    --srcdir=.. --prefix="$$dc_install_base" \
+	    --srcdir=../.. --prefix="$$dc_install_base" \
 	  && $(MAKE) $(AM_MAKEFLAGS) \
 	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
 	  && $(MAKE) $(AM_MAKEFLAGS) check \

@@ -2,7 +2,7 @@
 
 ## Makefile for Automake.
 
-# Copyright (C) 1995-2013 Free Software Foundation, Inc.
+# Copyright (C) 1995-2014 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ generated_file_finalize = $(AM_V_at) \
 # For some tests or targets, we need to have the just-build automake and
 # aclocal scripts avaiable on PATH.
 extend_PATH = \
-  { PATH='$(abs_builddir)/t/wrap'$(PATH_SEPARATOR)$$PATH && export PATH; }
+  { PATH='$(abs_builddir)/t/wrap$(PATH_SEPARATOR)'$$PATH && export PATH; }
 
 # The master location for INSTALL is lib/INSTALL.
 # This is where "make fetch" will install new versions.
@@ -92,6 +92,7 @@ ChangeLog:
 
 # Third-party, obsolescent or experimental stuff.
 EXTRA_DIST += \
+  contrib/tap-driver.pl \
   contrib/check-html.am \
   contrib/multilib/README \
   contrib/multilib/config-ml.in \

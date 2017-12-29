@@ -1,3 +1,777 @@
+2014-12-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	release: stable minor release 1.15
+
+	* configure.ac (AC_INIT): Bump version number to 1.15.
+	* m4/amversion.m4: Likewise (auto-updated by "make bootstrap").
+
+2014-12-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: minor improvements and fixed some typos and grammaros
+
+2014-12-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	docs: "make distcheck" implementation details are not to be abused
+
+	* doc/automake.texi: State explicitly and in detail that the exact location
+	and the exact structure of the subdirectory used by "make distcheck" is to
+	be considered an implementation detail, which can change at any time.
+
+2014-12-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: improve and adjust in light of the oncoming 1.15 release
+
+2014-12-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  shell-no-trail-bslash: improve diagnostic in case of failure
+
+2014-12-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	shell-no-trail-bslash: improve diagnostic in case of failure
+
+	* t/ax/shell-no-trail-bslash.in: Here, by fixing a typo in a
+	variable name and a logic error.
+	* t/self-check-shell-no-trail-bslash.sh: Enhance to catch the
+	issue.
+
+2014-12-28  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  tests: make script 'shell-no-trail-bslash' simpler and more robust
+
+2014-12-28  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: make script 'shell-no-trail-bslash' simpler and more robust
+
+	This solves spurious failure in the 'check-no-trailing-backslash-in-recipes'
+	target for Automake-NG.
+
+	This is basically a backport of Automake-NG commit v1.14.1-1010-g85aae58;
+	the point is to minimize the amount of spurious diffs between the mainline
+	Automake and the Automake-NG source trees.
+
+	* t/ax/shell-no-trail-bslash.in: Simplify and fortify.
+	* t/self-check-shell-no-trail-bslash.sh: Enhance.
+
+2014-12-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  tests: fix spurious failure in test on TEXINFO_TEX overriding
+	  tests: avoid some spurious failures on AIX 7.1
+
+2014-12-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: fix spurious failure in test on TEXINFO_TEX overriding
+
+	* t/txinfo-override-texinfo-tex.sh: Here.  The issue was pre-existing, but
+	has been only recently exposed by the fix for automake bug#18286 "distcheck
+	fails to detect missing files" (see commit v1.14.1-4-g01a7a4a) and by the
+	BSD make semantics.  To convince yourself this change actually makes sense
+	semantically, see https://sourceware.org/ml/binutils/2012-06/msg00004.html
+
+2014-12-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'aix-testsuite-failures' into micro
+
+	* aix-testsuite-failures:
+	  tests: avoid some spurious failures on AIX 7.1
+
+2014-12-27  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: avoid some spurious failures on AIX 7.1
+
+	* t/lex-noyywrap.sh: Here.
+	* t/instmany-mans.sh: And here.
+	* t/instmany-python.sh: And here.
+	* t/instmany.sh: And here.
+	* t/parallel-tests-concurrency.sh: And here.
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  dist: fix bug#18286 "distcheck fails to detect missing files"
+	  tests: expose automake bug#18286 "distcheck fails to detect missing files"
+	  include: fix bug in handling of user-defined makefile fragments generation
+	  tests: expose bug in handling of user-defined makefile fragments generation
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'distcheck-pr18286' into micro
+
+	* distcheck-pr18286:
+	  dist: fix bug#18286 "distcheck fails to detect missing files"
+	  tests: expose automake bug#18286 "distcheck fails to detect missing files"
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	dist: fix bug#18286 "distcheck fails to detect missing files"
+
+	BTW, this issue had been already reported in the past:
+	http://lists.gnu.org/archive/html/automake/2006-09/msg00008.html
+	http://lists.gnu.org/archive/html/automake/2013-01/msg00049.html
+
+	"make distcheck" could sometimes fail to detect missing files in the
+	distribution tarball, especially in those cases where both the generated
+	files and their dependencies are explicitly in $(srcdir).  An important
+	example of this are *generated* makefile fragments included at Automake
+	time in Makefile.am.  A basic example:
+
+	    # -*- Makefile.am -*-
+
+	    $(srcdir)/fragment.am: $(srcdir)/data.txt $(srcdir)/preproc.sh
+	        cd $(srcdir) && $(SHELL) preproc.sh <data.txt >fragment.am
+
+	    include $(srcdir)/fragment.am
+
+	    ...
+
+	If the use forgot to add data.txt and/or preproc.sh in the distribution
+	tarball, "make distcheck" would have erroneously succeeded!
+
+	The reason is that, while $(srcdir)/data.txt does not exist, make also
+	looks in $(srcdir)/$(srcdir)/data.txt, and in the distcheck-issued
+	VPATH build where $(srcdir) is '..', that file exists, as it is
+	part of the original development directory.
+
+	* t/distdir.am (distcheck): Adjust to have the build directory be
+	'$(distdir)/_build/sub' rather than just '$(distdir)/_build'.  Thanks
+	Nicola Fontana for the suggestion.
+	* t/distcheck-pr18286.sh: Enhance and tighten a little.
+	* t/list-of-tests.mk (XFAIL_TESTS): Remove 't/distcheck-pr18286.sh',
+	as it's now passing.
+	* t/subdir-am-cond.sh: Adjust to avoid a fully spurious failure due
+	to the new distcheck semantics.
+	* t/subdir-ac-subst.sh: Likewise.
+	* t/dejagnu-relative-srcdir.sh: Likewise.
+	* t/txinfo-builddir.sh: Likewise.
+	* NEWS: Update.
+
+	Helped-by: Nicola Fontana <ntd@entidi.it>
+	Helped-by: Peter Johansson <trojkan@gmail.com>
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: expose automake bug#18286 "distcheck fails to detect missing files"
+
+	* t/distcheck-pr18286.sh: New test, still XFAILing.
+	* t/list-of-tests.mk: Add it.
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'am-deps' into micro
+
+	* am-deps:
+	  include: fix bug in handling of user-defined makefile fragments generation
+	  tests: expose bug in handling of user-defined makefile fragments generation
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	include: fix bug in handling of user-defined makefile fragments generation
+
+	If a user defined one single Makefile fragment to be included (via Automake
+	includes) in his main Makefile.am, and gave a rule to generate that file
+	from other data, Automake used to spuriously complain about with something
+	like "overrides Automake target '$(srcdir)/foo.am".  This change remove that
+	spurious error (via a simple hack rather than a systematic change, but oh
+	well).
+
+	* lib/am/configure.am (%MAKEFILE-IN-DEPS%) [?HAVE-MAKEFILE-IN-DEPS?]: Add
+	a trailing "$(am__empty)" to the list of targets, which is enough to trick
+	Automake into not complaining about "duplicated targets" in case the
+	'%MAKEFILE-IN-DEPS%' list expands to a single target that is also declared
+	in some user-defined rule.
+	* t/list-of-tests.mk (XFAIL_TESTS): Remove now-passing test
+	't/am-include-only-one-generated-fragment.sh'.
+	* NEWS: Update.
+
+2014-12-23  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: expose bug in handling of user-defined makefile fragments generation
+
+	If a user defines one single Makefile fragment to be included (via Automake
+	includes) in his main Makefile.am, and givse a rule to generate that file
+	from other data, Automake will spuriously complain about with something
+	like "overrides Automake target '$(srcdir)/foo.am".
+
+	* t/am-include-only-one-generated-fragment.sh: Expose the bug (this test
+	is still XFAILing).
+	* t/list-of-tests.mk: Add the new test.
+
+2014-12-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  cleanup: refactor code to initialize DIST_COMMON
+	  dist: ordering of files in DIST_COMMON is deterministic now
+	  tests: refactor some tests on DIST_COMMON
+	  maint: make output of 'gen-testsuite-part' deterministic
+	  When computing lispdir, don't load emacs site wide init file.
+	  PATH: quote $(PATH_SEPARATOR) as well
+	  Improve detection of GNU make, avoiding "Arg list too long" errors.
+
+2014-12-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	cleanup: refactor code to initialize DIST_COMMON
+
+	There is not need to make that an Automake variable early,
+	only to later get and munge its contents, and use the new
+	content to redefine the variable.
+
+	* bin/automake.in (@dist_common): New global variable.
+	(push_dist_common, handle_dist): Use it.
+	(handle_dist): Define am__DIST_COMMON instead of DIST_COMMON
+	directly.
+	(initialize_per_input): Reset it to empty.
+	($configure_dist_common): Turn this scalar variable ...
+	(@configure_dist_common): ... into this array variable.
+	(handle_dist): Adjust.
+	(required_file_check_or_copy): Update and wrap some comments.
+	* lib/am/distdir.am (DIST_COMMON): Append $(am__DIST_COMMON).
+	* t/distcom2.sh: Tighten a little.
+
+2014-12-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	dist: ordering of files in DIST_COMMON is deterministic now
+
+	It had likely stopped being deterministic due to the new perl behavior
+	of having non-deterministic order of numerating hash keys:
+	<http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#Hash_randomization>
+	<http://onionstand.blogspot.ie/2012/12/are-you-relying-on-hash-keys-being.html>
+	See also similar commit v1.14-19-g52e6404, albeit in this case the issue
+	is likely coming from autom4te/autoconf, not from automake itself.
+
+	Fixes automake bug http://debbugs.gnu.org/17908
+
+	* bin/automake.in (handle_dist): Sort @dist_common.
+	(print_autodist_files): Swap invocations of 'sort' and 'uniq', for
+	consistency with the new code in 'handle_dist' and to get rid of a
+	minor hack.
+	* NEWS: Update.
+
+2014-12-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: refactor some tests on DIST_COMMON
+
+	So that they prefer checking the semantics of the generated Makefiles,
+	rather than grepping their content.  This will be useful in an upcoming
+	refactoring.
+
+	* t/distcom-subdir.sh: Adjust this test.
+	* t/distcom2.sh: And this.
+	* t/distcom3.sh: And this.
+	* t/distcom4.sh: And this.
+	* t/distcom5.sh: And this.
+
+2014-12-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	maint: make output of 'gen-testsuite-part' deterministic
+
+	So that diffs displayed by the 'compare-autodiffs' target are
+	less spurious and more useful.
+
+	* gen-testsuite-part: Sort keys of %deps_extractor, %wrapper_setups
+	and %depmodes before iterating on them.
+
+2014-12-19  Andrew Burgess  <andrew.burgess@embecosm.com>  (tiny change)
+
+	When computing lispdir, don't load emacs site wide init file.
+
+	When computing the lispdir emacs was previously invoked with the '-q'
+	option to avoid loading the users initialisation files, however, the
+	site wide initialisation file was still loaded, in some cases this can
+	cause emacs to hang, with the result that a configure can also hang.
+
+	The lisp code that aclocal causes to be executed reduces the load-path
+	list (in emacs) to empty.  The load-path is used by emacs to find
+	packages which it wants to load.  Currently, if emacs tries to auto
+	load a package during shut down, and the package is not found, then
+	emacs will hang.  This does seem like an emacs bug, but protecting
+	against this in aclocal is simply a case of not loading the site wide
+	initialisation file.
+
+	In this patch then the '-q' option to emacs is replaced with '-Q',
+	this has the same, the '-Q' option is similar to '-q --no-site-file
+	--no-splash'.
+
+	* doc/automake.texi (Hard-Coded Install Paths): Update explanation of
+	emacs code used to get lispdir.
+	* m4/lispdir.m4 (AM_PATH_LISPDIR): Update emacs flags.
+
+2014-12-19  KO Myung-Hun  <komh78@gmail.com>  (tiny change)
+
+	PATH: quote $(PATH_SEPARATOR) as well
+
+	On OS/2, $(PATH_SEPARATOR) is ';'. Without quote, it is recognized as
+	a mark of end of sentence.
+
+	* Makefile.am: quote $(PATH_SEPARATOR) as well.
+	* t/Makefile.inc: Likewise.
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Improve detection of GNU make, avoiding "Arg list too long" errors.
+
+	Such errors could take place when the main makefile included too many
+	sub-makefiles, making $(MAKEFILE_LIST) too long and causing the
+	recipes $(am__is_gnu_make) to exceed the shell's command-line length
+	limits.  This is not a theoretical issue: it could happen for projects
+	having lots of C/C++ sources and using automatic dependency tracking,
+	which created an included .Po sub-makefile for each of such sources.
+
+	Fixes http://debbugs.gnu.org/18744
+
+	* lib/am/header-vars.am (am__is_gnu_make): Fix the logic to avoid
+	the use of $(MAKEFILE_LIST).
+	* NEWS: Update.
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  Fix stupid typo in test, causing spurious failure
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Fix stupid typo in test, causing spurious failure
+
+	* t/aminit-trailing-dnl-comment-pr16841.sh: s/greop/grep/
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  sync: update third-part files from upstream
+	  Make sure AM_INIT_AUTOMAKE has a trailing newline
+	  dist: adjust warning messages about shar and tarZ deprecation
+	  docs: improve description of ${PACKAGE}, ${VERSION}, and similar variables
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'pr16841' into micro
+
+	* pr16841:
+	  Make sure AM_INIT_AUTOMAKE has a trailing newline
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	sync: update third-part files from upstream
+
+	* lib/config.guess: This.
+	* lib/config.sub: And this.
+	* lib/gitlog-to-changelog: And this.
+	* lib/gnupload: And this.
+	* lib/update-copyright: And this.
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Make sure AM_INIT_AUTOMAKE has a trailing newline
+
+	This used to be the case until Automke 1.13, but we broke it in
+	Automake 1.14 (see commit v1.13.1-71-gf78b0f0).  This caused
+	issues like http://debbugs.gnu.org/16841
+
+	* m4/init.m4 (AM_INIT_AUTOMAKE): Adjust.
+	* t/aminit-trailing-dnl-comment-pr16841.sh: New test.
+	* t/list-of-tests.mk: Add it.
+	* NEWS, THANKS: Update.
+
+2014-12-19  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branches 'dist-warn-pr19108' and 'docs-pr16623' into micro
+
+	* dist-warn-pr19108:
+	  dist: adjust warning messages about shar and tarZ deprecation
+
+	* docs-pr16623:
+	  docs: improve description of ${PACKAGE}, ${VERSION}, and similar variables
+
+2014-12-19  Aharon Robbins  <arnold@skeeve.com>
+
+	dist: adjust warning messages about shar and tarZ deprecation
+
+	They were swapped.  Reported in http://debbugs.gnu.org/19108.
+
+2014-12-18  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	docs: improve description of ${PACKAGE}, ${VERSION}, and similar variables
+
+	In particular, suggesting that $PACKAGE and $VERSION should be aliases of
+	the $PACKAGE_TARNAME and $PACKAGE_VERSION definitions coming from AC_INIT,
+	and not be defined via an obsolete 2-argument invocation of AM_INIT_AUTOMAKE;
+	and why that is the best default, given all our historical baggage.
+
+	See discussion in http://debbugs.gnu.org/16623 for more information and
+	background.
+
+	* doc/automake.texi: Adjust.
+	* THANKS: Update.
+
+2014-12-17  Thomas Jahns  <jahns@dkrz.de>
+
+	Fix dumb logic error preventing $install_sh from being be overridden
+
+	* m4/install-sh.m4: Here.
+	* THANKS: Update.
+
+2014-12-17  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branches 'pr19311' and 'micro' into minor
+
+	* pr19311:
+	  Expose automake bug#19311
+	  build: fix race in parallel builds
+
+	* micro:
+	  Automake docs: fix typos and use of British English
+	  build: fix race in parallel builds
+
+2014-12-17  Karl Berry  <karl@freefriends.org>
+
+	Automake docs: fix typos and use of British English
+
+	* doc/automake.texi: Here.
+
+2014-12-17  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Expose automake bug#19311
+
+	AC_PROG_CC called before AC_CONFIG_AUX_DIR can silently force wrong
+	$ac_aux_dir definition.
+
+	* t/auxdir-pr19311.sh: New.
+	* t/list-of-tests.mk: Add it as an XFAIL test.
+
+2014-12-17  Paul Eggert  <eggert@cs.ucla.edu>
+
+	build: fix race in parallel builds
+
+	Reported by Friedrich Beckmann in: http://bugs.gnu.org/18301
+	* lib/am/texi-vers.am (?DIRSTAMP?): Put the process-ID into the
+	temporary file name.  Use a similar temporary in the source dir.
+
+2014-08-23  Paul Eggert  <eggert@cs.ucla.edu>
+
+	build: fix race in parallel builds
+
+	Reported by Friedrich Beckmann in: http://bugs.gnu.org/18301
+	* lib/am/texi-vers.am (?DIRSTAMP?): Put the process-ID into the
+	temporary file name.  Use a similar temporary in the source dir.
+
+2014-04-22  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	init: ensure $ac_aux_dir is defined before being used
+
+	Since we use '$ac_aux_dir' to define '$am_aux_dir', we need
+	to ensure the former has been initialized before we try to
+	define the latter, otherwise the definition:
+
+	   am_aux_dir=`cd $ac_aux_dir && pwd`
+
+	will set '$am_aux_dir' to '$HOME', likely causing weird and
+	unexpected behaviours.
+
+	This change fixes automake bug#15981.
+
+	* m4/auxdir.m4 (AM_AUX_DIR_EXPAND): AC_REQUIRE expansion
+	of 'AC_CONFIG_AUX_DIR_DEFAULT'. Fix redundant comment and
+	AC_PREREQ, add extra quoting around '$ac_aux_dir'.
+	* t/auxdir-pr15981.sh: New test.
+	* t/auxdir-cc-pr15981.sh: Likewise.
+	* t/list-of-tests.mk (handwritten_TESTS): Add them.
+	* THANKS, NEWS: Update.
+	* bin/automake.in: Fix a harmless typo in comments, that
+	I happened to notice while writing this patch.
+
+2014-04-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	plans: enabling subdir-object by default is blocked on bug#13928
+
+2014-04-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	maint: update copyright years
+
+	We've been in 2014 already for few months now...
+
+2014-04-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	maint: sync files from upstream ("make fetch")
+
+2014-04-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Typofixes in warning messages and manual
+
+	Fixes automake bug#16827 and bug#16997.
+
+2014-04-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  doc: fix encoding error with UTF-8 characters
+
+2014-01-04  Paul Eggert  <eggert@cs.ucla.edu>
+
+	doc: fix encoding error with UTF-8 characters
+
+	* doc/automake.texi: Specify @documentencoding and
+	@documentlanguage, to prevent encoding errors for parts of this
+	input file that are UTF-8.  This also causes the .info output to
+	use curly quotes, which is easier to read though it does assume
+	UTF-8 support.
+
+2013-12-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: a typofix, and better word wrapping
+
+2013-12-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	parallel-tests: avoid possible implicit "make all" in test-suite.log rule
+
+	This change fixes automake bug#16302.
+
+	* lib/am/check.am ($(TEST_SUITE_LOG)): Avoid running "make $redo_logs"
+	when $redo_logs expands to empty, since in that case we are actually
+	ending up invoking a full "make all".  That shouldn't be required, and
+	can cause slowdowns for people implementing their extra "laziness
+	wrappers" around check-TESTS (automake bug#16302).
+	* NEWS: Update.
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Allow user to extend .PRECIOUS target
+
+	References:
+	<http://lists.freedesktop.org/archives/systemd-devel/2013-July/012155.html>
+	<http://lists.gnu.org/archive/html/automake/2013-07/msg00011.html>
+
+	* bin/automake.in: Adjust to ensure we handle '.PRECIOUS' the same way
+	we do for '.PHONY' and '.MAKE'.
+	* lib/Automake/Rule.pm: Likewise.
+	* t/precious.sh: New test.
+	* t/list-of-tests.mk: Add it.
+	* t/phony.sh: Enhance a little while at it.
+	* NEWS: Update.
+	* THANKS: Likewise.
+
+	Reported-by: Holger Hans Peter Freyther <holger@freyther.de>
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	cosmetics: remove a couple of extra trailing white spaces
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: fix a spurious failure on Mac OS X
+
+	This change fixes bug#14706.
+
+	* lib/depcomp2.sh: Also cater to spurious diagnostic from GNU rm,
+	not only from Apple's rm.
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	docs: make clear the JAVA primary is frozen
+
+	* doc/automake.texi: Here.  The JAVA primary is broken in several ways,
+	and will no longer be developed, not even for bug fixes.
+
+	See also automake bugs #9088, #8662 and #8540.
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'install-sh-improvements' into minor
+
+	* install-sh-improvements:
+	  install-sh: a slightly better diagnostic, and tests enhancements
+	  install-sh: be stricter in catching invalid usages
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	install-sh: a slightly better diagnostic, and tests enhancements
+
+	* lib/install-sh: When called with no non-option arguments and the '-t'
+	option with an argument that is not an existing directory, have the
+	diagnostic output complain about the lack of required arguments rather
+	than about the bad argument passed to '-t'.
+	* t/install-sh-unittests.sh: Enhance to also check diagnostic printed
+	in cases of expected failure.
+
+2013-12-26  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	install-sh: be stricter in catching invalid usages
+
+	Such usages (which are rejected by GNU install as well) are:
+
+	  - options -d and -t used together;
+
+	  - argument passed to option -t must be a directory;
+
+	  - if there are two or more SOURCEFILE arguments, the
+	    DESTINATION argument must be a directory.
+
+	Note that we still allow the use of options -d and -T together, by
+	making -d take the precedence; this is for compatibility with GNU
+	install.
+
+	This change fixes, among other things, automake bug#15376.
+
+	* lib/install-sh: Adjust.
+	* t/install-sh-unittests.sh: Enhance.
+	* NEWS: Update.
+	* THANKS: Add reporter of bug#15376.
+
+	Helped-by: Tobias Hansen <thansen@debian.org>
+
+2013-12-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: more significant names for some tests
+
+	* t/insh2.sh: Rename...
+	* t/dist-install-sh.sh: ... like this.
+	* t/instsh.sh: Rename...
+	* t/add-missing-install-sh.sh: ... like this.
+	* t/instsh2.sh: Rename...
+	* t/install-sh-unittests.sh: ... like this.
+	* t/instsh3.sh: Rename...
+	* t/install-sh-option-C.sh: ... like this.
+	* t/list-of-tests.mk: Adjust.
+
+2013-12-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: some cosmetic fixes
+
+	* t/instdat.sh: Here.
+	* t/instdat2.sh: And here.
+	* t/instsh.sh: And here.
+	* t/instsh3.sh: And here.
+
+2013-12-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	tests: more significant names for a test
+
+	* t/install2.sh: Rename...
+	* t/dist-with-unreadable-makefile-fails.sh: ... like this.
+	* t/list-of-tests.mk: Adjust.
+
+2013-12-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branches 'fix-pr11814' and 'drop-perl-tap-driver' into minor
+
+	* fix-pr11814:
+	  docs: drop a few obsolescent FIXME/TODO comments, and associated text
+	  testsuite harness: report test exit status in log file
+
+	* drop-perl-tap-driver:
+	  TAP driver: remove perl implementation (move it into contrib/)
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	docs: drop a few obsolescent FIXME/TODO comments, and associated text
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	testsuite harness: report test exit status in log file
+
+	The exit status of a test should be reported in the test logs, so
+	that one can see at a glance whether the test has succeeded or failed,
+	without having to look also into the corresponding .trs file.
+
+	This fixes automake bug#11814.
+
+	* lib/test-driver: Also report the test script exit status in the
+	test log (as the last line).
+	* t/check-exit-status-reported.sh: Test this new behaviour.
+	* t/list-of-tests.mk: Add the new test.
+	* t/ax/test-lib.sh( am_exit_trap): No longer log the test exit status;
+	this has been made redundant by the change to 'test-driver'.  While at
+	it, fix an imperfect quoting.
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	TAP driver: no need to invoke AC_PROG_AWK directly
+
+	It is already required by AM_INIT_AUTOMAKE anyway.
+
+	* doc/automake.texi: Adjust examples.
+	* t/tap-doc2.sh: Adjust documentation-tracking test.
+	* m4/init.m4 (AM_INIT_AUTOMAKE): Explicitly tell that the AC_PROG_AWK
+	requirement is also needed whenever the TAP driver is used.
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	TAP driver: remove perl implementation (move it into contrib/)
+
+	That implementation was only meant as a standard against which the
+	portable awk+shell implementation was to be measured.  Now, since
+	Automake 1.12, the latter implementation is fully functional and
+	already used in the wild, and in fact feature-par with the perl
+	implementation.  So the perl implementation is now just slowing
+	down and complicating our testsuite.  Let's move it to 'contrib/'
+	(we don't want to remove it, in case someone is actually using it
+	in the wild).
+
+	* lib/tap-driver.pl: Move it ...
+	* contrib/tap-driver.pl: ... here.  While at it, convert quoting
+	`like this' to quoting 'like this', and remove an obsolescent FIXME
+	comment.
+	* lib/Makefile.inc (dist_script_DATA): Drop '%D%/tap-driver.pl'.
+	* Makefile.am (EXTRA_DIST): Add 'contrib/tap-driver.pl'.
+	* doc/automake.texi: Remove one stray reference to 'tap-driver.pl',
+	and reference 'tap-driver.sh' instead, as intended.
+	* t/ax/am-test-lib.sh ($am_tap_implementation): Delete definition and
+	uses.
+	(fetch_tap_driver): Simplify to unconditionally assume the shell+awk
+	implementation of the TAP driver is used.
+	(get_shell_script): Make more flexible so that it can cater to the
+	needs of 'fetch_tap_driver()'.
+	* t/tap-bad-prog.tap: Likewise.
+	* t/tap-bailout-leading-space.sh: Likewise.
+	* t/tap-signal.tap: Likewise.
+	* t/tap-test-number-0.sh: Likewise.
+	* t/test-driver-cond.sh: Use 'tap-driver.sh' instead of 'tap-driver.pl'.
+	* gen-testsuite-part (%test_generators): Do not generate sister tests
+	that use the perl TAP driver rather than the shell+awk one.
+	* NEWS: Update.
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	NEWS: stop reporting "new" Automake versioning scheme
+
+	It's actually old news by now.
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  post-release: micro version bump to 1.14.1a devel version
+	  release: stable micro release 1.14.1
+	  HACKING: minor clarification
+	  tests: make install-info-dir.sh print more debugging info
+	  tests: remove too-brittle test tap-realtime.sh
+	  maintainer: am-ft: add option to cater to clock skews
+	  sync: update INSTALL, config.guess and config.sub from upstream
+	  TAP driver: cosmetic fixes
+
+2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	post-release: micro version bump to 1.14.1a devel version
+
+	* configure.ac (AC_INIT): Bump version number to 1.14.1a.
+	* m4/amversion.m4: Likewise (auto-updated by "make bootstrap").
+
 2013-12-24  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
 	release: stable micro release 1.14.1
@@ -48,6 +822,27 @@
 
 2013-11-02  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
+	Merge branch 'modernize-install-sh' into minor
+
+	* modernize-install-sh:
+	  cosmetics: untabify the install-sh script
+	  install-sh: assume that "set -f" and "set +f" work...
+	  install-sh: assume ${var:-value} works as expected
+	  install-sh: assume 'dirname' is available and working correctly
+
+2013-11-02  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  cosmetics: fix typo in a user-facing message in tests
+	  automake: account for perl hash order randomization
+	  tests: avoid use of intervals to capitalize letters
+	  distcheck: don't allow overriding of --prefix and --srcdir by the user
+	  tests: expose bug#14991 (relates to 'distcheck')
+
+2013-11-02  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
 	cosmetics: fix typo in a user-facing message in tests
 
 	* t/lex-header.sh: A "skip" message in this test, precisely.
@@ -94,6 +889,44 @@
 
 	* t/test-extensions.sh: Adjust.
 
+2013-10-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	cosmetics: untabify the install-sh script
+
+	* lib/install-sh: Here, plus a couple of related formatting tweaks.
+
+2013-10-31  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	install-sh: assume that "set -f" and "set +f" work...
+
+	... and disable/enable shell globbing, respectively.  This is
+	mandated by POSIX, and supported even by Solaris 9 /bin/sh (one
+	of the most braindead shells we still support).
+
+	* lib/install.sh: Adjust.
+	* NEWS: Update.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	install-sh: assume ${var:-value} works as expected
+
+	The Autoconf manual says it is OK these days.
+
+	* lib/install.sh: Adjust.
+	* NEWS: Update.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	install-sh: assume 'dirname' is available and working correctly
+
+	Really, we no longer care about hosts so outdated/broken to miss
+	fundamental utilities like basename or dirname.
+
+	* lib/install.sh: Adjust.
+	* NEWS, THANKS: Update.
+
+	Suggested-by: Philipp A. Hartmann <philipp.hartmann@offis.de>
+
 2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
 	distcheck: don't allow overriding of --prefix and --srcdir by the user
@@ -120,6 +953,25 @@
 
 	* t/distcheck-no-prefix-or-srcdir-override.sh: New, expose the bug.
 	* t/list-of-tests.mk (handwritten_TESTS, XFAIL_TESTS): Add it.
+
+2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  tests: fix spurious failure when zip is present but unzip is not
+	  tests: fix spurious failure due to localization issues
+	  NEWS: update with the changes since v1.14
+	  docs: correct typos in the fix-timestamp.sh script
+	  python: byte-compile nobase_*_PYTHON files only once
+	  cosmetics: typofix in the 'missing' script
+	  test: avoid false positives in 'cc-no-c-o' script
+	  test harness: improve catching of usage errors in script 'test-driver'
+	  tests: fix a spurious failure on NetBSD-current
+	  am-ft: make the environment available earlier
+	  NEWS: post-release tweaks (for 1.14.x series)
+	  tests: avoid a spurious failure on MacOS X 10.6.8
+	  tests: don't risk hanging on the 'cl' requirement
 
 2013-10-30  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
@@ -274,6 +1126,20 @@
 
 	* t/ax/am-test-lib.sh (require_tool): Adjust the handling of
 	the 'cl' requirement.
+
+2013-06-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	Merge branch 'micro' into minor
+
+	* micro:
+	  post-release: micro version bump (1.14.0a)
+
+2013-06-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	post-release: micro version bump (1.14a)
+
+	* configure.ac: Bump version: 1.14 -> 1.14a
+	* m4/amversion.m4: Likewise (auto-updated by "make bootstrap").
 
 2013-06-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
 

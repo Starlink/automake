@@ -3,7 +3,7 @@
 # of the Automake testsuite.  Also, automatically generate some more
 # tests from them (for particular cases/setups only).
 
-# Copyright (C) 2011-2013 Free Software Foundation, Inc.
+# Copyright (C) 2011-2014 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -241,20 +241,6 @@ my %test_generators =
         shell_setup_code =>
           'am_test_prefer_config_shell=yes',
       },
-    #
-    # Tests on tap support should be run with both the perl and awk
-    # implementations of the TAP driver (they run with the awk one
-    # by default).
-    #
-    perl_tap_driver =>
-      {
-        line_matcher =>
-          qr<(?:\bfetch_tap_driver\b|[\s/]tap-setup\.sh\b)>,
-        line_rejecter =>
-          qr/\bam_tap_implementation=/,
-        shell_setup_code =>
-          'am_tap_implementation=perl',
-      },
   );
 
 #--------------------------------------------------------------------------
@@ -297,8 +283,9 @@ foreach my $test (@all_tests)
     $wrapper_setups{$test} = \@setups if @setups;
   }
 # And now create all the wrapper tests.
-while (my ($wrapped_test, $setup_list) = each %wrapper_setups)
+for my $wrapped_test (sort keys %wrapper_setups)
   {
+    my $setup_list = $wrapper_setups{$wrapped_test};
     (my $base = $wrapped_test) =~ s/\.([^.]*)$//;
     my $suf = $1 or die "$me: test '$wrapped_test' lacks a suffix\n";
     my $count = 0;
@@ -359,7 +346,7 @@ my %depmodes =
 
 foreach my $lt (TRUE, FALSE)
   {
-    foreach my $m (keys %depmodes)
+    foreach my $m (sort keys %depmodes)
       {
         my $planned = ($lt && $m eq "auto") ? 84 : 28;
         my @required =
@@ -414,8 +401,9 @@ print <<EOF;
 
 EOF
 
-while (my ($k, $x) = each %deps_extractor)
+for my $k (sort keys %deps_extractor)
   {
+    my $x = $deps_extractor{$k};
     my $dist_prereqs = $x->{dist_prereqs} || "";
     my $nodist_prereqs = $x->{nodist_prereqs} || "";
     my @tests = grep { line_match $x->{line_matcher}, $_ } @all_tests;
