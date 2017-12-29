@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1995-2013 Free Software Foundation, Inc.
+# Copyright (C) 1995-2017 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@ dnl  Include the TARNAME field, not because we want to distribute
 dnl  this package, but so that autoconf uses this when building some
 dnl  installation locations rather than the "starlink-automake" it
 dnl  would otherwise construct.
-AC_INIT([Starlink Automake], [1.14.1-starlink], [starlink@jiscmail.ac.uk], automake)
+AC_INIT([Starlink Automake], [1.15.1-starlink], [starlink@jiscmail.ac.uk], automake)
 
 AC_PREREQ([2.69])
-dnl AC_INIT([GNU Automake], [1.14.1], [bug-automake@gnu.org])
+dnl AC_INIT([GNU Automake], [1.15.1], [bug-automake@gnu.org])
 
 AC_CONFIG_SRCDIR([bin/automake.in])
 AC_CONFIG_AUX_DIR([lib])
@@ -55,7 +55,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror dist-xz filename-length-max=99
 
 # Keep this on a line of its own, since it must be found and processed
 # by the 'update-copyright' rule in our Makefile.
-RELEASE_YEAR=2013
+RELEASE_YEAR=2017
 AC_SUBST([RELEASE_YEAR])
 
 # The API version is the base version.  We must guarantee
