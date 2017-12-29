@@ -7,10 +7,10 @@ checkout-fixup
 config.log
 config.status
 configure-output.log
-doc/aclocal-1.14.1
+doc/aclocal-1.15.1
 doc/aclocal.1
 doc/amhello/compile
-doc/automake-1.14.1
+doc/automake-1.15.1
 doc/automake.1
 lib/Automake/Config.pm
 lib/am/Makefile.in
@@ -20,5 +20,5 @@ runtest
 t/ax/cc-no-c-o
 t/ax/shell-no-trail-bslash
 t/ax/test-defs.sh
-t/wrap/aclocal-1.14
-t/wrap/automake-1.14
+t/wrap/aclocal-1.15
+t/wrap/automake-1.15
